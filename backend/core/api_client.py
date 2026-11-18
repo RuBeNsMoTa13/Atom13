@@ -83,10 +83,14 @@ def _parse_image_base64(image_data: Optional[str]) -> Optional[tuple[str, str]]:
 
 class ApiModelManager:
     def __init__(self):
-        CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-        if not CONFIG_FILE.exists():
-            with open(CONFIG_FILE, "w", encoding="utf-8") as f:
-                json.dump([], f, indent=2)
+        try:
+            CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+            if not CONFIG_FILE.exists():
+                with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+                    json.dump([], f, indent=2)
+        except OSError as e:
+            # Pasta somente leitura (Vercel): segue com o catálogo versionado
+            logger.warning(f"Catálogo de modelos somente leitura: {e}")
 
     def list_models(self) -> List[Dict[str, Any]]:
         """

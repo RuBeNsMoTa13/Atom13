@@ -3,7 +3,7 @@
  * Suporta cache estático e instalação como aplicativo autônomo.
  */
 
-const CACHE_NAME = 'atom-tactical-v2';
+const CACHE_NAME = 'atom-tactical-v3';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -44,9 +44,18 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  if (event.request.method !== 'GET') return;
+
+  // Rede primeiro (sempre a versão mais nova do cockpit); cache só quando estiver offline
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      return cached || fetch(event.request).catch(() => cached);
-    })
+    fetch(event.request)
+      .then((response) => {
+        if (response.ok && new URL(event.request.url).origin === self.location.origin) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        }
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });

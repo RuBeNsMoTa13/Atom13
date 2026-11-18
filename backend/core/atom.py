@@ -364,7 +364,8 @@ class AtomBrain:
                 "type": "report_created",
                 "filename": save_res.get("filename"),
                 "download_url": save_res.get("download_url"),
-                "title": save_res.get("title")
+                "title": save_res.get("title"),
+                "content": save_res.get("content")
             }
 
         yield {"type": "stream_end", "full_content": accumulated_response}

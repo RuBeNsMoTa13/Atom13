@@ -6,7 +6,13 @@ from typing import List, Dict, Any, Optional
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 RESEARCHES_DIR = BASE_DIR / "researches"
-RESEARCHES_DIR.mkdir(parents=True, exist_ok=True)
+# Na Vercel o código fica em pasta somente leitura: os dossiês vão para /tmp.
+if os.environ.get("VERCEL") or not os.access(BASE_DIR, os.W_OK):
+    RESEARCHES_DIR = Path(os.environ.get("ATOM_RESEARCHES_DIR", "/tmp/atom-researches"))
+try:
+    RESEARCHES_DIR.mkdir(parents=True, exist_ok=True)
+except OSError:
+    pass
 
 def sanitize_filename(name: str) -> str:
     """Sanitiza string para uso seguro como nome de arquivo."""
@@ -84,7 +90,9 @@ author: "A.T.O.M. por Rubens Mota"
         "title": title,
         "size": len(markdown_document),
         "created_at": now.isoformat(),
-        "download_url": f"/api/researches/{filename}/download"
+        "download_url": f"/api/researches/{filename}/download",
+        # Conteúdo junto: o navegador consegue baixar mesmo se o servidor for outro
+        "content": markdown_document
     }
 
 def list_researches() -> List[Dict[str, Any]]:
@@ -93,6 +101,10 @@ def list_researches() -> List[Dict[str, Any]]:
     """
     items = []
     if not RESEARCHES_DIR.exists():
+        return items
+    # Online, a pasta é compartilhada entre visitantes: não lista dossiês de outras pessoas.
+    from .system_tool import is_cloud_environment
+    if is_cloud_environment():
         return items
 
     for path in sorted(RESEARCHES_DIR.glob("*.md"), key=os.path.getmtime, reverse=True):

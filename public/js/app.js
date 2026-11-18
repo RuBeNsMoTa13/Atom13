@@ -1268,7 +1268,10 @@ class JarvisApp {
 
       onReportCreated: (reportEvent) => {
         const filename = reportEvent.filename;
-        const downloadUrl = JarvisAPI.getDownloadUrl(filename);
+        // Online, o servidor pode ser outro na hora do download: baixa direto do conteúdo recebido
+        const downloadUrl = reportEvent.content
+          ? URL.createObjectURL(new Blob([reportEvent.content], { type: 'text/markdown;charset=utf-8' }))
+          : JarvisAPI.getDownloadUrl(filename);
         assistantMsg.appendReportCreatedCard(filename, downloadUrl);
         this.loadResearches();
         this.logTerminal(`[RELATÓRIO GERADO]: ${filename} (Download disponível)`, 'sys');

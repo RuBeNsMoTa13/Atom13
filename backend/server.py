@@ -1,9 +1,12 @@
 import io
 import json
 import logging
+import os
+import time
+from collections import defaultdict, deque
 from pathlib import Path
 from typing import List, Dict, Any, Optional
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi import FastAPI, HTTPException, UploadFile, File, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -17,13 +20,48 @@ from .core.ollama_client import ollama_manager
 from .core.api_client import api_model_manager
 from .core.jarvis import jarvis_brain
 from .tools.markdown_tool import list_researches, read_research, open_research_file, get_research_file_path
-from .tools.system_tool import get_system_telemetry, execute_os_command, get_environment_info
+from .tools.system_tool import get_system_telemetry, execute_os_command, get_environment_info, is_cloud_environment
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("atom.server")
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-FRONTEND_DIR = BASE_DIR / "frontend"
+# O cockpit fica em public/ (a Vercel serve essa pasta direto pela CDN).
+FRONTEND_DIR = BASE_DIR / "public"
+if not FRONTEND_DIR.exists():
+    FRONTEND_DIR = BASE_DIR / "frontend"
+
+# --- LIMITE DE USO DA CHAVE DO SERVIDOR (MODO NUVEM) ---
+# Visitantes sem chave própria usam a chave configurada no servidor, com um limite
+# de mensagens por IP por hora. Quem cola a própria chave na aba não tem limite.
+RATE_LIMIT_PER_HOUR = int(os.environ.get("ATOM_RATE_LIMIT_PER_HOUR", "20") or 0)
+_usage: Dict[str, deque] = defaultdict(deque)
+
+
+def _client_ip(request: Request) -> str:
+    fwd = request.headers.get("x-forwarded-for", "")
+    if fwd:
+        return fwd.split(",")[0].strip()
+    return request.client.host if request.client else "desconhecido"
+
+
+def _check_rate_limit(request: Request) -> Optional[int]:
+    """Retorna None se liberado, ou os minutos até liberar se o limite estourou."""
+    if not is_cloud_environment() or RATE_LIMIT_PER_HOUR <= 0:
+        return None
+    now = time.time()
+    hits = _usage[_client_ip(request)]
+    while hits and now - hits[0] > 3600:
+        hits.popleft()
+    if len(hits) >= RATE_LIMIT_PER_HOUR:
+        return max(1, int((3600 - (now - hits[0])) // 60) + 1)
+    hits.append(now)
+    return None
+
+
+def _block_in_cloud():
+    if is_cloud_environment():
+        raise HTTPException(status_code=403, detail="Indisponível na versão online do A.T.O.M.")
 
 app = FastAPI(title="A.T.O.M. Tactical OS", version="2.0.0")
 
@@ -104,11 +142,13 @@ def get_google_models(session_key: Optional[str] = None):
 @app.post("/api/models/api")
 def add_api_model(req: AddApiModelRequest):
     """Cadastra um novo modelo de API (apenas metadados e provedor, sem chaves)."""
+    _block_in_cloud()
     return api_model_manager.add_model(req.model_dump())
 
 @app.delete("/api/models/api/{model_id}")
 def delete_api_model(model_id: str):
     """Remove um modelo de API cadastrado do catálogo."""
+    _block_in_cloud()
     success = api_model_manager.delete_model(model_id)
     if not success:
         raise HTTPException(status_code=404, detail="Modelo não encontrado")
@@ -127,6 +167,7 @@ async def test_api_model(req: TestApiModelRequest):
 @app.post("/api/models/pull")
 async def pull_model(req: PullModelRequest):
     """Baixa um novo modelo do repositório Ollama com streaming de progresso SSE."""
+    _block_in_cloud()
     async def event_generator():
         async for progress in ollama_manager.pull_model_stream(req.model_name):
             yield f"data: {json.dumps(progress, ensure_ascii=False)}\n\n"
@@ -183,8 +224,19 @@ async def transcribe_audio(audio: UploadFile = File(...)):
         return {"success": False, "error": f"Falha ao processar áudio: {str(e)}"}
 
 @app.post("/api/chat/stream")
-async def chat_stream(req: ChatRequest):
+async def chat_stream(req: ChatRequest, request: Request):
     """Processa a conversa em tempo real com execução de ferramentas, visão de tela e streaming SSE."""
+    if not (req.session_key and req.session_key.strip()):
+        wait_min = _check_rate_limit(request)
+        if wait_min is not None:
+            msg = (f"Limite de {RATE_LIMIT_PER_HOUR} mensagens por hora da versão online atingido. "
+                   f"Tente de novo em {wait_min} min, ou cole sua própria chave de API no painel de chaves para continuar sem limite.")
+
+            async def limited():
+                yield f"data: {json.dumps({'type': 'error', 'error': msg}, ensure_ascii=False)}\n\n"
+
+            return StreamingResponse(limited(), media_type="text/event-stream", headers={"Cache-Control": "no-cache"})
+
     messages_payload = [{"role": m.role, "content": m.content} for m in req.messages]
 
     async def sse_generator():
@@ -258,7 +310,10 @@ def execute_command(req: ExecuteCmdRequest):
     return execute_os_command(req.command, autonomous=req.autonomous or False)
 
 # --- ARQUIVOS ESTÁTICOS DO FRONTEND ---
-if FRONTEND_DIR.exists():
+# Na Vercel a pasta public/ já é servida pela CDN; o mount fica só para o uso local/Render.
+if os.environ.get("VERCEL"):
+    pass
+elif FRONTEND_DIR.exists():
     app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
 else:
     logger.warning(f"Diretório frontend não encontrado em: {FRONTEND_DIR}")
