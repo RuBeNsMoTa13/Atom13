@@ -58,6 +58,18 @@ Este é o backlog oficial e único de rastreabilidade do projeto **A.T.O.M.** Qu
 
 ---
 
+## ☁️ Versão Online (Vercel) — 2026-11-18
+
+- [x] Deploy na Vercel (`app.py`, `vercel.json`, cockpit em `public/`): https://atom-tactical-os.vercel.app
+- [x] Limite de mensagens por visitante/hora para a chave do servidor (`ATOM_RATE_LIMIT_PER_HOUR`).
+- [x] Catálogo de modelos e pull do Ollama bloqueados no modo nuvem.
+- [x] Dossiês em `/tmp` e download direto pelo navegador.
+- [x] Miniatura ao vivo da tela compartilhada (estilo Discord), clique para ampliar.
+- [ ] Configurar `GEMINI_API_KEY` (e `GROQ_API_KEY`) nas variáveis da Vercel.
+- [ ] Esconder no modo online os botões que só funcionam no PC (calculadora, bloco de notas, baixar modelo Ollama, abrir pasta no Windows).
+- [ ] Guardar os dossiês do visitante no próprio navegador para a gaveta de dossiês funcionar online.
+- [ ] Atualizar README e `docs/deploy` com a Vercel (hoje falam só do Render).
+
 ## 🔮 Futuras Expansões Táticas
 - [ ] Implementar suporte a gravação contínua de sessão de tela para envio sob demanda.
 - [ ] Adicionar exportação de dossiês para PDF tático com tema escuro.
