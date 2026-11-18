@@ -62,6 +62,21 @@ PROVIDER_DEFAULTS = {
     }
 }
 
+# Modelos do Gemini que o Atom consegue usar para conversar (texto + imagem da tela, com streaming).
+# A chave do Google libera muitos outros (imagem, vídeo, voz, agentes de IDE como o Antigravity,
+# computer use, deep research...) que não funcionam no chat do Atom: esses ficam fora da lista.
+GEMINI_SKIP = (
+    "embedding", "bison", "aqa", "imagen", "veo", "lyria", "robotics", "transcribe", "tts",
+    "image", "nano-banana", "audio", "live", "gemma", "antigravity", "computer-use", "deep-research",
+    "learnlm", "agent", "codegen", "-code-", "search", "vision", "medlm", "embed",
+)
+
+
+def gemini_usable(model_id: str) -> bool:
+    mid = (model_id or "").lower().replace("models/", "")
+    return mid.startswith("gemini-") and not any(x in mid for x in GEMINI_SKIP)
+
+
 def _parse_image_base64(image_data: Optional[str]) -> Optional[tuple[str, str]]:
     """
     Extrai (raw_base64, mime_type) de strings de imagem recebidas da UI.
@@ -260,10 +275,7 @@ class ApiModelManager:
         """Todos os modelos de conversa que a chave do provedor libera (Google ou APIs no padrão OpenAI)."""
         provider = (provider or "").lower()
         if provider == "google":
-            skip = ("embedding", "bison", "aqa", "imagen", "veo", "lyria", "robotics", "transcribe",
-                    "tts", "image-generation", "native-audio", "live", "gemma")
-            return [m for m in self.list_google_models(session_key)
-                    if not any(x in m["model_id"].lower() for x in skip)]
+            return [m for m in self.list_google_models(session_key) if gemini_usable(m["model_id"])]
 
         cfg = PROVIDER_DEFAULTS.get(provider)
         if not cfg or not cfg.get("base_url"):
@@ -317,7 +329,11 @@ class ApiModelManager:
             for m in client.models.list():
                 m_name = getattr(m, 'name', '') or ''
                 clean_name = m_name.replace("models/", "")
-                if any(x in clean_name.lower() for x in ignored_keywords):
+                if not gemini_usable(clean_name):
+                    continue
+
+                actions = getattr(m, 'supported_actions', None) or []
+                if actions and "generateContent" not in actions:
                     continue
 
                 display_name = getattr(m, 'display_name', clean_name) or clean_name
@@ -349,7 +365,7 @@ class ApiModelManager:
                         methods = m.get("supportedGenerationMethods", [])
                         if "generateContent" not in methods:
                             continue
-                        if any(x in clean_name.lower() for x in ignored_keywords):
+                        if not gemini_usable(clean_name):
                             continue
                         result.append({
                             "id": f"api:google:{clean_name}",

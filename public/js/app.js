@@ -201,6 +201,9 @@ class JarvisApp {
     // Botões de falar (o grande, embaixo do Atom, e o do campo de mensagem) funcionam igual.
     // Toque: ouve e para sozinho quando você se cala. Segurar: ouve enquanto estiver apertado.
     // Com o Atom falando ou respondendo: ele para e já começa a ouvir.
+    const stopBtn = document.getElementById('composer-stop-btn');
+    if (stopBtn) stopBtn.addEventListener('click', () => { this.interruptJarvis(); this.updateMicBtnState(); });
+
     [this.micBtn, this.composerMicBtn].filter(Boolean).forEach((btn) => {
       btn.addEventListener('pointerdown', (e) => {
         if (e.button !== undefined && e.button !== 0) return;
@@ -214,6 +217,7 @@ class JarvisApp {
       btn.addEventListener('click', (e) => e.preventDefault());
     });
     this.setupConversaMode();
+    this.audio.onMouth = (v) => this.reactor.setAudioLevel(v);
 
     // Toggles de Áudio
     this.ttsToggleBtn.addEventListener('click', () => {
@@ -424,9 +428,31 @@ class JarvisApp {
     }
 
     if (this.saveSessionKeyBtn) {
+      // Reconhece o tipo da chave pelo começo dela e escolhe o provedor certo
+      const guessProvider = (key) => {
+        if (/^AIza[0-9A-Za-z_-]{20,}$/.test(key)) return 'google';
+        if (/^gsk_/.test(key)) return 'groq';
+        if (/^sk-or-/.test(key)) return 'openrouter';
+        if (/^sk-ant-/.test(key)) return 'claude';
+        if (/^sk-/.test(key)) return this.sessionKeyProvider.value === 'deepseek' ? 'deepseek' : 'openai';
+        return null;
+      };
+      this.sessionApiKeyInput.addEventListener('input', () => {
+        const g = guessProvider(this.sessionApiKeyInput.value.trim());
+        if (g && g !== 'claude' && this.sessionKeyProvider.value !== g) this.sessionKeyProvider.value = g;
+      });
       this.saveSessionKeyBtn.addEventListener('click', () => {
         const prov = this.sessionKeyProvider.value;
         const key = this.sessionApiKeyInput.value.trim();
+        const kind = key ? guessProvider(key) : null;
+        if (key && kind === 'claude') {
+          this.showKeyFeedback('Essa é uma chave do Claude (Anthropic). O Atom ainda não usa esse tipo: use Google AI Studio, OpenAI, Groq, OpenRouter ou DeepSeek.', 'error');
+          return;
+        }
+        if (key && prov === 'google' && kind !== 'google') {
+          this.showKeyFeedback('Isso não parece uma chave do Google AI Studio (começa com AIza). Chaves do Antigravity ou do Google Cloud não funcionam aqui; crie uma em aistudio.google.com/apikey.', 'error');
+          return;
+        }
         if (key) {
           sessionStorage.setItem('jarvis_key_' + prov, key);
           this.showKeyFeedback(`Chave de ${prov.toUpperCase()} ativada. Buscando os modelos dela...`, 'info');
@@ -621,6 +647,12 @@ class JarvisApp {
         const busyBig = !isListening && this.audio && this.atomBusy();
         label.innerText = isListening ? 'OUVINDO... TOQUE PARA MANDAR' : busyBig ? 'PARAR E FALAR' : 'FALAR COM O ATOM';
       }
+    }
+
+    const stopBtn = document.getElementById('composer-stop-btn');
+    if (stopBtn && this.audio) {
+      const active = isListening || this.audio.isTranscribing || this.atomBusy();
+      stopBtn.classList.toggle('hidden', !active);
     }
 
     if (this.composerMicBtn) {
@@ -1166,7 +1198,7 @@ class JarvisApp {
 
     if (res.items.length === 0) {
       this.researchesList.innerHTML = `
-        <div class="empty-dossier-state">Nenhum dossiê gerado ainda. Peça ao A.T.O.M.: <em>"Crie um resumo em markdown sobre IA"</em></div>
+        <div class="empty-dossier-state">Nenhum arquivo Markdown salvo ainda. Peça ao Atom: <em>"Salve um arquivo Markdown sobre IA"</em></div>
       `;
       return;
     }
@@ -1264,11 +1296,21 @@ class JarvisApp {
     if (!text || !text.trim()) return;
     const clean = text.trim();
 
+    // "Para", "pare", "chega", "cancela"... sozinhos são ordem de parar, não mensagem
+    const bare = clean.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z ]/g, ' ').replace(/\s+/g, ' ').trim()
+      .replace(/^(atom|atomo|ei atom|ok atom) /, '');
+    if (/^(para|pare|parar|para tudo|chega|cancela|cancelar|esquece|silencio|stop|fica quieto|cala a boca|ja deu)$/.test(bare)) {
+      this.chatInput.value = '';
+      this.logTerminal(`[VOZ]: "${clean}" entendido como ordem de parar.`, 'sys');
+      this.interruptJarvis();
+      return;
+    }
+
     // 1. Escrever visivelmente no campo de entrada do chat
     this.chatInput.value = clean;
     this.chatInput.style.height = 'auto';
     this.chatInput.style.height = `${Math.min(this.chatInput.scrollHeight, 120)}px`;
-    this.chatInput.focus();
+    // sem focar o campo: assim o Espaço continua sendo o botão de falar
 
     this.logTerminal(`[COMANDO DE VOZ]: "${clean}" -> Enviando ordem...`, 'cmd');
 
@@ -1367,6 +1409,8 @@ class JarvisApp {
       onToken: (token) => {
         if (!fullResponse) {
           this.reactor.setState('SPEAKING');
+          // Com voz ligada a boca fica fechada enquanto o texto chega e só mexe quando o som sai
+          if (this.audio.ttsEnabled) this.reactor.setAudioLevel(0);
           this.lastLatency = Math.round(performance.now() - (this.sendAt || performance.now()));
         }
         fullResponse += token;
@@ -1410,7 +1454,7 @@ class JarvisApp {
       onFileCreated: (fileData) => {
         this.loadResearches();
         assistantMsg.appendFileCreatedCard(fileData);
-        this.logTerminal(`[DOSSIÊ SALVO]: ${fileData.filename} (${fileData.size} bytes)`, 'sys');
+        this.logTerminal(`[ARQUIVO MARKDOWN SALVO]: ${fileData.filename} (${fileData.size} bytes)`, 'sys');
       },
 
       onDone: (finalContent) => {
@@ -1426,14 +1470,16 @@ class JarvisApp {
           this.saveConversation();
           this.reactor.flash('feliz', 1500);
           // Falar resposta se TTS estiver ativado; sem voz, a conversa contínua volta a ouvir já
-          if (!this.audio.speak(finalContent)) this.resumeListeningSoon();
+          if (!this.audio.speak(finalContent)) { this.reactor.setAudioLevel(null); this.resumeListeningSoon(); }
         } else {
+          this.reactor.setAudioLevel(null);
           this.resumeListeningSoon();
         }
       },
 
       onError: (errMsg) => {
         this.isGenerating = false;
+        this.reactor.setAudioLevel(null);
         this.conversaPaused = true;
         this.updateMicBtnState();
         this.currentAbortController = null;
@@ -1464,8 +1510,12 @@ class JarvisApp {
     clearTimeout(this.resumeTimer);
     this.audio.stopSpeaking();
 
-    // 3. Cancelar microfone se estiver ouvindo
+    // 3. Cancelar microfone se estiver ouvindo: descarta o que foi ouvido, não manda nada
+    if (this.audio.isTranscribing) this.audio.dropTranscription = true;
     if (this.audio.isListening) {
+      this.audio.discardNext = true;
+      this.audio.holdToTalk = false;
+      this.chatInput.value = '';
       this.audio.stopListening();
       this.updateMicBtnState();
     }
@@ -1835,7 +1885,7 @@ class JarvisApp {
   }
 
   welcomeHtml(text) {
-    const msg = text || 'Oi! Sou o A.T.O.M., assistente do Rubens Mota. Posso pesquisar na web e no arXiv, montar dossiês e, se você deixar, enxergar a sua tela. Como posso ajudar?';
+    const msg = text || 'Oi! Sou o A.T.O.M., assistente do Rubens Mota. Posso pesquisar na web, buscar artigos no arXiv, salvar arquivos Markdown e, se você deixar, enxergar a sua tela. Como posso ajudar?';
     return `
       <div class="chat-msg atom-msg jarvis-msg">
         <div class="msg-avatar"><span class="atom-av" aria-hidden="true"><i></i><i></i></span></div>
@@ -2012,7 +2062,7 @@ class JarvisApp {
         card.className = 'chat-report-card';
         card.innerHTML = `
           <div class="report-card-info">
-            <span class="report-card-tag">DOSSIÊ TÁTICO FINALIZADO</span>
+            <span class="report-card-tag">ARQUIVO MARKDOWN PRONTO</span>
             <span class="report-card-title">${ic('arquivo')} ${filename}</span>
           </div>
           <div class="report-card-actions">
@@ -2033,7 +2083,7 @@ class JarvisApp {
         card.className = 'tool-execution-card dossier';
         const downloadUrl = JarvisAPI.getDownloadUrl(fileData.filename);
         card.innerHTML = `
-          <div class="tool-header-line">${ic('arquivo')} DOSSIÊ SALVO EM MARKDOWN</div>
+          <div class="tool-header-line">${ic('arquivo')} ARQUIVO MARKDOWN SALVO</div>
           <div style="margin: 4px 0;"><strong>${fileData.title || fileData.filename}</strong></div>
           <div style="font-size: 10px; color: #a3a3a3;">${fileData.filename} (${fileData.size || 0} bytes)</div>
           <div style="display: flex; gap: 8px; margin-top: 6px;">

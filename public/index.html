@@ -95,9 +95,9 @@
         <button id="mode-toggle-btn" class="atom-square-btn" title="Mudar para o tema claro" aria-label="Mudar para o tema claro">
           <svg class="ic" aria-hidden="true"><use href="#i-sol"/></svg>
         </button>
-        <button id="toggle-researches-btn" class="hud-btn-nav" title="Ver Dossiês e Relatórios Salvos">
+        <button id="toggle-researches-btn" class="hud-btn-nav" title="Ver os arquivos Markdown salvos">
           <span class="btn-icon"><svg class="ic" aria-hidden="true"><use href="#i-pasta"/></svg></span>
-          <span>DOSSIÊS (<span id="research-count">0</span>)</span>
+          <span>ARQUIVOS (<span id="research-count">0</span>)</span>
         </button>
         <button id="toggle-settings-btn" class="hud-btn-nav" title="Configurações e Baixar Novos Modelos">
           <span class="btn-icon"><svg class="ic" aria-hidden="true"><use href="#i-ajustes"/></svg></span>
@@ -201,7 +201,8 @@
             <button class="quick-cmd-btn so-local" data-prompt="Abra a calculadora"><svg class="ic" aria-hidden="true"><use href="#i-calculadora"/></svg> Abrir Calculadora</button>
             <button class="quick-cmd-btn so-local" data-prompt="Abra o bloco de notas"><svg class="ic" aria-hidden="true"><use href="#i-nota"/></svg> Bloco de Notas</button>
             <button class="quick-cmd-btn so-local" data-prompt="A.T.O.M., qual o status do sistema e uso de hardware?"><svg class="ic" aria-hidden="true"><use href="#i-grafico"/></svg> Diagnóstico do sistema</button>
-            <button class="quick-cmd-btn" data-prompt="A.T.O.M., pesquise artigos científicos no arXiv sobre quantum computing e faça um resumo"><svg class="ic" aria-hidden="true"><use href="#i-artigo"/></svg> Pesquisar no arXiv</button>
+            <button class="quick-cmd-btn" data-prompt="A.T.O.M., pesquise artigos científicos no arXiv sobre quantum computing e faça um resumo"><svg class="ic" aria-hidden="true"><use href="#i-artigo"/></svg> Pesquisar artigos (arXiv)</button>
+            <button class="quick-cmd-btn" data-prompt="Salve um arquivo Markdown sobre as novidades de inteligência artificial"><svg class="ic" aria-hidden="true"><use href="#i-salvar"/></svg> Salvar arquivo Markdown</button>
             <button class="quick-cmd-btn" data-prompt="A.T.O.M., pesquise na web as novidades sobre tecnologia hoje e faça um resumo"><svg class="ic" aria-hidden="true"><use href="#i-globo"/></svg> Pesquisar notícias</button>
           </div>
         </div>
@@ -361,6 +362,11 @@
               autocomplete="off"
             ></textarea>
 
+            <button id="composer-stop-btn" class="hud-composer-mic-btn atom-stop-btn hidden" title="Parar tudo: o Atom para de ouvir, de pensar e de falar, sem mandar nada (Esc)">
+              <span class="mic-glyph"><svg class="ic" aria-hidden="true"><use href="#i-parar"/></svg></span>
+              <span class="atom-stop-label">PARAR</span>
+            </button>
+
             <button id="composer-mic-btn" class="hud-composer-mic-btn" title="Toque para falar (para sozinho quando você se cala) ou segure para falar">
               <span class="mic-glyph"><svg class="ic" aria-hidden="true"><use id="composer-mic-icon" href="#i-microfone"/></svg></span>
             </button>
@@ -380,7 +386,7 @@
       <div class="drawer-header">
         <div class="drawer-title">
           <span class="panel-tag">ARQUIVOS</span>
-          <h3>DOSSIÊS & PESQUISAS MARKDOWN</h3>
+          <h3>ARQUIVOS MARKDOWN SALVOS</h3>
         </div>
         <div class="drawer-actions">
           <button id="open-research-folder-btn" class="hud-action-btn so-local"><svg class="ic" aria-hidden="true"><use href="#i-pasta"/></svg> ABRIR PASTA NO WINDOWS</button>
@@ -390,7 +396,7 @@
       
       <div class="drawer-content">
         <div class="researches-list" id="researches-list">
-          <div class="empty-dossier-state">Nenhum dossiê gerado ainda. Peça ao A.T.O.M.: <em>"Crie um resumo em markdown sobre IA"</em></div>
+          <div class="empty-dossier-state">Nenhum arquivo Markdown salvo ainda. Peça ao Atom: <em>"Salve um arquivo Markdown sobre IA"</em></div>
         </div>
       </div>
     </div>
@@ -410,7 +416,7 @@
         <!-- SECTION: MODO WEB OU LOCAL -->
         <div class="settings-section atom-env-section">
           <h4>MODO: <span id="env-name">WEB</span></h4>
-          <p class="settings-desc so-web">Você está na versão web, hospedada na Vercel. Aqui funcionam conversa, voz, ver a tela, pesquisas na web e no arXiv, dossiês e as suas chaves de API.</p>
+          <p class="settings-desc so-web">Você está na versão web, hospedada na Vercel. Aqui funcionam conversa, voz, ver a tela, pesquisas na web e de artigos no arXiv, arquivos Markdown e as suas chaves de API.</p>
           <p class="settings-desc so-web">Só no modo local (o Atom rodando no seu PC): modelos do Ollama, medidores de CPU, memória e disco, abrir aplicativos como calculadora e bloco de notas, e o modo autônomo.</p>
           <p class="settings-desc so-local">Você está no modo local, com o Atom rodando no seu PC. Tudo funciona: Ollama, medidores do PC, abrir aplicativos, modo autônomo, além das chaves de API.</p>
         </div>
@@ -491,6 +497,7 @@
               <button id="clear-session-key-btn" class="hud-btn-subtle text-red"><svg class="ic" aria-hidden="true"><use href="#i-fechar"/></svg> Limpar</button>
             </div>
             <div id="key-test-feedback" class="key-feedback-msg hidden"></div>
+            <p class="settings-desc atom-key-types">Chaves que o Atom consegue usar: <b>Google AI Studio</b> (Gemini, começa com <code>AIza</code>), <b>OpenAI</b> (<code>sk-</code>), <b>Groq</b> (<code>gsk_</code>), <b>OpenRouter</b> (<code>sk-or-</code>), <b>DeepSeek</b> (<code>sk-</code>) ou uma API no padrão OpenAI (Custom). Chaves de outros produtos, como Antigravity, Vertex/Google Cloud ou Claude, não funcionam aqui. Ao colar, o tipo é reconhecido sozinho. Da chave do Gemini aparecem só os modelos de conversa; os de imagem, vídeo, voz e agentes ficam de fora.</p>
           </div>
 
           <!-- FORMULÁRIO DE CADASTRO DE NOVO MODELO (METADADOS) -->
@@ -589,8 +596,8 @@
       <div class="hud-modal-window">
         <div class="modal-header">
           <div class="modal-title-box">
-            <span class="panel-tag">DOSSIÊ</span>
-            <h3 id="modal-dossier-title">Título do Dossiê</h3>
+            <span class="panel-tag">ARQUIVO MARKDOWN</span>
+            <h3 id="modal-dossier-title">Arquivo Markdown</h3>
           </div>
           <div class="modal-actions">
             <button id="modal-download-btn" class="hud-action-btn modal-download-btn" title="Baixar relatório em Markdown"><svg class="ic" aria-hidden="true"><use href="#i-baixar"/></svg> BAIXAR RELATÓRIO</button>

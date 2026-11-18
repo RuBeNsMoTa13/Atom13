@@ -34,6 +34,7 @@ export class JarvisAudio {
     this.onSpeechDone = null;    // o Atom terminou de falar sem ser interrompido
     this.onNothingHeard = null;  // a escuta acabou sem nenhuma frase
     this.onIdleTimeout = null;   // ninguém falou dentro do limite
+    this.onMouth = null;         // abertura da boca do Atom (0..1) seguindo a voz; null = solta
     this.hasSpoken = false;
     this.currentText = '';
     this.sfxEnabled = true;
@@ -277,6 +278,7 @@ export class JarvisAudio {
     this.currentText = '';
     this.hasSpoken = false;
     this.audioChunks = [];
+    this.dropTranscription = false;
 
     const bannerEl = document.getElementById('speech-banner');
     const transcriptEl = document.getElementById('speech-transcript');
@@ -505,6 +507,13 @@ export class JarvisAudio {
           try { sessionKey = sessionStorage.getItem('jarvis_key_google'); } catch (e) {}
           const res = await JarvisAPI.transcribeAudio(upload, sessionKey);
           this.isTranscribing = false;
+          if (this.dropTranscription) {
+            // Mandaram parar enquanto o servidor transcrevia: joga fora
+            this.dropTranscription = false;
+            if (bannerEl) bannerEl.classList.add('hidden');
+            if (this.onStateChange) this.onStateChange('IDLE');
+            return;
+          }
 
           if (res && res.success && res.text && res.text.trim()) {
             const finalSpoken = res.text.trim();
@@ -761,13 +770,56 @@ export class JarvisAudio {
         const audio = new Audio(url);
         this.currentAudio = audio;
         audio.playbackRate = this.voiceRate || 1;
+        this.trackMouth(audio);
         audio.onended = audio.onerror = () => { URL.revokeObjectURL(url); resolve(); };
         audio.play().catch(() => resolve());
       });
       if (token !== this.speechToken) return;
     }
     this.currentAudio = null;
+    this.stopMouth();
     this.finishSpeech(token);
+  }
+
+  /** Mede o volume da voz que está tocando e abre a boca do Atom na mesma medida, quadro a quadro. */
+  trackMouth(audio) {
+    this.stopMouth(true);
+    if (!this.onMouth || !this.audioCtx) return;
+    // Se o contexto de áudio ainda estiver suspenso, ligar o som nele deixaria a voz muda: usa a animação automática
+    if (this.audioCtx.state !== 'running') { this.ensureAudioContext(); this.onMouth(null); return; }
+    try {
+      const src = this.audioCtx.createMediaElementSource(audio);
+      const an = this.audioCtx.createAnalyser();
+      an.fftSize = 512;
+      an.smoothingTimeConstant = 0.2;
+      src.connect(an);
+      an.connect(this.audioCtx.destination);
+      const buf = new Uint8Array(an.fftSize);
+      let level = 0;
+      const tick = () => {
+        if (this.currentAudio !== audio) return;
+        an.getByteTimeDomainData(buf);
+        let sum = 0;
+        for (let i = 0; i < buf.length; i++) { const d = (buf[i] - 128) / 128; sum += d * d; }
+        const rms = Math.sqrt(sum / buf.length);
+        // abre rápido e fecha um pouco mais devagar, como uma boca de verdade
+        const target = Math.min(1, Math.max(0, (rms - 0.02) * 4.5));
+        level = target > level ? level + (target - level) * 0.7 : level + (target - level) * 0.35;
+        this.onMouth(level);
+        this.mouthRaf = requestAnimationFrame(tick);
+      };
+      this.onMouth(0);
+      this.mouthRaf = requestAnimationFrame(tick);
+    } catch (e) {
+      // Sem análise de áudio: a boca usa a animação automática
+      this.onMouth(null);
+    }
+  }
+
+  stopMouth(keepOpen = false) {
+    cancelAnimationFrame(this.mouthRaf);
+    clearTimeout(this.mouthWordTimer);
+    if (!keepOpen && this.onMouth) this.onMouth(null);
   }
 
   /** Amostra curta de uma voz (botão "ouvir" no Sistema). */
@@ -796,9 +848,17 @@ export class JarvisAudio {
 
     utterance.onstart = () => {
       if (this.onStateChange) this.onStateChange('SPEAKING');
+      if (this.onMouth) this.onMouth(0);
+    };
+    // A voz do navegador não deixa medir o som: a boca abre a cada palavra dita
+    utterance.onboundary = (ev) => {
+      if (!this.onMouth || token !== this.speechToken || (ev.name && ev.name !== 'word')) return;
+      this.onMouth(0.85);
+      clearTimeout(this.mouthWordTimer);
+      this.mouthWordTimer = setTimeout(() => { if (token === this.speechToken) this.onMouth(0.15); }, 140);
     };
 
-    utterance.onend = () => this.finishSpeech(token);
+    utterance.onend = () => { if (token === this.speechToken) this.stopMouth(); this.finishSpeech(token); };
 
     utterance.onerror = () => {
       if (token === this.speechToken) this.isSpeakingNow = false;
@@ -811,6 +871,7 @@ export class JarvisAudio {
   stopSpeaking(silent = false) {
     this.speechToken = (this.speechToken || 0) + 1;
     this.isSpeakingNow = false;
+    this.stopMouth();
     if (this.currentAudio) {
       try { this.currentAudio.pause(); } catch (e) {}
       this.currentAudio = null;

@@ -3,7 +3,7 @@
  * Suporta cache estático e instalação como aplicativo autônomo.
  */
 
-const CACHE_NAME = 'atom-tactical-v5';
+const CACHE_NAME = 'atom-tactical-v6';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

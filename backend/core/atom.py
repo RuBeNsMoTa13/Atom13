@@ -30,14 +30,66 @@ Suas capacidades integradas incluem:
 1. Visão de Tela Multimodal: capacidade de enxergar o que o operador está vendo na tela em tempo real para análises, diagnósticos, revisão de código e assistência contextual.
 2. Pesquisa Web & Leitura Profunda: DuckDuckGo para dados em tempo real e Jina Reader para extração cirúrgica de conteúdo de páginas e documentações.
 3. Inteligência Acadêmica & Científica: busca em tempo real no repositório arXiv para papers, teses e fundamentos de ponta.
-4. Geração de Relatórios e Dossiês: criação de arquivos Markdown (.md) estruturados com metadados táticos e download HTTP imediato.
+4. Arquivos Markdown: criação de arquivos .md estruturados (relatórios e resumos) com download imediato.
 5. Automação do Sistema Operacional: execução de comandos controlados no Windows (PowerShell/CMD) e abertura adaptativa de sites/aplicativos via navegador do operador na nuvem.
+
+Vocabulário do operador (ele costuma falar por voz e a transcrição erra algumas palavras):
+- "artigo" ou "artigos" = artigo científico. Pesquisar artigo é buscar no arXiv (arxiv.org), o site de artigos.
+- "arquivo X", "archive" ou "arcaive" na transcrição = arXiv.
+- "salvar arquivo Markdown" (antes chamado de "dossiê", que a voz às vezes transcreve como "do CI") = criar um arquivo .md com o conteúdo.
 
 Diretrizes de comunicação:
 - Responda em Português do Brasil com tom tático, perspicaz, técnico e prestativo.
+- Sempre diga de qual site veio cada informação pesquisada (por exemplo "segundo o arXiv" ou "fonte: g1.globo.com"), com o link.
 - Se uma captura de tela for fornecida, analise diretamente os elementos visuais destacados pelo operador com precisão cirúrgica.
 - Sintetize informações complexas de forma analítica com títulos claros, tópicos objetivos, tabelas e conclusões práticas.
 """
+
+def normalize_voice(lower: str) -> str:
+    """Corrige palavras que a transcrição de voz costuma errar."""
+    t = lower
+    t = re.sub(r"\b(?:arquivo\s*(?:x|xis|ks)|arc?h?a[iy]ve|arcaive|arquive|ar\s*xiv|arxive|archive\s*x)\b", "arxiv", t)
+    t = re.sub(r"\b(salv\w*|cri\w*|ger\w*|fa[cçz]\w*|grav\w*)\s+(um\s+|o\s+)?(?:do\s*ci|dossi[eê]s?)\b", r"\1 \2arquivo markdown", t)
+    t = re.sub(r"\bmark\s*down\b", "markdown", t)
+    return t
+
+
+def arxiv_query(lower: str) -> str:
+    """Tira da frase os pedidos ("pesquise uns artigos no arxiv sobre") e deixa só o assunto."""
+    m = re.search(r"\b(?:sobre|a respeito de|acerca de|relacionad\w* a|de)\s+(.+)$", lower)
+    q = m.group(1) if m and re.search(r"\b(?:sobre|a respeito de|acerca de)\b", lower) else lower
+    filler = (r"\b(?:a\.?t\.?o\.?m\.?|atom|ei|ok|por favor|pra mim|para mim|me|pesquis\w*|busc\w*|procur\w*|ach\w*|"
+              r"encontr\w*|tra[zg]\w*|mostr\w*|list\w*|no|na|nos|nas|o|a|os|as|um|uns|uma|umas|alguns|algumas|"
+              r"artigos?|papers?|teses?|cient[íi]fic\w*|site|de artigos|arxiv|e|faça|faz|resumo|um resumo)\b")
+    q = re.sub(filler, " ", q)
+    q = re.sub(r"[^\w\s\-\.+#]", " ", q)
+    q = re.sub(r"\s+", " ", q).strip()
+    return re.sub(r"^(?:de|do|da|dos|das|em|sobre)\s+", "", q)
+
+
+def english_query(q: str, session_key: Optional[str] = None) -> str:
+    """O arXiv só acha bem em inglês: traduz o assunto com o Gemini (rápido). Sem chave, usa como veio."""
+    if not q or not re.search(r"[a-zA-Z]", q):
+        return q
+    try:
+        key = api_model_manager.resolve_api_key({"provider": "google", "env_var": "GEMINI_API_KEY"}, session_key)
+        if not key:
+            return q
+        from .api_client import genai_client
+        client = genai_client(key)
+        prompt = ("Translate this academic search topic to concise English search keywords for arXiv. "
+                  "Answer with the keywords only, no quotes: " + q)
+        for m in ("gemini-flash-lite-latest", "gemini-flash-latest"):
+            try:
+                out = (client.models.generate_content(model=m, contents=prompt).text or "").strip()
+                if out:
+                    return re.sub(r"[\"'\n]+", " ", out)[:120].strip()
+            except Exception:
+                continue
+    except Exception as e:
+        logger.info(f"Tradução da busca do arXiv falhou, usando o original: {e}")
+    return q
+
 
 class AtomBrain:
     def __init__(self):
@@ -51,7 +103,7 @@ class AtomBrain:
         Detecta intenções explícitas de ferramentas para execução proativa e coordenada.
         """
         msg = user_message.strip()
-        lower = msg.lower()
+        lower = normalize_voice(msg.lower())
 
         # 1. Intenção: Abrir aplicativo conhecido ou URL
         app_patterns = [
@@ -77,10 +129,14 @@ class AtomBrain:
         ]):
             return {"tool": "system_telemetry"}
 
-        # 3. Intenção: Pesquisa Científica / Acadêmica no arXiv
-        arxiv_match = re.search(r"(?:pesquise|busque|procure|ache)?\s*(?:no\s+arxiv|artigos?\s+cient[íi]ficos?|papers?|teses?)\s*(?:sobre|de)?\s*(.*)", lower)
-        if ("arxiv" in lower) or ("artigo científico" in lower) or ("artigos científicos" in lower) or ("paper sobre" in lower):
-            q = re.sub(r"(?:pesquise|busque|procure|no arxiv|artigo científico|artigos científicos|papers|paper sobre|tese sobre|sobre)\s*", "", lower).strip()
+        # 3. Intenção: Pesquisa de artigos (para o operador, "artigo" = artigo científico no arXiv)
+        wants_paper = (
+            "arxiv" in lower
+            or re.search(r"\b(?:pesquis|busc|procur|ach|encontr|tra[zg]|mostr|list)\w*\b.*\b(?:artigos?|papers?|teses?)\b", lower)
+            or re.search(r"\b(?:artigos?|papers?)\s+(?:cient[íi]fic\w*\s+)?(?:sobre|de|a respeito)\b", lower)
+        )
+        if wants_paper:
+            q = arxiv_query(lower)
             if q:
                 return {"tool": "arxiv_search", "query": q}
 
@@ -97,7 +153,9 @@ class AtomBrain:
                 return {"tool": "os_command", "command": cmd}
 
         # 6. Intenção: Criar resumo / dossiê / relatório em Markdown
-        markdown_match = re.search(r"(?:crie|gere|salve|fazer|faça)\s+(?:um\s+)?(?:arquivo\s+)?(?:resumo|relat[oó]rio|dossi[êe]|nota|anota[çc][ãa]o)\s+(?:em\s+markdown|\.md)?\s*(?:sobre|de)?\s*(.*)", lower)
+        markdown_match = (
+            re.search(r"(?:crie|gere|salve|salvar|grave|fazer|faça|faz)\s+(?:um\s+|o\s+|isso\s+(?:num|em um|em)\s+)?(?:arquivo\s+)?(?:markdown|\.?md|resumo|relat[oó]rio|dossi[êe]|nota|anota[çc][ãa]o)\s*(?:em\s+markdown|\.md)?\s*(?:sobre|de|do|da)?\s*(.*)", lower)
+        )
         if markdown_match:
             topic = markdown_match.group(1).strip() or "Pesquisa Tática"
             return {"tool": "create_markdown", "topic": topic}
@@ -234,14 +292,23 @@ class AtomBrain:
                 "label": "Inteligência Científica (arXiv)",
                 "details": f"Consultando teses e artigos acadêmicos sobre \"{q}\"..."
             }
-            arxiv_res = search_arxiv(q, max_results=3)
+            google_key = session_key if str(target_model).startswith("api:google:") else None
+            q_en = english_query(q, google_key)
+            arxiv_res = search_arxiv(q_en, max_results=3)
+            if q_en.lower() != q.lower():
+                arxiv_res = dict(arxiv_res)  # não mexe no resultado guardado no cache
+                arxiv_res["query"] = f"{q} (buscado em inglês: {q_en})" 
             yield {
                 "type": "tool_end",
                 "tool": "arxiv_search",
                 "success": arxiv_res.get("success", False),
                 "data": arxiv_res
             }
-            context_injection = "\n" + format_arxiv_context(arxiv_res)
+            context_injection = (
+                "\n" + format_arxiv_context(arxiv_res) +
+                "\n[INSTRUÇÃO]: Comece dizendo que os artigos foram encontrados no arXiv (arxiv.org). "
+                "Para cada artigo, dê o título, os autores, o ano, um resumo curto em português e o link."
+            )
 
         elif tool_name == "read_url":
             target_url = intent["url"]
@@ -275,14 +342,17 @@ class AtomBrain:
                 "success": search_res.get("success", False),
                 "data": search_res
             }
-            context_injection = "\n" + format_search_context(search_res)
+            context_injection = (
+                "\n" + format_search_context(search_res) +
+                "\n[INSTRUÇÃO]: Diga de qual site veio cada informação (nome do site e link)."
+            )
 
         elif tool_name == "create_markdown":
             topic = intent["topic"]
             yield {
                 "type": "tool_start",
                 "tool": "web_search",
-                "label": "Coleta de Inteligência para Dossiê",
+                "label": "Pesquisando para o arquivo Markdown",
                 "details": f"Pesquisando dados na web sobre \"{topic}\"..."
             }
             search_res = search_web(topic, max_results=4)
@@ -294,10 +364,10 @@ class AtomBrain:
             }
             
             context_injection = (
-                f"\n[INSTRUÇÃO DO PROTOCOLO A.T.O.M.]: O operador solicitou um relatório/dossiê técnico em Markdown sobre '{topic}'.\n"
+                f"\n[INSTRUÇÃO DO PROTOCOLO A.T.O.M.]: O operador pediu para salvar um arquivo Markdown sobre '{topic}'.\n"
                 f"Abaixo estão os dados coletados na web:\n"
                 f"{format_search_context(search_res)}\n"
-                f"Gere um dossiê aprofundado, com rigor técnico, seções bem estruturadas, tópicos e conclusões."
+                f"Gere um conteúdo aprofundado, com rigor técnico, seções bem estruturadas, tópicos e conclusões."
             )
 
         # Montar mensagens com injeção de contexto se houver
@@ -350,7 +420,7 @@ class AtomBrain:
         if tool_name == "create_markdown" and accumulated_response.strip():
             topic = intent["topic"]
             save_res = save_research_markdown(
-                title=f"Dossiê - {topic.title()}",
+                title=f"{topic.title()}",
                 content=accumulated_response,
                 query=topic
             )

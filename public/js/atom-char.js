@@ -113,6 +113,18 @@ export class AtomCharacter {
     if (waveEl) waveEl.style.opacity = (face === 'ouvindo' || face === 'falando') ? '1' : '0.35';
   }
 
-  // Compatibilidade com o antigo reator
-  setAudioLevel() {}
+  /**
+   * Boca acompanhando a voz: v de 0 (fechada) a 1 (bem aberta). null devolve a animação automática.
+   * Usa atributo (e não classe) porque show() reescreve as classes a cada troca de rosto.
+   */
+  setAudioLevel(v) {
+    if (!this.el) return;
+    if (v === null || v === undefined) {
+      delete this.el.dataset.lip;
+      this.el.style.removeProperty('--boca');
+      return;
+    }
+    this.el.dataset.lip = '1';
+    this.el.style.setProperty('--boca', Math.max(0, Math.min(1, v)).toFixed(3));
+  }
 }

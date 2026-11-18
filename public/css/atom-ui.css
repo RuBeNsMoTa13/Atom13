@@ -419,3 +419,18 @@ html[data-ambiente="local"] .so-web { display: none !important; }
 .atom-web-rows dd { margin: 0; min-width: 0; color: var(--text-primary); font-family: var(--font-mono); text-align: right; overflow-wrap: anywhere; line-height: 1.35; }
 .atom-web-note { margin: 10px 0 0; font-size: 10.5px; line-height: 1.45; color: var(--text-dim); }
 .atom-env-section h4 span { color: var(--accent-red); }
+
+/* Boca sincronizada com o áudio da voz (--boca de 0 a 1, enviada pelo audio.js) */
+.atom-char[data-lip="1"].s-falando .mo2 {
+  animation: none;
+  transition: height .07s linear, width .07s linear, margin-left .07s linear, border-radius .07s linear;
+  height: calc(4em + var(--boca, 0) * 15em);
+  width: calc(26em - var(--boca, 0) * 6em);
+  margin-left: calc(-13em + var(--boca, 0) * 3em);
+  border-radius: calc(var(--boca, 0) * 5em);
+}
+
+/* Parar: só aparece quando o Atom está ouvindo, pensando ou falando */
+.atom-stop-btn { gap: 6px; border-color: var(--accent-red) !important; color: var(--accent-red) !important; font-family: var(--font-hud); font-size: 10px; letter-spacing: 1px; }
+.atom-stop-btn.hidden { display: none !important; }
+.atom-stop-btn:hover { background: color-mix(in srgb, var(--accent-red) 18%, transparent) !important; }
