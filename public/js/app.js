@@ -446,35 +446,27 @@ class JarvisApp {
     if (this.saveSessionKeyBtn) {
       // Reconhece o tipo da chave pelo começo dela e escolhe o provedor certo
       const guessProvider = (key) => {
-        if (/^AIza[0-9A-Za-z_-]{20,}$/.test(key)) return 'google';
+        if (/^AIza/.test(key)) return 'google';
         if (/^gsk_/.test(key)) return 'groq';
         if (/^sk-or-/.test(key)) return 'openrouter';
         if (/^sk-ant-/.test(key)) return 'claude';
+        if (/^xai-/.test(key)) return 'xai';
         if (/^sk-/.test(key)) return this.sessionKeyProvider.value === 'deepseek' ? 'deepseek' : 'openai';
-        return null;
+        return null; // formato desconhecido: vale o provedor escolhido na lista
       };
       this.sessionApiKeyInput.addEventListener('input', () => {
         const g = guessProvider(this.sessionApiKeyInput.value.trim());
-        if (g && g !== 'claude' && this.sessionKeyProvider.value !== g) this.sessionKeyProvider.value = g;
+        if (g && this.sessionKeyProvider.value !== g) this.sessionKeyProvider.value = g;
       });
       this.saveSessionKeyBtn.addEventListener('click', () => {
         const prov = this.sessionKeyProvider.value;
         const key = this.sessionApiKeyInput.value.trim();
-        const kind = key ? guessProvider(key) : null;
-        if (key && kind === 'claude') {
-          this.showKeyFeedback('Essa é uma chave do Claude (Anthropic). O Atom ainda não usa esse tipo: use Google AI Studio, OpenAI, Groq, OpenRouter ou DeepSeek.', 'error');
-          return;
-        }
-        if (key && prov === 'google' && kind !== 'google') {
-          this.showKeyFeedback('Isso não parece uma chave do Google AI Studio (começa com AIza). Chaves do Antigravity ou do Google Cloud não funcionam aqui; crie uma em aistudio.google.com/apikey.', 'error');
-          return;
-        }
         if (key) {
           sessionStorage.setItem('jarvis_key_' + prov, key);
           this.showKeyFeedback(`Chave de ${prov.toUpperCase()} ativada. Buscando os modelos dela...`, 'info');
           this.loadLiveModels(prov).then((n) => {
             if (n) this.showKeyFeedback(`Chave de ${prov.toUpperCase()} ativada. ${n} modelos liberados no seletor lá em cima.`, 'success');
-            else this.showKeyFeedback(`Chave de ${prov.toUpperCase()} ativada, mas não consegui listar os modelos dela. Confira se a chave está certa.`, 'error');
+            else this.showKeyFeedback(`Guardei a chave, mas o provedor ${prov.toUpperCase()} não liberou nenhum modelo com ela. Confira se a chave está certa e se o provedor escolhido na lista é o dela.`, 'error');
           });
           this.logTerminal(`[SEGURANÇA]: Chave de ${prov.toUpperCase()} ativada na sessão do navegador (volátil).`, 'sys');
         } else {
@@ -865,7 +857,7 @@ class JarvisApp {
     this.renderApiModelsCatalog();
 
     // Provedores com chave (na sessão ou na Vercel/.env): mostra todos os modelos que a chave libera
-    const providers = new Set(['google', 'openai', 'groq', 'openrouter', 'deepseek'].filter((p) => {
+    const providers = new Set(['google', 'openai', 'groq', 'openrouter', 'deepseek', 'claude', 'xai', 'mistral'].filter((p) => {
       try { if (sessionStorage.getItem('jarvis_key_' + p)) return true; } catch (e) {}
       return false;
     }));
@@ -915,7 +907,7 @@ class JarvisApp {
     const sel = this.modelSelect;
     const previous = this.currentModel;
     sel.innerHTML = '';
-    const names = { google: 'Google Gemini', openai: 'OpenAI', groq: 'Groq', openrouter: 'OpenRouter', deepseek: 'DeepSeek' };
+    const names = { google: 'Google Gemini', openai: 'OpenAI', groq: 'Groq', openrouter: 'OpenRouter', deepseek: 'DeepSeek', claude: 'Claude (Anthropic)', xai: 'xAI (Grok)', mistral: 'Mistral', custom: 'Custom' };
     const add = (group, value, text) => {
       const opt = document.createElement('option');
       opt.value = value;

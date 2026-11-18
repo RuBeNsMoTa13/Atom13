@@ -55,6 +55,21 @@ PROVIDER_DEFAULTS = {
         "default_model": "deepseek-chat",
         "base_url": "https://api.deepseek.com/v1"
     },
+    "claude": {
+        "env_var": "ANTHROPIC_API_KEY",
+        "default_model": "claude-sonnet-4-5",
+        "base_url": "https://api.anthropic.com/v1"
+    },
+    "xai": {
+        "env_var": "XAI_API_KEY",
+        "default_model": "grok-4",
+        "base_url": "https://api.x.ai/v1"
+    },
+    "mistral": {
+        "env_var": "MISTRAL_API_KEY",
+        "default_model": "mistral-large-latest",
+        "base_url": "https://api.mistral.ai/v1"
+    },
     "custom": {
         "env_var": "CUSTOM_API_KEY",
         "default_model": "custom-model",
@@ -333,8 +348,11 @@ class ApiModelManager:
         if not key:
             return []
         import urllib.request
-        req = urllib.request.Request(cfg["base_url"].rstrip("/") + "/models",
-                                     headers={"Authorization": f"Bearer {key}", "User-Agent": "atom"})
+        headers = {"Authorization": f"Bearer {key}", "User-Agent": "atom"}
+        if provider == "claude":
+            headers.update({"x-api-key": key, "anthropic-version": "2023-06-01"})
+        req = urllib.request.Request(cfg["base_url"].rstrip("/") + "/models" + ("?limit=100" if provider == "claude" else ""),
+                                     headers=headers)
         try:
             with urllib.request.urlopen(req, timeout=15) as r:
                 data = json.loads(r.read().decode("utf-8"))
@@ -350,7 +368,7 @@ class ApiModelManager:
                 continue
             out.append({
                 "id": f"api:{provider}:{mid}",
-                "name": m.get("name") or mid,
+                "name": m.get("name") or m.get("display_name") or mid,
                 "model_id": mid,
                 "provider": provider,
                 "description": (m.get("description") or "")[:150],
@@ -496,6 +514,8 @@ class ApiModelManager:
             return os.environ.get("OPENROUTER_API_KEY")
         elif provider == "deepseek":
             return os.environ.get("DEEPSEEK_API_KEY")
+        elif provider in PROVIDER_DEFAULTS:
+            return os.environ.get(PROVIDER_DEFAULTS[provider]["env_var"])
 
         return None
 

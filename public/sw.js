@@ -3,7 +3,7 @@
  * Suporta cache estático e instalação como aplicativo autônomo.
  */
 
-const CACHE_NAME = 'atom-v9';
+const CACHE_NAME = 'atom-v10';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

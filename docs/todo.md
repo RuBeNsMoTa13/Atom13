@@ -60,7 +60,7 @@ Este é o backlog oficial e único de rastreabilidade do projeto **A.T.O.M.** Qu
 
 ## ☁️ Versão Online (Vercel) — 2026-11-18
 
-- [x] Deploy na Vercel (`app.py`, `vercel.json`, cockpit em `public/`): https://atom-tactical-os.vercel.app
+- [x] Deploy na Vercel (`app.py`, `vercel.json`, cockpit em `public/`): https://atom13.vercel.app
 - [x] Sem limite de mensagens por padrão (decisão do Rubens, 18/11). Se um dia precisar, é só definir `ATOM_RATE_LIMIT_PER_HOUR` na Vercel (ex.: 20).
 - [x] Catálogo de modelos e pull do Ollama bloqueados no modo nuvem.
 - [x] Dossiês em `/tmp` e download direto pelo navegador.
