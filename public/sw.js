@@ -3,7 +3,7 @@
  * Suporta cache estático e instalação como aplicativo autônomo.
  */
 
-const CACHE_NAME = 'atom-tactical-v4';
+const CACHE_NAME = 'atom-tactical-v5';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -19,7 +19,7 @@ const STATIC_ASSETS = [
   '/js/atom-bodies.js',
   '/js/themes.js',
   '/js/conversas.js',
-  '/icons/atom-icon.svg'
+  '/icons/atom-face.svg'
 ];
 
 self.addEventListener('install', (event) => {

@@ -141,7 +141,7 @@ def get_google_models(session_key: Optional[str] = None):
 
 class TTSRequest(BaseModel):
     text: str
-    voice: str = "Charon"
+    voice: str = "Fenrir"
     session_key: Optional[str] = None
 
 
@@ -161,14 +161,14 @@ def text_to_speech(req: TTSRequest):
     key = api_model_manager.resolve_api_key({"provider": "google", "env_var": "GEMINI_API_KEY"}, req.session_key)
     if not key:
         return JSONResponse({"success": False, "error": "Sem chave do Gemini para a voz natural."}, status_code=400)
-    voice = "".join(ch for ch in (req.voice or "Charon") if ch.isalpha())[:32] or "Charon"
+    voice = "".join(ch for ch in (req.voice or "Fenrir") if ch.isalpha())[:32] or "Fenrir"
     try:
         from google.genai import types
         from .core.api_client import genai_client, best_tts_model
         client = genai_client(key)
         resp = client.models.generate_content(
             model=best_tts_model(client, key),
-            contents=f"Fale em português do Brasil, com naturalidade e calma, como um assistente simpático: {text}",
+            contents=text,
             config=types.GenerateContentConfig(
                 response_modalities=["AUDIO"],
                 speech_config=types.SpeechConfig(

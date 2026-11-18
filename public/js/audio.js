@@ -26,6 +26,14 @@ export class JarvisAudio {
 
     this.isListening = false;
     this.isTranscribing = false;
+    // Conversa: segurar para falar (não para no silêncio), limite de espera sem fala e avisos para o app
+    this.holdToTalk = false;
+    this.idleLimit = 0;          // em décimos de segundo; 0 = espera para sempre
+    this.discardNext = false;
+    this.isSpeakingNow = false;
+    this.onSpeechDone = null;    // o Atom terminou de falar sem ser interrompido
+    this.onNothingHeard = null;  // a escuta acabou sem nenhuma frase
+    this.onIdleTimeout = null;   // ninguém falou dentro do limite
     this.hasSpoken = false;
     this.currentText = '';
     this.sfxEnabled = true;
@@ -39,10 +47,10 @@ export class JarvisAudio {
     this.currentAudio = null;
     try {
       this.voiceEngine = localStorage.getItem('atom_voz_motor') || 'natural';
-      this.geminiVoice = localStorage.getItem('atom_voz_gemini') || 'Charon';
+      this.geminiVoice = localStorage.getItem('atom_voz_gemini') || 'Fenrir';
     } catch (e) {
       this.voiceEngine = 'natural';
-      this.geminiVoice = 'Charon';
+      this.geminiVoice = 'Fenrir';
     }
     this.selectedVoice = null;
     this.voices = [];
@@ -385,13 +393,19 @@ export class JarvisAudio {
       } else {
         if (!this.hasSpoken) {
           zeroCount++;
+          if (this.idleLimit && zeroCount >= this.idleLimit && !this.holdToTalk) {
+            this.discardNext = true;
+            this.stopListening();
+            if (this.onIdleTimeout) this.onIdleTimeout();
+            return;
+          }
           if (zeroCount === 30 && transcriptEl) { // 3 segundos de silêncio absoluto
             transcriptEl.innerText = `● Microfone ativo [Vol: 0%] - Verifique se não está mudo no Windows ou fale mais perto`;
           }
         } else {
           silenceCount++;
           // Se o usuário falou e agora ficou em silêncio por ~1.6 segundos (16 * 100ms)
-          if (silenceCount >= 16) {
+          if (silenceCount >= 16 && !this.holdToTalk) {
             if (this.onStatusMessage) this.onStatusMessage("Silêncio detectado após a fala. Processando ordem...");
             this.stopListening();
             return;
@@ -442,6 +456,16 @@ export class JarvisAudio {
     });
 
     await stopHardwarePromise;
+    this.holdToTalk = false;
+
+    // Escuta encerrada por falta de fala: descarta sem mandar nada
+    if (this.discardNext) {
+      this.discardNext = false;
+      this.currentText = '';
+      if (bannerEl) bannerEl.classList.add('hidden');
+      if (this.onStateChange) this.onStateChange('IDLE');
+      return;
+    }
 
     // 3. Avaliar resultado do reconhecimento
     const recognizedText = (this.currentText || '').trim();
@@ -526,6 +550,7 @@ export class JarvisAudio {
     }
 
     if (this.onStateChange) this.onStateChange('IDLE');
+    if (this.onNothingHeard) setTimeout(() => this.onNothingHeard(), 0);
   }
 
   /** Converte o áudio gravado (WebM/Ogg) em WAV 16 kHz mono, que qualquer servidor entende. */
@@ -646,15 +671,32 @@ export class JarvisAudio {
 
   /** Fala a resposta: voz natural do Gemini quando der; senão a voz do navegador. */
   speak(text) {
-    if (!this.ttsEnabled) return;
+    if (!this.ttsEnabled) return false;
     this.stopSpeaking(true);
     const cleanText = this.cleanForSpeech(text);
-    if (!cleanText) return;
+    if (!cleanText) return false;
+    this.isSpeakingNow = true;
+    this.isPreview = false;
     if (this.voiceEngine === 'natural') {
       this.speakNatural(cleanText, this.geminiVoice).catch(() => this.speakBrowser(cleanText));
     } else {
       this.speakBrowser(cleanText);
     }
+    return true;
+  }
+
+  /** O Atom está falando (ou buscando o áudio para falar)? */
+  isSpeaking() {
+    return this.isSpeakingNow || !!this.currentAudio || ('speechSynthesis' in window && window.speechSynthesis.speaking);
+  }
+
+  finishSpeech(token) {
+    if (token !== this.speechToken) return;
+    this.isSpeakingNow = false;
+    if (this.onStateChange) this.onStateChange('IDLE');
+    const preview = this.isPreview;
+    this.isPreview = false;
+    if (!preview && this.onSpeechDone) this.onSpeechDone();
   }
 
   cleanForSpeech(text) {
@@ -725,13 +767,14 @@ export class JarvisAudio {
       if (token !== this.speechToken) return;
     }
     this.currentAudio = null;
-    if (token === this.speechToken && this.onStateChange) this.onStateChange('IDLE');
+    this.finishSpeech(token);
   }
 
   /** Amostra curta de uma voz (botão "ouvir" no Sistema). */
   previewVoice(engine, voiceName) {
     const sample = 'Oi, eu sou o Atom. É assim que eu vou falar com você.';
     this.stopSpeaking(true);
+    this.isPreview = true;
     if (engine === 'natural') return this.speakNatural(sample, voiceName);
     this.speakBrowser(sample);
     return Promise.resolve();
@@ -741,6 +784,7 @@ export class JarvisAudio {
     if (!('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
     if (!cleanText) return;
+    const token = this.speechToken;
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = 'pt-BR';
     utterance.rate = this.voiceRate;
@@ -754,11 +798,10 @@ export class JarvisAudio {
       if (this.onStateChange) this.onStateChange('SPEAKING');
     };
 
-    utterance.onend = () => {
-      if (this.onStateChange) this.onStateChange('IDLE');
-    };
+    utterance.onend = () => this.finishSpeech(token);
 
     utterance.onerror = () => {
+      if (token === this.speechToken) this.isSpeakingNow = false;
       if (this.onStateChange) this.onStateChange('IDLE');
     };
 
@@ -767,6 +810,7 @@ export class JarvisAudio {
 
   stopSpeaking(silent = false) {
     this.speechToken = (this.speechToken || 0) + 1;
+    this.isSpeakingNow = false;
     if (this.currentAudio) {
       try { this.currentAudio.pause(); } catch (e) {}
       this.currentAudio = null;

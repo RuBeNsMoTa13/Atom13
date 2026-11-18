@@ -8,8 +8,9 @@
   <title>A.T.O.M. // Artificial Tactical Operating Matrix</title>
   
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/svg+xml" href="icons/atom-icon.svg">
-  <link rel="apple-touch-icon" href="icons/atom-icon.svg">
+  <link rel="icon" type="image/svg+xml" href="icons/atom-face.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   
   <!-- Google Fonts: Space Grotesk (Interface Tática) & JetBrains Mono (Telemetria & HUD) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,6 +22,10 @@
   <link rel="stylesheet" href="css/atom-char.css">
   <link rel="stylesheet" href="css/atom-ui.css">
   <script>try{var m=localStorage.getItem('atom_modo')==='claro'?'claro':'escuro',p=localStorage.getItem('atom_pal_'+m);document.documentElement.dataset.modo=m;document.documentElement.dataset.tema=p||(m==='claro'?'nevoa':'azul-noite');}catch(e){}</script>
+  <script>
+    // Web ou local: palpite pelo endereço até o servidor confirmar (evita piscar o que não existe na web)
+    (function () { var h = location.hostname; document.documentElement.dataset.ambiente = (h === 'localhost' || h === '127.0.0.1' || h === '' || /^192\.168\./.test(h)) ? 'local' : 'web'; })();
+  </script>
 </head>
 <body class="atom-theme">
   <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><symbol id="i-editar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 3.5l3 3L6 15H3v-3z"/><path d="M10 5l3 3"/></symbol><symbol id="i-recarregar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 9a5.5 5.5 0 1 1-1.6-3.9"/><path d="M13.5 2.5v3h-3"/></symbol><symbol id="i-fechar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 4.5l9 9M13.5 4.5l-9 9"/></symbol><symbol id="i-pasta" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 5V14a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V6.5a1 1 0 0 0-1-1H9L7.5 3.5h-4a1 1 0 0 0-1 1z"/></symbol><symbol id="i-ajustes" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h6M12 5h3M3 13h2M8 13h7"/><circle cx="10.5" cy="5" r="1.5"/><circle cx="6.5" cy="13" r="1.5"/></symbol><symbol id="i-calculadora" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2.5" width="10" height="13" rx="1"/><path d="M6.5 5.5h5"/><path d="M6.5 9h.01M9 9h.01M11.5 9h.01M6.5 12h.01M9 12h.01M11.5 12h.01" stroke-width="2"/></symbol><symbol id="i-nota" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2.5h7l3 3v10H4z"/><path d="M11 2.5v3h3M6.5 9h5M6.5 12h3.5"/></symbol><symbol id="i-grafico" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15h12"/><path d="M5 12V9M9 12V5M13 12V7.5"/></symbol><symbol id="i-artigo" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 3.5h11v11h-11z"/><path d="M6 6.5h6M6 9h6M6 11.5h3.5"/></symbol><symbol id="i-globo" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="6.5"/><path d="M2.5 9h13M9 2.5c-2.2 2.4-2.2 10.6 0 13M9 2.5c2.2 2.4 2.2 10.6 0 13"/></symbol><symbol id="i-olho" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.8 9S4.5 4 9 4s7.2 5 7.2 5-2.7 5-7.2 5S1.8 9 1.8 9z"/><circle cx="9" cy="9" r="2.2"/></symbol><symbol id="i-olho-fechado" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7c1.5 2 3.7 3.2 6.5 3.2S14 9 15.5 7"/><path d="M5 9.6L4 11.5M9 10.2v2M13 9.6l1 1.9"/></symbol><symbol id="i-microfone" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2" width="5" height="8.5" rx="2.5"/><path d="M4 8.5a5 5 0 0 0 10 0M9 13.5V16M6.5 16h5"/></symbol><symbol id="i-som" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h2.5L9 4v10l-3.5-3H3z"/><path d="M12 6.5a3.5 3.5 0 0 1 0 5M14 4.5a6.5 6.5 0 0 1 0 9"/></symbol><symbol id="i-raio" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2L4.5 10H9l-1 6 5.5-8H9z"/></symbol><symbol id="i-lixeira" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h12M7 5V3h4v2M4.5 5l.8 10h7.4l.8-10"/><path d="M7.5 8v4.5M10.5 8v4.5"/></symbol><symbol id="i-copiar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="9" height="9" rx="1"/><path d="M12 6V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h2"/></symbol><symbol id="i-enviar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h11M10 5l4 4-4 4"/></symbol><symbol id="i-escudo" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2l5.5 2v4.5c0 3.4-2.3 5.9-5.5 7.5-3.2-1.6-5.5-4.1-5.5-7.5V4z"/></symbol><symbol id="i-baixar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2.5v9M5.5 8L9 11.5 12.5 8M3 14.5h12"/></symbol><symbol id="i-salvar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h9.5L15 5.5V15H3z"/><path d="M6 3v4h5V3M6 15v-4.5h6V15"/></symbol><symbol id="i-arquivo" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 2.5h6l3 3v10h-9z"/><path d="M10.5 2.5v3h3"/></symbol><symbol id="i-livro" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4c2-1 4.5-1 6.5.5 2-1.5 4.5-1.5 6.5-.5v10.5c-2-1-4.5-1-6.5.5-2-1.5-4.5-1.5-6.5-.5z"/><path d="M9 4.5V15"/></symbol><symbol id="i-cadeado" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="8" width="11" height="7.5" rx="1"/><path d="M6 8V6a3 3 0 0 1 6 0v2"/></symbol><symbol id="i-ok" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 9.5l3.5 3.5 7.5-8"/></symbol><symbol id="i-alerta" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2.5l7 12.5H2z"/><path d="M9 7.5v3.5M9 13h.01" stroke-width="1.8"/></symbol><symbol id="i-pessoa" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="6" r="3"/><path d="M3 15.5c.8-3 3.2-4.5 6-4.5s5.2 1.5 6 4.5"/></symbol><symbol id="i-paleta" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2a7 7 0 1 0 0 14c1 0 1.4-.7 1.1-1.5-.4-1 .2-2 1.3-2H13a3 3 0 0 0 3-3C16 5.2 12.9 2 9 2Z"/><circle cx="5.6" cy="8.4" r="1" fill="currentColor" stroke="none"/><circle cx="8.2" cy="5.4" r="1" fill="currentColor" stroke="none"/><circle cx="11.8" cy="6.2" r="1" fill="currentColor" stroke="none"/></symbol><symbol id="i-sol" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3.2"/><path d="M9 1.8v1.7M9 14.5v1.7M1.8 9h1.7M14.5 9h1.7M3.9 3.9l1.2 1.2M12.9 12.9l1.2 1.2M3.9 14.1l1.2-1.2M12.9 5.1l1.2-1.2"/></symbol><symbol id="i-lua" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 10.6A6 6 0 0 1 7.4 3.5a6 6 0 1 0 7.1 7.1Z"/></symbol><symbol id="i-cabide" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6.5V6a1.6 1.6 0 1 0-1.6-1.6"/><path d="M9 6.5L2.5 11.5c-.6.5-.3 1.5.5 1.5h12c.8 0 1.1-1 .5-1.5z"/></symbol><symbol id="i-parar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="4.5" width="9" height="9" rx="1"/></symbol><symbol id="i-estrela" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2.5l2 4.2 4.5.6-3.3 3.1.8 4.5L9 12.7l-4 2.2.8-4.5-3.3-3.1 4.5-.6z"/></symbol><symbol id="i-tela" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="3" width="13" height="9.5" rx="1"/><path d="M6.5 15.5h5M9 12.5v3"/></symbol><symbol id="i-nuvem" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 14h8a3 3 0 0 0 .4-6A4.5 4.5 0 0 0 4.7 7.2 3.4 3.4 0 0 0 5 14z"/></symbol><symbol id="i-tocar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 3.5v11l9-5.5z"/></symbol></svg>
@@ -107,13 +112,30 @@
       <!-- LEFT PANEL: TELEMETRY & HARDWARE -->
       <aside class="hud-sidebar hud-telemetry-panel">
         <div class="panel-header">
-          <span class="panel-tag">SYS.DIAG</span>
-          <h3>TELEMETRIA TÁTICA</h3>
+          <span class="panel-tag" id="env-tag">WEB</span>
+          <h3>TELEMETRIA</h3>
         </div>
 
         <div class="telemetry-grid">
+          <!-- VERSÃO WEB: o que faz sentido medir aqui -->
+          <div class="telemetry-card so-web atom-web-card">
+            <div class="card-head">
+              <span>VERSÃO WEB</span>
+              <span class="badge-status online">ONLINE</span>
+            </div>
+            <dl class="atom-web-rows">
+              <div><dt>Rodando em</dt><dd>Vercel (nuvem)</dd></div>
+              <div><dt>Modelo</dt><dd id="web-model">...</dd></div>
+              <div><dt>Chave</dt><dd id="web-key">...</dd></div>
+              <div><dt>Voz</dt><dd id="web-voice">...</dd></div>
+              <div><dt>Nesta conversa</dt><dd id="web-msgs">0 mensagens</dd></div>
+              <div><dt>Resposta</dt><dd id="web-latency">ainda não medida</dd></div>
+            </dl>
+            <p class="atom-web-note">CPU, memória, disco, Ollama e abrir aplicativos só existem no modo local, com o Atom rodando no seu PC.</p>
+          </div>
+
           <!-- CPU GAUGE (A.T.O.M. PROCESS) -->
-          <div class="telemetry-card">
+          <div class="telemetry-card so-local">
             <div class="card-head">
               <span>CPU (A.T.O.M.)</span>
               <span id="cpu-val" class="metric-highlight">0.0%</span>
@@ -128,7 +150,7 @@
           </div>
 
           <!-- RAM GAUGE (A.T.O.M. MEMORY) -->
-          <div class="telemetry-card">
+          <div class="telemetry-card so-local">
             <div class="card-head">
               <span>RAM (A.T.O.M.)</span>
               <span id="ram-val" class="metric-highlight">0 MB</span>
@@ -143,7 +165,7 @@
           </div>
 
           <!-- DISK / PROJECT STORAGE GAUGE -->
-          <div class="telemetry-card">
+          <div class="telemetry-card so-local">
             <div class="card-head">
               <span>PROJETO & DISCO</span>
               <span id="disk-val" class="metric-highlight">0 MB</span>
@@ -157,7 +179,7 @@
           </div>
 
           <!-- MOTOR STATUS -->
-          <div class="telemetry-card status-card">
+          <div class="telemetry-card status-card so-local">
             <div class="card-head">
               <span>MOTOR LOCAL (OLLAMA)</span>
               <span id="ollama-status" class="badge-status online">CONECTADO</span>
@@ -176,9 +198,9 @@
             <h4>COMANDOS RÁPIDOS</h4>
           </div>
           <div class="quick-btn-group">
-            <button class="quick-cmd-btn" data-prompt="Abra a calculadora"><svg class="ic" aria-hidden="true"><use href="#i-calculadora"/></svg> Abrir Calculadora</button>
-            <button class="quick-cmd-btn" data-prompt="Abra o bloco de notas"><svg class="ic" aria-hidden="true"><use href="#i-nota"/></svg> Bloco de Notas</button>
-            <button class="quick-cmd-btn" data-prompt="A.T.O.M., qual o status do sistema e uso de hardware?"><svg class="ic" aria-hidden="true"><use href="#i-grafico"/></svg> Diagnóstico do sistema</button>
+            <button class="quick-cmd-btn so-local" data-prompt="Abra a calculadora"><svg class="ic" aria-hidden="true"><use href="#i-calculadora"/></svg> Abrir Calculadora</button>
+            <button class="quick-cmd-btn so-local" data-prompt="Abra o bloco de notas"><svg class="ic" aria-hidden="true"><use href="#i-nota"/></svg> Bloco de Notas</button>
+            <button class="quick-cmd-btn so-local" data-prompt="A.T.O.M., qual o status do sistema e uso de hardware?"><svg class="ic" aria-hidden="true"><use href="#i-grafico"/></svg> Diagnóstico do sistema</button>
             <button class="quick-cmd-btn" data-prompt="A.T.O.M., pesquise artigos científicos no arXiv sobre quantum computing e faça um resumo"><svg class="ic" aria-hidden="true"><use href="#i-artigo"/></svg> Pesquisar no arXiv</button>
             <button class="quick-cmd-btn" data-prompt="A.T.O.M., pesquise na web as novidades sobre tecnologia hoje e faça um resumo"><svg class="ic" aria-hidden="true"><use href="#i-globo"/></svg> Pesquisar notícias</button>
           </div>
@@ -188,7 +210,7 @@
         <div class="terminal-preview-container">
           <div class="terminal-header">
             <span class="term-dot"></span>
-            <span>TERMINAL TÁTICO</span>
+            <span>TERMINAL</span>
             <button id="clear-term-btn" class="term-action-btn">LIMPAR</button>
           </div>
           <div id="terminal-output" class="terminal-logs">
@@ -219,29 +241,24 @@
 
         <!-- VOICE & MULTIMODAL CONTROLS -->
         <div class="voice-controls-bar">
-          <button id="quick-stop-btn" class="hud-action-pill pill-stop" title="Interromper A.T.O.M. imediatamente (Atalho: - ou Esc)">
-            <span class="pill-symbol">−</span>
-            <span>PARAR [-]</span>
-          </button>
-
           <button id="screen-share-btn" class="hud-control-toggle screen-btn" title="Compartilhar tela com o A.T.O.M. (Visão Multimodal)">
             <span class="toggle-icon"><svg class="ic" aria-hidden="true"><use href="#i-olho"/></svg></span>
             <span class="toggle-label" id="screen-btn-label">ENXERGAR TELA</span>
           </button>
 
-          <button id="mic-toggle-btn" class="voice-btn mic-btn" title="Parar o A.T.O.M. e começar a ouvir você (Atalho: +)">
+          <button id="mic-toggle-btn" class="voice-btn mic-btn" title="Toque para falar ou segure para falar (Espaço faz o mesmo)">
             <span class="mic-icon"><svg class="ic" aria-hidden="true"><use href="#i-microfone"/></svg></span>
-            <span class="mic-label" id="mic-btn-label">FALAR COM A.T.O.M. [+]</span>
+            <span class="mic-label" id="mic-btn-label">FALAR COM O ATOM</span>
           </button>
 
           <button id="tts-toggle-btn" class="hud-control-toggle active" title="Alternar resposta por voz (Text-To-Speech)">
             <span class="toggle-icon"><svg class="ic" aria-hidden="true"><use href="#i-som"/></svg></span>
-            <span class="toggle-label">VOZ ATIVA</span>
+            <span class="toggle-label" id="tts-label">VOZ ATIVADA</span>
           </button>
 
           <button id="sfx-toggle-btn" class="hud-control-toggle active" title="Alternar efeitos sonoros de interface">
             <span class="toggle-icon"><svg class="ic" aria-hidden="true"><use href="#i-raio"/></svg></span>
-            <span class="toggle-label">SFX TÁTICO</span>
+            <span class="toggle-label" id="sfx-label">EFEITOS SONOROS ATIVADOS</span>
           </button>
         </div>
 
@@ -320,20 +337,19 @@
           </div>
 
           <div class="composer-toolbar">
-            <label class="auto-mode-toggle" title="Modo Autônomo: executa comandos do sistema diretamente sem pedir confirmação">
+            <label class="auto-mode-toggle so-local" title="Modo Autônomo: executa comandos do sistema diretamente sem pedir confirmação">
               <input type="checkbox" id="autonomous-toggle">
               <span class="checkbox-custom"></span>
               <span class="toggle-text">MODO AUTÔNOMO</span>
             </label>
 
-            <!-- AÇÕES RÁPIDAS DE CONTROLE [-] E [+] -->
-            <div class="composer-quick-actions">
-              <button id="stop-jarvis-btn" class="hud-mini-btn btn-stop" title="Interromper A.T.O.M. imediatamente (Atalho: - ou Esc)">
-                <span>−</span> PARAR
-              </button>
-            </div>
+            <label class="auto-mode-toggle" title="Conversa contínua: depois de responder, o Atom volta a ouvir sozinho. Esc pausa.">
+              <input type="checkbox" id="conversa-toggle">
+              <span class="checkbox-custom"></span>
+              <span class="toggle-text">CONVERSA CONTÍNUA</span>
+            </label>
 
-            <span class="composer-hint">[Enter] envia</span>
+            <span class="composer-hint" id="composer-hint">[Enter] envia · segure [Espaço] para falar · [Esc] para</span>
           </div>
 
           <div class="composer-input-row">
@@ -345,8 +361,8 @@
               autocomplete="off"
             ></textarea>
 
-            <button id="composer-mic-btn" class="hud-composer-mic-btn" title="Ativar microfone de voz">
-              <span class="mic-glyph"><svg class="ic" aria-hidden="true"><use href="#i-microfone"/></svg></span>
+            <button id="composer-mic-btn" class="hud-composer-mic-btn" title="Toque para falar (para sozinho quando você se cala) ou segure para falar">
+              <span class="mic-glyph"><svg class="ic" aria-hidden="true"><use id="composer-mic-icon" href="#i-microfone"/></svg></span>
             </button>
 
             <button id="send-btn" class="hud-send-btn" title="Enviar mensagem [Enter]">
@@ -367,7 +383,7 @@
           <h3>DOSSIÊS & PESQUISAS MARKDOWN</h3>
         </div>
         <div class="drawer-actions">
-          <button id="open-research-folder-btn" class="hud-action-btn"><svg class="ic" aria-hidden="true"><use href="#i-pasta"/></svg> ABRIR PASTA NO WINDOWS</button>
+          <button id="open-research-folder-btn" class="hud-action-btn so-local"><svg class="ic" aria-hidden="true"><use href="#i-pasta"/></svg> ABRIR PASTA NO WINDOWS</button>
           <button class="close-drawer-btn" data-drawer="researches-drawer"><svg class="ic" aria-hidden="true"><use href="#i-fechar"/></svg></button>
         </div>
       </div>
@@ -391,8 +407,16 @@
 
       <div class="drawer-content settings-layout">
         
-        <!-- SECTION: BAIXAR NOVO MODELO OLLAMA -->
-        <div class="settings-section">
+        <!-- SECTION: MODO WEB OU LOCAL -->
+        <div class="settings-section atom-env-section">
+          <h4>MODO: <span id="env-name">WEB</span></h4>
+          <p class="settings-desc so-web">Você está na versão web, hospedada na Vercel. Aqui funcionam conversa, voz, ver a tela, pesquisas na web e no arXiv, dossiês e as suas chaves de API.</p>
+          <p class="settings-desc so-web">Só no modo local (o Atom rodando no seu PC): modelos do Ollama, medidores de CPU, memória e disco, abrir aplicativos como calculadora e bloco de notas, e o modo autônomo.</p>
+          <p class="settings-desc so-local">Você está no modo local, com o Atom rodando no seu PC. Tudo funciona: Ollama, medidores do PC, abrir aplicativos, modo autônomo, além das chaves de API.</p>
+        </div>
+
+        <!-- SECTION: BAIXAR NOVO MODELO OLLAMA (SÓ LOCAL) -->
+        <div class="settings-section so-local">
           <h4>BAIXAR NOVO MODELO (OLLAMA PULL)</h4>
           <p class="settings-desc">Adicione qualquer modelo da biblioteca oficial Ollama (ex: <code>llama3.2</code>, <code>mistral</code>, <code>qwen2.5</code>, <code>deepseek-r1:7b</code>, <code>phi3</code>).</p>
           <div class="pull-row">
@@ -525,7 +549,7 @@
             <input type="range" id="temp-slider" min="0" max="1" step="0.05" value="0.7" class="hud-slider">
             <span id="temp-val" class="slider-val">0.70</span>
           </div>
-          <span class="settings-desc">Valores menores (0.1 - 0.3) são mais determinísticos e exatos; valores maiores (0.7 - 0.9) são mais criativos e analíticos.</span>
+          <span class="settings-desc">Valores menores (0.1 - 0.3) são mais determinísticos e exatos; valores maiores (0.7 - 0.9) são mais criativos. Vale nos dois modos: vai junto em toda mensagem, tanto para a chave de API (Gemini, OpenAI, Groq...) quanto para o Ollama local.</span>
         </div>
 
         <!-- SECTION: VOZ DO A.T.O.M. -->
@@ -565,7 +589,7 @@
       <div class="hud-modal-window">
         <div class="modal-header">
           <div class="modal-title-box">
-            <span class="panel-tag">DOSSIÊ TÁTICO</span>
+            <span class="panel-tag">DOSSIÊ</span>
             <h3 id="modal-dossier-title">Título do Dossiê</h3>
           </div>
           <div class="modal-actions">

@@ -198,50 +198,56 @@ class JarvisApp {
     });
 
     // Microfone
-    if (this.micBtn) {
-      this.micBtn.addEventListener('click', () => {
-        this.audio.toggleListening();
-        this.updateMicBtnState();
+    // Botões de falar (o grande, embaixo do Atom, e o do campo de mensagem) funcionam igual.
+    // Toque: ouve e para sozinho quando você se cala. Segurar: ouve enquanto estiver apertado.
+    // Com o Atom falando ou respondendo: ele para e já começa a ouvir.
+    [this.micBtn, this.composerMicBtn].filter(Boolean).forEach((btn) => {
+      btn.addEventListener('pointerdown', (e) => {
+        if (e.button !== undefined && e.button !== 0) return;
+        e.preventDefault();
+        try { btn.setPointerCapture(e.pointerId); } catch (err) {}
+        this.talkPress();
       });
-    }
-
-    if (this.composerMicBtn) {
-      // Único botão de ouvir: se o Atom estiver falando ou respondendo, ele para e já começa a ouvir
-      this.composerMicBtn.addEventListener('click', () => {
-        if (this.audio.isListening) this.audio.toggleListening();
-        else this.stopAndListen();
-        this.updateMicBtnState();
-      });
-    }
+      const release = () => this.talkRelease();
+      btn.addEventListener('pointerup', release);
+      btn.addEventListener('pointercancel', release);
+      btn.addEventListener('click', (e) => e.preventDefault());
+    });
+    this.setupConversaMode();
 
     // Toggles de Áudio
     this.ttsToggleBtn.addEventListener('click', () => {
       this.audio.ttsEnabled = !this.audio.ttsEnabled;
       this.ttsToggleBtn.classList.toggle('active', this.audio.ttsEnabled);
+      const tl = document.getElementById('tts-label');
+      if (tl) tl.textContent = this.audio.ttsEnabled ? 'VOZ ATIVADA' : 'VOZ DESATIVADA';
+      if (!this.audio.ttsEnabled) this.audio.stopSpeaking();
     });
 
     this.sfxToggleBtn.addEventListener('click', () => {
       this.audio.sfxEnabled = !this.audio.sfxEnabled;
       this.sfxToggleBtn.classList.toggle('active', this.audio.sfxEnabled);
+      const sl = document.getElementById('sfx-label');
+      if (sl) sl.textContent = this.audio.sfxEnabled ? 'EFEITOS SONOROS ATIVADOS' : 'EFEITOS SONOROS DESATIVADOS';
     });
 
     // BOTÃO [-]: Interromper JARVIS imediatamente
-    if (this.stopJarvisBtn) {
-      this.stopJarvisBtn.addEventListener('click', () => this.interruptJarvis());
-    }
-    if (this.quickStopBtn) {
-      this.quickStopBtn.addEventListener('click', () => this.interruptJarvis());
-    }
 
     // BOTÃO [+]: Parar JARVIS e começar a ouvir o operador
     if (this.listenJarvisBtn) {
       this.listenJarvisBtn.addEventListener('click', () => this.stopAndListen());
     }
 
-    // ATALHOS GLOBAIS DE TECLADO: [-] INTERROMPER | [+] OUVIR
+    // ATALHOS GLOBAIS DE TECLADO: [-]/Esc INTERROMPER | [+] OUVIR | segurar Espaço para falar
     window.addEventListener('keydown', (e) => {
       const activeTag = document.activeElement ? document.activeElement.tagName : '';
-      const isTyping = ['INPUT', 'TEXTAREA'].includes(activeTag);
+      const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(activeTag) || (document.activeElement && document.activeElement.isContentEditable);
+
+      if (e.code === 'Space' && !isTyping) {
+        e.preventDefault();
+        if (!e.repeat) this.talkPress();
+        return;
+      }
 
       // Tecla [-], NumpadSubtract ou Escape: Interrompe JARVIS
       if ((e.key === '-' && !isTyping) || e.code === 'NumpadSubtract' || e.key === 'Escape') {
@@ -252,12 +258,18 @@ class JarvisApp {
         }
       }
 
-      // Tecla [+], NumpadAdd: Parar e Ouvir
+      // Tecla [+], NumpadAdd: Parar e Ouvir (fora de campos de texto)
       if ((e.key === '+' && !isTyping) || e.code === 'NumpadAdd') {
         e.preventDefault();
         this.stopAndListen();
         return;
       }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      if (e.code !== 'Space' || !this.spaceDown) return;
+      e.preventDefault();
+      this.talkRelease();
     });
 
     // Comandos Rápidos
@@ -606,15 +618,22 @@ class JarvisApp {
       this.micBtn.classList.toggle('recording', isListening);
       const label = document.getElementById('mic-btn-label');
       if (label) {
-        label.innerText = isListening ? 'ESCUTANDO... [NUMLOCK P/ PARAR]' : 'FALAR COM A.T.O.M. [NUMLOCK]';
+        const busyBig = !isListening && this.audio && this.atomBusy();
+        label.innerText = isListening ? 'OUVINDO... TOQUE PARA MANDAR' : busyBig ? 'PARAR E FALAR' : 'FALAR COM O ATOM';
       }
     }
 
     if (this.composerMicBtn) {
+      const busy = !isListening && this.audio && this.atomBusy();
+      const icon = document.getElementById('composer-mic-icon');
+      if (icon) icon.setAttribute('href', busy ? '#i-parar' : '#i-microfone');
+      this.composerMicBtn.classList.toggle('atom-busy', busy);
       this.composerMicBtn.classList.toggle('active', isListening);
       this.composerMicBtn.classList.toggle('listening', isListening);
       this.composerMicBtn.classList.toggle('recording', isListening);
-      this.composerMicBtn.title = isListening ? 'Parar escuta (Tecla NumLock)' : 'Ativar microfone (Tecla NumLock ou Ctrl+Espaço)';
+      this.composerMicBtn.title = isListening
+        ? 'Ouvindo. Toque para mandar o que você falou'
+        : busy ? 'Parar o Atom e falar' : 'Toque para falar (para sozinho quando você se cala) ou segure para falar';
     }
 
     if (this.statusText) {
@@ -777,6 +796,7 @@ class JarvisApp {
       } catch (e) {}
     }
 
+    await this.detectEnvironment();
     await this.loadModels();
     await this.updateTelemetry();
     await this.loadResearches();
@@ -1024,7 +1044,44 @@ class JarvisApp {
     this.bindGeminiChips();
   }
 
+  /** Web (Vercel) ou local (PC)? O servidor confirma; até lá vale o palpite feito no <head>. */
+  async detectEnvironment() {
+    const html = document.documentElement;
+    try {
+      const res = await fetch('/api/health', { cache: 'no-store' });
+      const data = await res.json();
+      if (data && data.environment && typeof data.environment.is_cloud === 'boolean') {
+        html.dataset.ambiente = data.environment.is_cloud ? 'web' : 'local';
+      }
+    } catch (e) {}
+    this.isWeb = html.dataset.ambiente !== 'local';
+    const label = this.isWeb ? 'WEB' : 'LOCAL';
+    const tag = document.getElementById('env-tag');
+    const name = document.getElementById('env-name');
+    if (tag) tag.textContent = label;
+    if (name) name.textContent = label;
+    if (this.isWeb && this.autonomousToggle) this.autonomousToggle.checked = false;
+  }
+
+  /** Painel da versão web: só o que faz sentido medir na nuvem. */
+  updateWebTelemetry() {
+    const set = (id, txt) => { const el = document.getElementById(id); if (el && el.textContent !== txt) el.textContent = txt; };
+    const opt = this.modelSelect && this.modelSelect.selectedOptions ? this.modelSelect.selectedOptions[0] : null;
+    set('web-model', (opt && opt.textContent.trim()) || this.currentModel || 'nenhum');
+    const prov = this.providerOf(this.currentModel);
+    let session = false;
+    try { session = !!(prov && sessionStorage.getItem('jarvis_key_' + prov)); } catch (e) {}
+    const env = prov && (this.apiModels || []).some((m) => m.provider === prov && m.has_env_key);
+    set('web-key', session ? 'sua, nesta aba' : env ? 'do Atom (Vercel)' : prov ? 'falta a chave' : '...');
+    const a = this.audio;
+    set('web-voice', !a.ttsEnabled ? 'desligada' : a.voiceEngine === 'natural' ? `${a.geminiVoice} (Gemini)` : 'do navegador');
+    const n = (this.messages || []).length;
+    set('web-msgs', `${n} ${n === 1 ? 'mensagem' : 'mensagens'}`);
+    if (this.lastLatency) set('web-latency', `${(this.lastLatency / 1000).toFixed(1)} s até a 1ª palavra`);
+  }
+
   async updateTelemetry() {
+    if (this.isWeb) { this.updateWebTelemetry(); return; }
     const data = await JarvisAPI.getTelemetry();
     if (!data || !data.success) return;
 
@@ -1276,6 +1333,8 @@ class JarvisApp {
     this.saveConversation();
 
     this.isGenerating = true;
+    this.sendAt = performance.now();
+    this.updateMicBtnState();
     this.reactor.setState('THINKING');
     this.audio.playToolBeep();
 
@@ -1284,7 +1343,7 @@ class JarvisApp {
     let fullResponse = '';
 
     const temperature = parseFloat(this.tempSlider.value) || 0.7;
-    const autonomous = this.autonomousToggle.checked;
+    const autonomous = this.isWeb ? false : this.autonomousToggle.checked; // abrir apps só existe no modo local
 
     // Resolver chave de sessão volátil se for um modelo de API
     let sessionKey = null;
@@ -1306,7 +1365,10 @@ class JarvisApp {
       signal: this.currentAbortController.signal,
 
       onToken: (token) => {
-        if (!fullResponse) this.reactor.setState('SPEAKING');
+        if (!fullResponse) {
+          this.reactor.setState('SPEAKING');
+          this.lastLatency = Math.round(performance.now() - (this.sendAt || performance.now()));
+        }
         fullResponse += token;
         assistantMsg.updateContent(fullResponse);
         this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
@@ -1353,6 +1415,7 @@ class JarvisApp {
 
       onDone: (finalContent) => {
         this.isGenerating = false;
+        this.updateMicBtnState();
         this.currentAbortController = null;
         this.hideToolBanner();
         this.reactor.setState('IDLE');
@@ -1362,13 +1425,17 @@ class JarvisApp {
           this.messages.push({ role: 'assistant', content: finalContent });
           this.saveConversation();
           this.reactor.flash('feliz', 1500);
-          // Falar resposta se TTS estiver ativado
-          this.audio.speak(finalContent);
+          // Falar resposta se TTS estiver ativado; sem voz, a conversa contínua volta a ouvir já
+          if (!this.audio.speak(finalContent)) this.resumeListeningSoon();
+        } else {
+          this.resumeListeningSoon();
         }
       },
 
       onError: (errMsg) => {
         this.isGenerating = false;
+        this.conversaPaused = true;
+        this.updateMicBtnState();
         this.currentAbortController = null;
         this.hideToolBanner();
         this.reactor.setState('IDLE');
@@ -1392,7 +1459,9 @@ class JarvisApp {
       this.currentAbortController = null;
     }
 
-    // 2. Cancelar fala de áudio TTS
+    // 2. Cancelar fala de áudio TTS (e pausar a conversa contínua até o próximo toque no microfone)
+    this.conversaPaused = true;
+    clearTimeout(this.resumeTimer);
     this.audio.stopSpeaking();
 
     // 3. Cancelar microfone se estiver ouvindo
@@ -1409,6 +1478,97 @@ class JarvisApp {
     // 5. Feedback sonoro e no terminal
     this.audio.playCancelSFX();
     this.logTerminal('[COMANDO -]: A.T.O.M. interrompido pelo operador.', 'sys');
+  }
+
+  /* ==========================================================================
+     CONVERSA: tocar, segurar para falar e conversa contínua
+     ========================================================================== */
+
+  atomBusy() {
+    return this.isGenerating || this.audio.isSpeaking();
+  }
+
+  /** Apertou o microfone (ou Espaço). */
+  talkPress() {
+    if (this.spaceDown) return;
+    this.spaceDown = true;
+    this.pressAt = Date.now();
+    this.pressStoppedListening = false;
+    this.conversaPaused = false;
+    this.emptyHeard = 0;
+    if (this.audio.isListening) {
+      // Já estava ouvindo: este toque encerra a fala (manda o que ouviu)
+      this.pressStoppedListening = true;
+      this.audio.holdToTalk = false;
+      this.audio.stopListening();
+      this.updateMicBtnState();
+      return;
+    }
+    this.audio.holdToTalk = true;
+    this.stopAndListen();
+  }
+
+  /** Soltou o microfone (ou Espaço). Toque curto: segue ouvindo até você se calar. Segurou: manda agora. */
+  talkRelease() {
+    if (!this.spaceDown) return;
+    this.spaceDown = false;
+    if (this.pressStoppedListening) return;
+    const held = Date.now() - (this.pressAt || 0);
+    if (held >= 450 && this.audio.isListening) {
+      this.audio.holdToTalk = false;
+      this.audio.stopListening();
+    } else {
+      this.audio.holdToTalk = false;
+    }
+    this.updateMicBtnState();
+  }
+
+  setupConversaMode() {
+    const box = document.getElementById('conversa-toggle');
+    try { this.conversa = localStorage.getItem('atom_conversa') === '1'; } catch (e) { this.conversa = false; }
+    this.conversaPaused = false;
+    this.emptyHeard = 0;
+    if (box) {
+      box.checked = this.conversa;
+      box.addEventListener('change', () => {
+        this.conversa = box.checked;
+        try { localStorage.setItem('atom_conversa', this.conversa ? '1' : '0'); } catch (e) {}
+        this.audio.idleLimit = this.conversa ? 600 : 0;
+        this.conversaPaused = false;
+        this.logTerminal(this.conversa
+          ? '[CONVERSA]: contínua ligada. Depois de responder, o Atom volta a ouvir sozinho. Esc pausa.'
+          : '[CONVERSA]: contínua desligada. Toque ou segure o microfone para falar.', 'sys');
+        if (this.conversa && !this.atomBusy() && !this.audio.isListening) this.stopAndListen();
+      });
+    }
+    this.audio.idleLimit = this.conversa ? 600 : 0; // 60 s sem ninguém falar: pausa
+    this.audio.onSpeechDone = () => this.resumeListeningSoon();
+    this.audio.onNothingHeard = () => {
+      if (!this.conversa || this.conversaPaused) return;
+      this.emptyHeard = (this.emptyHeard || 0) + 1;
+      if (this.emptyHeard >= 3) {
+        this.conversaPaused = true;
+        this.logTerminal('[CONVERSA]: não entendi nada três vezes seguidas. Pausei; toque no microfone para voltar.', 'sys');
+        return;
+      }
+      this.resumeListeningSoon();
+    };
+    this.audio.onIdleTimeout = () => {
+      if (!this.conversa) return;
+      this.conversaPaused = true;
+      this.logTerminal('[CONVERSA]: 1 minuto sem ouvir você. Pausei; toque no microfone para voltar.', 'sys');
+    };
+  }
+
+  /** Na conversa contínua, volta a ouvir depois que o Atom termina. */
+  resumeListeningSoon() {
+    if (!this.conversa || this.conversaPaused) return;
+    clearTimeout(this.resumeTimer);
+    this.resumeTimer = setTimeout(() => {
+      if (!this.conversa || this.conversaPaused || this.atomBusy() || this.audio.isListening || this.audio.isTranscribing) return;
+      this.audio.holdToTalk = false;
+      this.audio.startListening().then(() => this.updateMicBtnState());
+    }, 400);
   }
 
   /**
@@ -1582,11 +1742,11 @@ class JarvisApp {
 
   setupVoices() {
     const VOICES = [
+      ['Fenrir', 'empolgada (padrão)'],
       ['Charon', 'grave e tranquila'],
       ['Puck', 'animada'],
       ['Kore', 'firme e clara'],
       ['Orus', 'firme, mais grave'],
-      ['Fenrir', 'empolgada'],
       ['Aoede', 'leve'],
       ['Zephyr', 'clara e brilhante'],
       ['Leda', 'jovem'],
