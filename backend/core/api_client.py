@@ -90,6 +90,31 @@ def genai_client(key: str):
     return genai.Client(api_key=key, http_options=types.HttpOptions(api_version="v1beta"))
 
 
+_tts_model_cache: Dict[str, str] = {}
+
+
+def best_tts_model(client, key: str = "") -> str:
+    """Modelo de voz (TTS) do Gemini mais novo que a chave libera."""
+    if key in _tts_model_cache:
+        return _tts_model_cache[key]
+    import re as _re
+    best, best_ver = os.environ.get("ATOM_TTS_MODEL", "gemini-2.5-flash-preview-tts"), -1.0
+    if not os.environ.get("ATOM_TTS_MODEL"):
+        try:
+            for m in client.models.list():
+                name = (getattr(m, "name", "") or "").replace("models/", "")
+                low = name.lower()
+                if "tts" not in low:
+                    continue
+                mv = _re.search(r"gemini-(\d+(?:\.\d+)?)", low)
+                ver = (float(mv.group(1)) if mv else 0.0) + (0.01 if "flash" in low else 0.0)
+                if ver > best_ver:
+                    best, best_ver = name, ver
+        except Exception as e:
+            logger.warning(f"Não consegui listar modelos de voz do Gemini: {e}")
+    _tts_model_cache[key] = best
+    return best
+
 _best_flash_cache: Dict[str, str] = {}
 
 

@@ -382,3 +382,19 @@ body { background-color: var(--bg-space); transition: background-color .3s; }
 /* Cabeçalho acima das gavetas (Sistema, Dossiês): os menus de Temas e Vestiário abrem por cima delas */
 .hud-header { position: relative; z-index: 150; }
 @media (max-width: 760px) { .hud-header { position: sticky; } }
+
+/* ---------- Vozes ---------- */
+.atom-seg { display: inline-flex; border: 1px solid var(--border-muted); border-radius: 4px; overflow: hidden; margin: 6px 0 8px; }
+.atom-seg-btn { padding: 8px 14px; background: transparent; border: none; color: var(--text-secondary); font-family: var(--font-sans); font-size: 13px; cursor: pointer; }
+.atom-seg-btn + .atom-seg-btn { border-left: 1px solid var(--border-muted); }
+.atom-seg-btn.active { background: var(--accent-red); color: #fff; }
+.atom-voice-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin: 10px 0 4px; }
+.atom-voice-grid.hidden, #browser-voice-group.hidden, #voice-pitch-row.hidden { display: none; }
+.atom-voice-card { display: flex; align-items: stretch; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-space); }
+.atom-voice-card.active { border-color: var(--accent-red); }
+.atom-voice-pick { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; background: none; border: none; text-align: left; cursor: pointer; color: var(--text-primary); font-family: var(--font-sans); }
+.atom-voice-name { font-size: 13px; font-weight: 500; }
+.atom-voice-note { font-size: 11px; color: var(--text-muted); }
+.atom-voice-play { width: 38px; background: none; border: none; border-left: 1px solid var(--border-color); color: var(--accent-red); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.atom-voice-play:hover { background: var(--bg-card-hover); }
+.atom-voice-play.loading { opacity: .4; pointer-events: none; }

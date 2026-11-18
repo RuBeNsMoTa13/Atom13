@@ -139,6 +139,59 @@ def get_google_models(session_key: Optional[str] = None):
     models = api_model_manager.list_google_models(session_key=session_key)
     return {"success": True, "models": models}
 
+class TTSRequest(BaseModel):
+    text: str
+    voice: str = "Charon"
+    session_key: Optional[str] = None
+
+
+def _pcm_to_wav(pcm: bytes, rate: int = 24000) -> bytes:
+    import struct
+    return (b"RIFF" + struct.pack("<I", 36 + len(pcm)) + b"WAVE" + b"fmt " +
+            struct.pack("<IHHIIHH", 16, 1, 1, rate, rate * 2, 2, 16) + b"data" + struct.pack("<I", len(pcm)) + pcm)
+
+
+@app.post("/api/tts")
+def text_to_speech(req: TTSRequest):
+    """Voz natural do Gemini. Devolve WAV; se não houver chave, o navegador usa a voz dele."""
+    from fastapi.responses import Response, JSONResponse
+    text = (req.text or "").strip()[:1500]
+    if not text:
+        return JSONResponse({"success": False, "error": "Texto vazio."}, status_code=400)
+    key = api_model_manager.resolve_api_key({"provider": "google", "env_var": "GEMINI_API_KEY"}, req.session_key)
+    if not key:
+        return JSONResponse({"success": False, "error": "Sem chave do Gemini para a voz natural."}, status_code=400)
+    voice = "".join(ch for ch in (req.voice or "Charon") if ch.isalpha())[:32] or "Charon"
+    try:
+        from google.genai import types
+        from .core.api_client import genai_client, best_tts_model
+        client = genai_client(key)
+        resp = client.models.generate_content(
+            model=best_tts_model(client, key),
+            contents=f"Fale em português do Brasil, com naturalidade e calma, como um assistente simpático: {text}",
+            config=types.GenerateContentConfig(
+                response_modalities=["AUDIO"],
+                speech_config=types.SpeechConfig(
+                    voice_config=types.VoiceConfig(prebuilt_voice_config=types.PrebuiltVoiceConfig(voice_name=voice))
+                ),
+            ),
+        )
+        part = resp.candidates[0].content.parts[0]
+        data = part.inline_data.data
+        mime = (part.inline_data.mime_type or "").lower()
+        if isinstance(data, str):
+            import base64
+            data = base64.b64decode(data)
+        if "wav" not in mime:
+            import re as _re
+            m = _re.search(r"rate=(\d+)", mime)
+            data = _pcm_to_wav(data, int(m.group(1)) if m else 24000)
+        return Response(content=data, media_type="audio/wav", headers={"Cache-Control": "no-store"})
+    except Exception as e:
+        logger.warning(f"[TTS GEMINI]: {e}")
+        return JSONResponse({"success": False, "error": str(e)[:300]}, status_code=502)
+
+
 class ListModelsRequest(BaseModel):
     provider: str
     session_key: Optional[str] = None

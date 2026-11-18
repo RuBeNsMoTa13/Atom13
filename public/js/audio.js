@@ -34,6 +34,16 @@ export class JarvisAudio {
     // TTS Config
     this.voiceRate = 1.05;
     this.voicePitch = 0.95;
+    // Voz: "natural" (Gemini, no servidor) ou "navegador"; escolha salva neste navegador
+    this.speechToken = 0;
+    this.currentAudio = null;
+    try {
+      this.voiceEngine = localStorage.getItem('atom_voz_motor') || 'natural';
+      this.geminiVoice = localStorage.getItem('atom_voz_gemini') || 'Charon';
+    } catch (e) {
+      this.voiceEngine = 'natural';
+      this.geminiVoice = 'Charon';
+    }
     this.selectedVoice = null;
     this.voices = [];
 
@@ -597,21 +607,30 @@ export class JarvisAudio {
       select.innerHTML = '';
       let defaultIdx = 0;
 
+      // Prefere vozes em português marcadas como naturais (Edge "Online (Natural)", Google, neurais)
+      const score = (v) => {
+        const n = v.name.toLowerCase();
+        let sc = 0;
+        if (/^pt/i.test(v.lang)) sc += 10;
+        if (/pt-br/i.test(v.lang)) sc += 5;
+        if (/natural|online|neural|google|premium|enhanced/.test(n)) sc += 8;
+        return sc;
+      };
+      let bestScore = -1;
       this.voices.forEach((v, idx) => {
         const option = document.createElement('option');
         option.value = idx;
         option.textContent = `${v.name} (${v.lang})`;
-
-        // Priorizar voz em português
-        if (v.lang.includes('pt') || v.lang.includes('PT')) {
-          option.textContent += ' (recomendada)';
-          if (!this.selectedVoice) {
-            defaultIdx = idx;
-            this.selectedVoice = v;
-          }
-        }
+        const sc = score(v);
+        if (sc >= 18) option.textContent += ' (mais natural)';
+        if (sc > bestScore) { bestScore = sc; defaultIdx = idx; }
         select.appendChild(option);
       });
+      try {
+        const saved = localStorage.getItem('atom_voz_navegador');
+        const i = this.voices.findIndex((v) => v.name === saved);
+        if (i >= 0) defaultIdx = i;
+      } catch (e) {}
 
       if (this.voices.length > 0) {
         select.value = defaultIdx;
@@ -625,20 +644,103 @@ export class JarvisAudio {
     }
   }
 
+  /** Fala a resposta: voz natural do Gemini quando der; senão a voz do navegador. */
   speak(text) {
-    if (!this.ttsEnabled || !('speechSynthesis' in window)) return;
+    if (!this.ttsEnabled) return;
+    this.stopSpeaking(true);
+    const cleanText = this.cleanForSpeech(text);
+    if (!cleanText) return;
+    if (this.voiceEngine === 'natural') {
+      this.speakNatural(cleanText, this.geminiVoice).catch(() => this.speakBrowser(cleanText));
+    } else {
+      this.speakBrowser(cleanText);
+    }
+  }
 
-    window.speechSynthesis.cancel();
-
-    const cleanText = text
+  cleanForSpeech(text) {
+    return String(text || '')
       .replace(/\[TOOL:[^\]]+\]/g, '')
-      .replace(/[#*`_~]/g, '')
+      .replace(/```[\s\S]*?```/g, ' ')
+      .replace(/[#*`_~>|]/g, '')
       .replace(/https?:\/\/\S+/g, 'link na web')
       .replace(/\n+/g, ' ')
+      .replace(/\s+/g, ' ')
       .trim();
+  }
 
+  /** Divide em pedaços curtos (frases) para a primeira parte começar a tocar rápido. */
+  splitForSpeech(text, max = 280) {
+    const sentences = text.match(/[^.!?;:]+[.!?;:]*\s*/g) || [text];
+    const chunks = [];
+    let cur = '';
+    sentences.forEach((snt) => {
+      if ((cur + snt).length > max && cur) { chunks.push(cur.trim()); cur = ''; }
+      if (snt.length > max) {
+        for (let i = 0; i < snt.length; i += max) chunks.push(snt.slice(i, i + max).trim());
+      } else cur += snt;
+    });
+    if (cur.trim()) chunks.push(cur.trim());
+    return chunks.filter(Boolean);
+  }
+
+  async fetchNatural(text, voice) {
+    let key = null;
+    try { key = sessionStorage.getItem('jarvis_key_google'); } catch (e) {}
+    const res = await fetch('/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, voice, session_key: key })
+    });
+    if (!res.ok) {
+      let msg = 'voz natural indisponível';
+      try { msg = (await res.json()).error || msg; } catch (e) {}
+      throw new Error(msg);
+    }
+    return URL.createObjectURL(await res.blob());
+  }
+
+  async speakNatural(text, voice) {
+    const token = ++this.speechToken;
+    const chunks = this.splitForSpeech(text);
+    let next = this.fetchNatural(chunks[0], voice);
+    let started = false;
+    for (let i = 0; i < chunks.length; i++) {
+      let url;
+      try {
+        url = await next;
+      } catch (e) {
+        if (!started) throw e; // nada tocou ainda: cai para a voz do navegador
+        break;
+      }
+      if (token !== this.speechToken) { URL.revokeObjectURL(url); return; }
+      if (i + 1 < chunks.length) next = this.fetchNatural(chunks[i + 1], voice);
+      if (!started) { started = true; if (this.onStateChange) this.onStateChange('SPEAKING'); }
+      await new Promise((resolve) => {
+        const audio = new Audio(url);
+        this.currentAudio = audio;
+        audio.playbackRate = this.voiceRate || 1;
+        audio.onended = audio.onerror = () => { URL.revokeObjectURL(url); resolve(); };
+        audio.play().catch(() => resolve());
+      });
+      if (token !== this.speechToken) return;
+    }
+    this.currentAudio = null;
+    if (token === this.speechToken && this.onStateChange) this.onStateChange('IDLE');
+  }
+
+  /** Amostra curta de uma voz (botão "ouvir" no Sistema). */
+  previewVoice(engine, voiceName) {
+    const sample = 'Oi, eu sou o Atom. É assim que eu vou falar com você.';
+    this.stopSpeaking(true);
+    if (engine === 'natural') return this.speakNatural(sample, voiceName);
+    this.speakBrowser(sample);
+    return Promise.resolve();
+  }
+
+  speakBrowser(cleanText) {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
     if (!cleanText) return;
-
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = 'pt-BR';
     utterance.rate = this.voiceRate;
@@ -663,10 +765,13 @@ export class JarvisAudio {
     window.speechSynthesis.speak(utterance);
   }
 
-  stopSpeaking() {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      if (this.onStateChange) this.onStateChange('IDLE');
+  stopSpeaking(silent = false) {
+    this.speechToken = (this.speechToken || 0) + 1;
+    if (this.currentAudio) {
+      try { this.currentAudio.pause(); } catch (e) {}
+      this.currentAudio = null;
     }
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    if (!silent && this.onStateChange) this.onStateChange('IDLE');
   }
 }

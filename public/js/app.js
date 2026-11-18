@@ -352,12 +352,16 @@ class JarvisApp {
       const idx = parseInt(e.target.value, 10);
       if (this.audio.voices[idx]) {
         this.audio.selectedVoice = this.audio.voices[idx];
+        try { localStorage.setItem('atom_voz_navegador', this.audio.voices[idx].name); } catch (err) {}
       }
     });
 
     this.testVoiceBtn.addEventListener('click', () => {
-      this.audio.speak("Sistemas vocais operacionais, senhor Rubens. A.T.O.M. às suas ordens.");
+      this.audio.previewVoice(this.audio.voiceEngine, this.audio.geminiVoice)
+        .catch((err) => this.showVoiceError(err));
     });
+
+    this.setupVoices();
 
     if (this.testMicHardwareBtn) {
       this.testMicHardwareBtn.addEventListener('click', () => {
@@ -1570,6 +1574,81 @@ class JarvisApp {
     bindMenu(document.getElementById('theme-menu-btn'), document.getElementById('theme-menu'));
     modeBtn?.addEventListener('click', () => apply(html.dataset.modo === 'claro' ? 'escuro' : 'claro'));
     apply(html.dataset.modo === 'claro' ? 'claro' : 'escuro');
+  }
+
+  /* ==========================================================================
+     VOZES DO ATOM (NATURAL DO GEMINI OU DO NAVEGADOR)
+     ========================================================================== */
+
+  setupVoices() {
+    const VOICES = [
+      ['Charon', 'grave e tranquila'],
+      ['Puck', 'animada'],
+      ['Kore', 'firme e clara'],
+      ['Orus', 'firme, mais grave'],
+      ['Fenrir', 'empolgada'],
+      ['Aoede', 'leve'],
+      ['Zephyr', 'clara e brilhante'],
+      ['Leda', 'jovem'],
+      ['Achird', 'amigável'],
+      ['Sulafat', 'calorosa'],
+      ['Algenib', 'rouca'],
+      ['Enceladus', 'suave, quase sussurro'],
+    ];
+    const grid = document.getElementById('natural-voices');
+    const browserGroup = document.getElementById('browser-voice-group');
+    const pitchRow = document.getElementById('voice-pitch-row');
+    const desc = document.getElementById('voice-engine-desc');
+    if (!grid) return;
+    const store = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+
+    VOICES.forEach(([name, note]) => {
+      const card = document.createElement('div');
+      card.className = 'atom-voice-card';
+      card.dataset.voice = name;
+      card.innerHTML = `<button type="button" class="atom-voice-pick"><span class="atom-voice-name">${name}</span><span class="atom-voice-note">${note}</span></button><button type="button" class="atom-voice-play" title="Ouvir ${name}" aria-label="Ouvir ${name}">${ic('tocar')}</button>`;
+      card.querySelector('.atom-voice-pick').addEventListener('click', () => {
+        this.audio.geminiVoice = name;
+        store('atom_voz_gemini', name);
+        mark();
+      });
+      card.querySelector('.atom-voice-play').addEventListener('click', async (e) => {
+        const btn = e.currentTarget;
+        btn.classList.add('loading');
+        try { await this.audio.previewVoice('natural', name); }
+        catch (err) { this.showVoiceError(err); }
+        btn.classList.remove('loading');
+      });
+      grid.appendChild(card);
+    });
+
+    const mark = () => {
+      const natural = this.audio.voiceEngine === 'natural';
+      document.querySelectorAll('.atom-seg-btn').forEach((b) => {
+        const on = b.dataset.engine === this.audio.voiceEngine;
+        b.classList.toggle('active', on);
+        b.setAttribute('aria-checked', on ? 'true' : 'false');
+      });
+      grid.classList.toggle('hidden', !natural);
+      if (browserGroup) browserGroup.classList.toggle('hidden', natural);
+      if (pitchRow) pitchRow.classList.toggle('hidden', natural);
+      if (desc) desc.innerText = natural
+        ? 'Vozes do Gemini, bem menos robóticas. Usam a sua chave do Google (a da Vercel ou a ativada na sessão). Se falhar, o Atom usa a voz do navegador.'
+        : 'Vozes instaladas no seu navegador. As marcadas como "mais natural" costumam soar melhor (no Edge, as "Online (Natural)").';
+      grid.querySelectorAll('.atom-voice-card').forEach((c) => c.classList.toggle('active', c.dataset.voice === this.audio.geminiVoice));
+    };
+    document.querySelectorAll('.atom-seg-btn').forEach((b) => b.addEventListener('click', () => {
+      this.audio.voiceEngine = b.dataset.engine;
+      store('atom_voz_motor', b.dataset.engine);
+      mark();
+    }));
+    mark();
+  }
+
+  showVoiceError(err) {
+    const msg = (err && err.message) || String(err);
+    this.logTerminal(`[VOZ]: ${msg}`, 'sys');
+    this.showKeyFeedback(`A voz natural não respondeu: ${msg}. Ative uma chave do Google acima ou use a voz do navegador.`, 'error');
   }
 
   /* ==========================================================================
