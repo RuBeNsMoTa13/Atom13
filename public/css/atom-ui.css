@@ -378,3 +378,7 @@ body { background-color: var(--bg-space); transition: background-color .3s; }
   .hud-cockpit { height: auto !important; overflow: visible !important; }
   .atom-pop { top: 112px; }
 }
+
+/* Cabeçalho acima das gavetas (Sistema, Dossiês): os menus de Temas e Vestiário abrem por cima delas */
+.hud-header { position: relative; z-index: 150; }
+@media (max-width: 760px) { .hud-header { position: sticky; } }

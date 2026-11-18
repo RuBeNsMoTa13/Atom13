@@ -6,7 +6,7 @@ import time
 from collections import defaultdict, deque
 from pathlib import Path
 from typing import List, Dict, Any, Optional
-from fastapi import FastAPI, HTTPException, UploadFile, File, Request
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -182,17 +182,59 @@ async def pull_model(req: PullModelRequest):
         }
     )
 
+STT_MODEL = os.environ.get("ATOM_STT_MODEL", "gemini-flash-latest")
+
+
+def _transcribe_with_gemini(content: bytes, mime: str, session_key: Optional[str]) -> Optional[str]:
+    """Transcreve a fala com o Gemini (funciona online, sem ffmpeg). Devolve None se não houver chave."""
+    key = api_model_manager.resolve_api_key({"provider": "google", "env_var": "GEMINI_API_KEY"}, session_key)
+    if not key:
+        return None
+    from google import genai
+    from google.genai import types
+    client = genai.Client(api_key=key)
+    resp = client.models.generate_content(
+        model=STT_MODEL,
+        contents=[types.Content(role="user", parts=[
+            types.Part.from_bytes(data=content, mime_type=mime),
+            types.Part.from_text(text=(
+                "Transcreva exatamente o que a pessoa fala neste áudio, em português do Brasil. "
+                "Responda só com o texto falado, sem aspas e sem comentários. "
+                "Se não houver fala compreensível, responda apenas: [silencio]"
+            )),
+        ])],
+        config=types.GenerateContentConfig(temperature=0),
+    )
+    text = (getattr(resp, "text", "") or "").strip()
+    return "" if text.lower().strip("[] .") == "silencio" else text
+
+
 @app.post("/api/audio/transcribe")
-async def transcribe_audio(audio: UploadFile = File(...)):
-    """Transcreve áudio gravado diretamente do microfone (WAV, WebM, Ogg) via SpeechRecognition backend."""
+async def transcribe_audio(audio: UploadFile = File(...), session_key: Optional[str] = Form(None)):
+    """Transcreve o áudio do microfone. O navegador manda WAV; usa o Gemini quando há chave e o
+    SpeechRecognition (Google Web Speech) como reserva."""
     try:
         content = await audio.read()
         if not content or len(content) < 400:
             return {"success": False, "error": "Áudio muito curto ou vazio."}
+        is_wav = content.startswith(b'RIFF')
+        mime = "audio/wav" if is_wav else (audio.content_type or "audio/webm").split(";")[0]
+
+        gemini_error = None
+        try:
+            text = _transcribe_with_gemini(content, mime, session_key)
+            if text:
+                logger.info("[TRANSCRIÇÃO VIA GEMINI]: ok")
+                return {"success": True, "text": text}
+            if text == "":
+                return {"success": False, "error": "Não ouvi nenhuma fala. Fale um pouco mais perto do microfone."}
+        except Exception as g_err:
+            gemini_error = g_err
+            logger.warning(f"[TRANSCRIÇÃO VIA GEMINI]: falhou, tentando reserva: {g_err}")
 
         buf = io.BytesIO(content)
         # Se não começar com cabeçalho RIFF (WAV puro), converter via pydub
-        if not content.startswith(b'RIFF'):
+        if not is_wav:
             try:
                 from pydub import AudioSegment
                 seg = AudioSegment.from_file(io.BytesIO(content))
@@ -203,7 +245,9 @@ async def transcribe_audio(audio: UploadFile = File(...)):
                 logger.warning(f"Tentativa de conversão de formato de áudio: {conv_err}")
 
         if sr is None:
-            return {"success": False, "error": "Pacote SpeechRecognition não instalado. Instale com: pip install SpeechRecognition"}
+            if gemini_error:
+                return {"success": False, "error": f"Falha ao transcrever com o Gemini: {gemini_error}"}
+            return {"success": False, "error": "Sem chave do Gemini e sem SpeechRecognition para transcrever o áudio."}
 
         recognizer = sr.Recognizer()
 

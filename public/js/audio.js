@@ -221,12 +221,16 @@ export class JarvisAudio {
 
       this.recognition.onerror = (event) => {
         console.warn("SpeechRecognition nativo aviso/erro:", event.error);
-        // Não travar - o MediaRecorder continuará gravando e o backend transcreverá se necessário
+        // Não travar: o gravador continua e o servidor transcreve. Erros que não passam sozinhos
+        // (sem rede para o serviço do navegador, bloqueado) não devem ficar reiniciando em loop.
+        if (['network', 'not-allowed', 'service-not-allowed', 'audio-capture'].includes(event.error)) {
+          this.nativeBroken = true;
+        }
       };
 
       this.recognition.onend = () => {
         // Se ainda estamos escutando e o browser finalizou a sessão nativa antes da hora, tentar reiniciar
-        if (this.isListening && this.recognition) {
+        if (this.isListening && this.recognition && !this.nativeBroken) {
           try {
             this.recognition.start();
           } catch (e) {}
@@ -330,6 +334,7 @@ export class JarvisAudio {
     }
 
     // 4. Iniciar SpeechRecognition Nativo (Web Speech API)
+    this.nativeBroken = false;
     if (this.recognition) {
       try {
         this.recognition.start();
@@ -459,7 +464,12 @@ export class JarvisAudio {
         if (this.onStatusMessage) this.onStatusMessage("Transcrevendo áudio via servidor neural...");
 
         try {
-          const res = await JarvisAPI.transcribeAudio(audioBlob);
+          // Converte para WAV no navegador: o servidor online não tem ffmpeg para ler WebM
+          let upload = audioBlob;
+          try { upload = await this.blobToWav(audioBlob); } catch (convErr) { console.warn('Conversão para WAV falhou, enviando original:', convErr); }
+          let sessionKey = null;
+          try { sessionKey = sessionStorage.getItem('jarvis_key_google'); } catch (e) {}
+          const res = await JarvisAPI.transcribeAudio(upload, sessionKey);
           this.isTranscribing = false;
 
           if (res && res.success && res.text && res.text.trim()) {
@@ -506,6 +516,33 @@ export class JarvisAudio {
     }
 
     if (this.onStateChange) this.onStateChange('IDLE');
+  }
+
+  /** Converte o áudio gravado (WebM/Ogg) em WAV 16 kHz mono, que qualquer servidor entende. */
+  async blobToWav(blob) {
+    this.ensureAudioContext();
+    const decoded = await this.audioCtx.decodeAudioData(await blob.arrayBuffer());
+    const rate = 16000;
+    const frames = Math.max(1, Math.ceil(decoded.duration * rate));
+    const offline = new OfflineAudioContext(1, frames, rate);
+    const src = offline.createBufferSource();
+    src.buffer = decoded;
+    src.connect(offline.destination);
+    src.start();
+    const pcm = (await offline.startRendering()).getChannelData(0);
+
+    const buffer = new ArrayBuffer(44 + pcm.length * 2);
+    const view = new DataView(buffer);
+    const str = (o, t) => { for (let i = 0; i < t.length; i++) view.setUint8(o + i, t.charCodeAt(i)); };
+    str(0, 'RIFF'); view.setUint32(4, 36 + pcm.length * 2, true); str(8, 'WAVE');
+    str(12, 'fmt '); view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+    view.setUint32(24, rate, true); view.setUint32(28, rate * 2, true); view.setUint16(32, 2, true); view.setUint16(34, 16, true);
+    str(36, 'data'); view.setUint32(40, pcm.length * 2, true);
+    for (let i = 0; i < pcm.length; i++) {
+      const v = Math.max(-1, Math.min(1, pcm[i]));
+      view.setInt16(44 + i * 2, v < 0 ? v * 0x8000 : v * 0x7fff, true);
+    }
+    return new Blob([buffer], { type: 'audio/wav' });
   }
 
   async testMicrophoneHardware(onProgress, onResult) {

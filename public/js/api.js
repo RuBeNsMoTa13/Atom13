@@ -284,10 +284,12 @@ export const JarvisAPI = {
   /**
    * Transcreve áudio gravado diretamente no backend via SpeechRecognition.
    */
-  async transcribeAudio(audioBlob) {
+  async transcribeAudio(audioBlob, sessionKey = null) {
     try {
       const formData = new FormData();
-      formData.append('audio', audioBlob, 'speech.wav');
+      const isWav = (audioBlob.type || '').includes('wav');
+      formData.append('audio', audioBlob, isWav ? 'speech.wav' : 'speech.webm');
+      if (sessionKey) formData.append('session_key', sessionKey);
 
       const response = await fetch(`${API_BASE}/api/audio/transcribe`, {
         method: 'POST',
