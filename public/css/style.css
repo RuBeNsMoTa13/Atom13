@@ -2684,6 +2684,7 @@ code,
   background: var(--red-bg-subtle);
   border: 1px solid var(--accent-red);
   border-radius: var(--border-radius-sm);
+  gap: 8px;
   padding: 6px 12px;
   margin-bottom: 8px;
   animation: slideDownBadge 0.25s ease-out;
@@ -2696,8 +2697,30 @@ code,
 
 .screen-badge-info {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.screen-live-preview {
+  width: 96px;
+  height: 54px;
+  object-fit: contain;
+  background: #000;
+  border: 1px solid var(--accent-red);
+  border-radius: 2px;
+  cursor: zoom-in;
+  flex-shrink: 0;
+  transition: width 0.2s ease, height 0.2s ease;
+}
+
+.screen-live-preview.expanded {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  cursor: zoom-out;
 }
 
 .screen-live-dot {

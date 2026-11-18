@@ -674,6 +674,12 @@ class JarvisApp {
       if (this.screenPreviewBadge) {
         this.screenPreviewBadge.classList.remove('hidden');
       }
+      const livePreview = document.getElementById('screen-live-preview');
+      if (livePreview) {
+        livePreview.srcObject = this.screenStream;
+        livePreview.play().catch(() => {});
+        livePreview.onclick = () => livePreview.classList.toggle('expanded');
+      }
 
       // Detectar quando o usuário encerra o compartilhamento pela barra do SO/navegador
       const track = this.screenStream.getVideoTracks()[0];
@@ -712,6 +718,11 @@ class JarvisApp {
     }
     if (this.screenPreviewBadge) {
       this.screenPreviewBadge.classList.add('hidden');
+    }
+    const livePreview = document.getElementById('screen-live-preview');
+    if (livePreview) {
+      livePreview.srcObject = null;
+      livePreview.classList.remove('expanded');
     }
 
     this.logTerminal('[VISÃO DE TELA]: Transmissão de tela encerrada.', 'sys');
