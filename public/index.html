@@ -505,6 +505,9 @@
                 <option value="groq">Groq Cloud</option>
                 <option value="openrouter">OpenRouter</option>
                 <option value="deepseek">DeepSeek</option>
+                <option value="claude">Claude (Anthropic)</option>
+                <option value="xai">xAI (Grok)</option>
+                <option value="mistral">Mistral</option>
                 <option value="custom">Custom</option>
               </select>
               <div class="key-input-wrapper">
@@ -518,7 +521,7 @@
               <button id="clear-session-key-btn" class="hud-btn-subtle text-red"><svg class="ic" aria-hidden="true"><use href="#i-fechar"/></svg> Limpar</button>
             </div>
             <div id="key-test-feedback" class="key-feedback-msg hidden"></div>
-            <p class="settings-desc atom-key-types">Chaves que o Atom consegue usar: <b>Google AI Studio</b> (Gemini, começa com <code>AIza</code>), <b>OpenAI</b> (<code>sk-</code>), <b>Groq</b> (<code>gsk_</code>), <b>OpenRouter</b> (<code>sk-or-</code>), <b>DeepSeek</b> (<code>sk-</code>) ou uma API no padrão OpenAI (Custom). Chaves de outros produtos, como Antigravity, Vertex/Google Cloud ou Claude, não funcionam aqui. Ao colar, o tipo é reconhecido sozinho. Da chave do Gemini aparecem só os modelos de conversa; os de imagem, vídeo, voz e agentes ficam de fora.</p>
+            <p class="settings-desc atom-key-types">Cole qualquer chave: Google (Gemini), OpenAI, Claude, Groq, xAI, Mistral, OpenRouter, DeepSeek ou uma API no padrão OpenAI (Custom). O tipo é reconhecido sozinho quando dá; se não der, escolha o provedor na lista. Ao ativar, o Atom testa a chave direto no provedor e mostra os modelos de conversa que ela libera.</p>
           </div>
 
           <!-- FORMULÁRIO DE CADASTRO DE NOVO MODELO (METADADOS) -->
