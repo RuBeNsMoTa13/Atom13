@@ -1788,7 +1788,23 @@ class JarvisApp {
     const box = document.getElementById('atom-shortcuts');
     if (!box) return;
     try { if (localStorage.getItem('atom_atalhos') === '0') box.open = false; } catch (e) {}
-    box.addEventListener('toggle', () => { try { localStorage.setItem('atom_atalhos', box.open ? '1' : '0'); } catch (e) {} });
+    let auto = false;
+    box.addEventListener('toggle', () => {
+      if (auto) { auto = false; return; }
+      try { localStorage.setItem('atom_atalhos', box.open ? '1' : '0'); } catch (e) {}
+    });
+    // Se a tela for baixa e a lista encostar nos botões, ela fecha sozinha (o título continua lá para abrir)
+    const keepClear = () => {
+      if (!box.open) return;
+      const bar = document.querySelector('.voice-controls-bar');
+      if (!bar) return;
+      const a = box.getBoundingClientRect();
+      const b = bar.getBoundingClientRect();
+      if (a.top < b.bottom + 6 && a.bottom > b.top && a.left < b.right && a.right > b.left) { auto = true; box.open = false; }
+    };
+    requestAnimationFrame(keepClear);
+    setTimeout(keepClear, 600);
+    window.addEventListener('resize', () => { clearTimeout(this.atalhosTimer); this.atalhosTimer = setTimeout(keepClear, 150); });
   }
 
   /**
