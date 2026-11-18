@@ -3,7 +3,9 @@
  * Conecta UI, Arc Reactor, Sistema de Áudio/Voz e API de IA Local.
  */
 
-import { ArcReactor } from './reactor.js';
+import { AtomCharacter } from './atom-char.js';
+import { THEMES } from './themes.js';
+import { Conversas } from './conversas.js';
 import { JarvisAudio } from './audio.js';
 import { JarvisAPI } from './api.js';
 
@@ -19,8 +21,8 @@ class JarvisApp {
     this.screenVideo = null;
     this.isScreenSharing = false;
 
-    // Inicializar Reator Arc
-    this.reactor = new ArcReactor('arc-reactor-canvas');
+    // Personagem do A.T.O.M. (rosto padrão + corpo trocável)
+    this.reactor = new AtomCharacter('atom-char');
 
     // Inicializar Sistema de Áudio
     this.audio = new JarvisAudio(
@@ -41,6 +43,8 @@ class JarvisApp {
     this.bindDOMElements();
     this.setupEventListeners();
     this.setupKeyboardShortcuts();
+    this.setupAppearance();
+    this.setupConversations();
 
     // Inicialização do Sistema
     this.bootSystem();
@@ -262,22 +266,11 @@ class JarvisApp {
       });
     });
 
-    // Limpar Chat
+    // Apagar a conversa atual (as outras continuam salvas)
     this.clearChatBtn.addEventListener('click', () => {
-      this.messages = [];
-      this.chatMessages.innerHTML = `
-        <div class="chat-msg atom-msg jarvis-msg">
-          <div class="msg-avatar">⚛</div>
-          <div class="msg-body">
-            <div class="msg-meta">
-              <span class="msg-sender">A.T.O.M.</span>
-              <span class="msg-time">AGORA</span>
-              <button class="copy-msg-btn" title="Copiar mensagem">📋 Copiar</button>
-            </div>
-            <div class="msg-content">Histórico de operações limpo. Matriz A.T.O.M. aguardando novas diretrizes táticas, senhor Rubens.</div>
-          </div>
-        </div>
-      `;
+      if (this.messages.length && !confirm('Apagar esta conversa deste navegador?')) return;
+      Conversas.remove(this.conversationId);
+      this.startNewConversation('Conversa apagada. Pode mandar a próxima.');
       this.audio.playToolBeep();
     });
 
@@ -665,6 +658,7 @@ class JarvisApp {
       await this.screenVideo.play();
 
       this.isScreenSharing = true;
+      this.reactor.setSeeing(true);
 
       // Atualizar UI
       if (this.screenShareBtn) {
@@ -711,6 +705,7 @@ class JarvisApp {
       this.screenVideo = null;
     }
     this.isScreenSharing = false;
+    this.reactor.setSeeing(false);
 
     if (this.screenShareBtn) {
       this.screenShareBtn.classList.remove('active');
@@ -1218,6 +1213,7 @@ class JarvisApp {
     // 1. Renderizar mensagem do usuário (com indicador visual de tela se houver imagem)
     this.appendMessage('user', text, !!imageBase64);
     this.messages.push({ role: 'user', content: text });
+    this.saveConversation();
 
     this.isGenerating = true;
     this.reactor.setState('THINKING');
@@ -1250,6 +1246,7 @@ class JarvisApp {
       signal: this.currentAbortController.signal,
 
       onToken: (token) => {
+        if (!fullResponse) this.reactor.setState('SPEAKING');
         fullResponse += token;
         assistantMsg.updateContent(fullResponse);
         this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
@@ -1303,6 +1300,8 @@ class JarvisApp {
 
         if (finalContent) {
           this.messages.push({ role: 'assistant', content: finalContent });
+          this.saveConversation();
+          this.reactor.flash('feliz', 1500);
           // Falar resposta se TTS estiver ativado
           this.audio.speak(finalContent);
         }
@@ -1313,6 +1312,7 @@ class JarvisApp {
         this.currentAbortController = null;
         this.hideToolBanner();
         this.reactor.setState('IDLE');
+        this.reactor.flash('confuso', 3500);
         assistantMsg.updateContent(`⚠️ **Erro de Comunicação Neural**: ${errMsg}`);
         this.logTerminal(`[ERRO]: ${errMsg}`, 'sys');
       }
@@ -1424,6 +1424,176 @@ class JarvisApp {
       btn.classList.remove('copied');
       btn.innerHTML = originalHTML;
     }, 2000);
+  }
+
+  /* ==========================================================================
+     APARÊNCIA (CORPO DO ATOM) & TEMAS DO PORTFÓLIO
+     ========================================================================== */
+
+  setupAppearance() {
+    const btn = document.getElementById('appearance-btn');
+    const pop = document.getElementById('appearance-pop');
+    const grid = document.getElementById('body-grid');
+    if (!btn || !pop || !grid) return;
+
+    AtomCharacter.bodies.forEach((b) => {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'atom-body-card';
+      card.dataset.body = b.id;
+      card.innerHTML = `<span class="atom-body-mini"><span class="atom-char s-parado"><span class="ch">${b.html}</span></span></span><span class="atom-body-name">${b.name}</span>`;
+      card.addEventListener('click', () => {
+        this.reactor.setBody(b.id);
+        markBody();
+      });
+      grid.appendChild(card);
+    });
+    const markBody = () => grid.querySelectorAll('.atom-body-card').forEach((c) => {
+      c.classList.toggle('active', c.dataset.body === this.reactor.bodyId);
+    });
+    markBody();
+
+    const currentTheme = () => document.documentElement.dataset.tema || 'azul-noite';
+    const markTheme = () => pop.querySelectorAll('.atom-swatch').forEach((sw) => {
+      sw.classList.toggle('active', sw.dataset.tema === currentTheme());
+    });
+    THEMES.forEach((t) => {
+      const sw = document.createElement('button');
+      sw.type = 'button';
+      sw.className = 'atom-swatch';
+      sw.dataset.tema = t.id;
+      sw.title = t.name;
+      sw.setAttribute('aria-label', 'Tema ' + t.name);
+      sw.style.background = t.bg;
+      sw.style.setProperty('--sw-red', t.red);
+      sw.addEventListener('click', () => {
+        document.documentElement.dataset.tema = t.id;
+        try { localStorage.setItem('atom_tema', t.id); } catch (e) {}
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', t.bg);
+        markTheme();
+      });
+      document.getElementById(t.dark ? 'theme-dark' : 'theme-light').appendChild(sw);
+    });
+    markTheme();
+
+    const toggle = (open) => {
+      pop.classList.toggle('hidden', !open);
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    };
+    btn.addEventListener('click', (e) => { e.stopPropagation(); toggle(pop.classList.contains('hidden')); });
+    pop.addEventListener('click', (e) => e.stopPropagation());
+    document.addEventListener('click', () => toggle(false));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') toggle(false); });
+  }
+
+  /* ==========================================================================
+     CONVERSAS SALVAS NO NAVEGADOR
+     ========================================================================== */
+
+  setupConversations() {
+    this.historyPanel = document.getElementById('history-panel');
+    this.historyList = document.getElementById('history-list');
+    this.historyBtn = document.getElementById('history-btn');
+    this.historyCount = document.getElementById('history-count');
+
+    document.getElementById('new-chat-btn')?.addEventListener('click', () => {
+      if (this.isGenerating) this.interruptJarvis();
+      this.startNewConversation();
+      this.audio.playToolBeep();
+    });
+    this.historyBtn?.addEventListener('click', () => this.toggleHistory());
+    document.getElementById('history-close-btn')?.addEventListener('click', () => this.toggleHistory(false));
+
+    const saved = Conversas.get(Conversas.currentId());
+    if (saved) this.openConversation(saved.id, true);
+    else this.startNewConversation(null, true);
+  }
+
+  welcomeHtml(text) {
+    const msg = text || 'Oi! Sou o A.T.O.M., assistente do Rubens Mota. Posso pesquisar na web e no arXiv, montar dossiês e, se você deixar, enxergar a sua tela. Como posso ajudar?';
+    return `
+      <div class="chat-msg atom-msg jarvis-msg">
+        <div class="msg-avatar">⚛</div>
+        <div class="msg-body">
+          <div class="msg-meta">
+            <span class="msg-sender">A.T.O.M.</span>
+            <span class="msg-time">AGORA</span>
+          </div>
+          <div class="msg-content">${this.escapeHtml(msg)}</div>
+        </div>
+      </div>`;
+  }
+
+  escapeHtml(t) {
+    return String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  startNewConversation(welcomeText = null, silent = false) {
+    this.conversationId = Conversas.newId();
+    Conversas.setCurrent(this.conversationId);
+    this.messages = [];
+    this.chatMessages.innerHTML = this.welcomeHtml(welcomeText);
+    this.renderHistory();
+    this.toggleHistory(false);
+    if (!silent) this.reactor.flash('feliz', 1200);
+  }
+
+  openConversation(id, silent = false) {
+    const conv = Conversas.get(id);
+    if (!conv) return;
+    if (this.isGenerating) this.interruptJarvis();
+    this.conversationId = conv.id;
+    Conversas.setCurrent(conv.id);
+    this.messages = conv.messages.map((m) => ({ role: m.role, content: m.content }));
+    this.chatMessages.innerHTML = this.welcomeHtml();
+    this.messages.forEach((m) => this.appendMessage(m.role === 'user' ? 'user' : 'assistant', m.content));
+    this.renderHistory();
+    this.toggleHistory(false);
+    if (!silent) this.audio.playToolBeep();
+  }
+
+  saveConversation() {
+    Conversas.save(this.conversationId, this.messages);
+    this.renderHistory();
+  }
+
+  toggleHistory(open) {
+    if (!this.historyPanel) return;
+    const willOpen = open === undefined ? this.historyPanel.classList.contains('hidden') : open;
+    this.historyPanel.classList.toggle('hidden', !willOpen);
+    this.historyBtn?.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    if (willOpen) this.renderHistory();
+  }
+
+  renderHistory() {
+    if (!this.historyList) return;
+    const all = Conversas.list();
+    if (this.historyCount) this.historyCount.innerText = all.length;
+    if (all.length === 0) {
+      this.historyList.innerHTML = '<div class="atom-history-empty">Nenhuma conversa salva ainda. Elas aparecem aqui assim que você manda a primeira mensagem.</div>';
+      return;
+    }
+    this.historyList.innerHTML = '';
+    all.forEach((c) => {
+      const row = document.createElement('div');
+      row.className = 'atom-history-item' + (c.id === this.conversationId ? ' active' : '');
+      const when = new Date(c.updated).toLocaleString([], { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+      const n = c.messages.filter((m) => m.role === 'user').length;
+      row.innerHTML = `
+        <button type="button" class="atom-history-open">
+          <span class="atom-history-title">${this.escapeHtml(c.title)}</span>
+          <span class="atom-history-meta">${when} · ${n} ${n === 1 ? 'pergunta' : 'perguntas'}</span>
+        </button>
+        <button type="button" class="atom-history-del" title="Apagar esta conversa">✕</button>`;
+      row.querySelector('.atom-history-open').addEventListener('click', () => this.openConversation(c.id));
+      row.querySelector('.atom-history-del').addEventListener('click', () => {
+        Conversas.remove(c.id);
+        if (c.id === this.conversationId) this.startNewConversation(null, true);
+        else this.renderHistory();
+      });
+      this.historyList.appendChild(row);
+    });
   }
 
   appendMessage(role, content, hasScreenFrame = false) {

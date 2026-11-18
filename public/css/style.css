@@ -125,8 +125,8 @@ code,
   position: fixed;
   inset: 0;
   background-image: 
-    linear-gradient(to right, rgba(239, 68, 68, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(239, 68, 68, 0.04) 1px, transparent 1px);
+    linear-gradient(to right, color-mix(in srgb, var(--accent-red) 4%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--accent-red) 4%, transparent) 1px, transparent 1px);
   background-size: 40px 40px;
   pointer-events: none;
   z-index: 0;
@@ -137,7 +137,7 @@ code,
   inset: 0;
   background: linear-gradient(
     rgba(18, 16, 16, 0) 50%, 
-    rgba(0, 0, 0, 0.25) 50%
+    color-mix(in srgb, var(--bg-card) 25%, transparent) 50%
   );
   background-size: 100% 4px;
   pointer-events: none;
@@ -157,12 +157,12 @@ code,
 .glow-top-left {
   top: -150px;
   left: -150px;
-  background: radial-gradient(circle, rgba(239, 68, 68, 0.14), transparent 70%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent-red) 14%, transparent), transparent 70%);
 }
 .glow-bottom-right {
   bottom: -150px;
   right: -150px;
-  background: radial-gradient(circle, rgba(225, 29, 29, 0.08), transparent 70%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent-red) 8%, transparent), transparent 70%);
 }
 
 /* ==========================================================================
@@ -185,10 +185,10 @@ code,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(9, 14, 28, 0.85);
+  background: color-mix(in srgb, var(--bg-card) 85%, transparent);
   backdrop-filter: var(--panel-blur);
   border-bottom: 1px solid var(--cyan-border);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--bg-card) 40%, transparent);
   z-index: 10;
   width: 100%;
   max-width: 2560px;
@@ -220,7 +220,7 @@ code,
   font-size: clamp(16px, 1.6vw, 20px);
   font-weight: 900;
   letter-spacing: clamp(1.5px, 0.25vw, 3px);
-  color: #fff;
+  color: var(--text-primary);
   text-shadow: 0 0 8px var(--cyan-core);
   white-space: nowrap;
 }
@@ -231,7 +231,7 @@ code,
   background: var(--amber-dim);
   padding: 2px 6px;
   border-radius: 4px;
-  border: 1px solid rgba(255, 170, 0, 0.3);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 30%, transparent);
   letter-spacing: 1px;
   white-space: nowrap;
 }
@@ -268,7 +268,7 @@ code,
   display: flex;
   align-items: center;
   gap: clamp(6px, 0.8vw, 10px);
-  background: rgba(14, 23, 44, 0.6);
+  background: color-mix(in srgb, var(--bg-card) 60%, transparent);
   padding: 4px clamp(8px, 1vw, 12px);
   border-radius: 24px;
   border: 1px solid var(--cyan-border);
@@ -307,7 +307,7 @@ code,
   overflow: hidden;
 }
 .hud-select option {
-  background: #0d162a;
+  background: var(--bg-card);
   color: var(--text-primary);
 }
 .select-arrow {
@@ -342,7 +342,7 @@ code,
   flex-shrink: 0;
 }
 .hud-icon-btn:hover, .hud-btn-nav:hover, .hud-action-btn:hover {
-  background: rgba(0, 243, 255, 0.25);
+  background: color-mix(in srgb, var(--accent-red) 25%, transparent);
   border-color: var(--cyan-core);
   box-shadow: 0 0 12px var(--cyan-glow);
   transform: translateY(-1px);
@@ -355,7 +355,7 @@ code,
 .hud-action-btn {
   padding: 8px clamp(10px, 1.2vw, 16px);
   border-radius: 6px;
-  background: rgba(0, 243, 255, 0.15);
+  background: color-mix(in srgb, var(--accent-red) 15%, transparent);
   color: #fff;
   font-weight: 700;
   flex-shrink: 0;
@@ -403,7 +403,7 @@ code,
   display: flex;
   align-items: center;
   gap: 8px;
-  border-bottom: 1px solid rgba(0, 243, 255, 0.15);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent-red) 15%, transparent);
   padding-bottom: 8px;
 }
 .panel-tag {
@@ -430,7 +430,7 @@ code,
 }
 .telemetry-card {
   background: var(--bg-card);
-  border: 1px solid rgba(0, 243, 255, 0.1);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 10%, transparent);
   padding: clamp(6px, 1vh, 10px) clamp(8px, 1vw, 12px);
   border-radius: var(--border-radius-md);
   min-width: 0;
@@ -453,23 +453,23 @@ code,
 .hud-progress-bar {
   width: 100%;
   height: 6px;
-  background: rgba(0, 0, 0, 0.4);
+  background: color-mix(in srgb, var(--bg-card) 40%, transparent);
   border-radius: 3px;
   overflow: hidden;
-  border: 1px solid rgba(0, 243, 255, 0.15);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 15%, transparent);
 }
 .hud-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #00a8ff, var(--cyan-core));
+  background: linear-gradient(90deg, var(--accent-red), var(--cyan-core));
   box-shadow: 0 0 8px var(--cyan-core);
   transition: width 0.4s ease;
 }
 .fill-amber {
-  background: linear-gradient(90deg, #e67e22, var(--amber-gold));
+  background: linear-gradient(90deg, var(--accent-red), var(--amber-gold));
   box-shadow: 0 0 8px var(--amber-gold);
 }
 .fill-cyan {
-  background: linear-gradient(90deg, #10b981, #00f3ff);
+  background: linear-gradient(90deg, #10b981, var(--accent-red));
 }
 
 .telemetry-subinfo {
@@ -509,8 +509,8 @@ code,
   margin-top: 6px;
 }
 .quick-cmd-btn {
-  background: rgba(14, 25, 48, 0.7);
-  border: 1px solid rgba(0, 243, 255, 0.12);
+  background: color-mix(in srgb, var(--bg-card) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 12%, transparent);
   color: var(--text-primary);
   padding: clamp(5px, 0.8vh, 8px) clamp(8px, 1vw, 10px);
   border-radius: var(--border-radius-sm);
@@ -527,7 +527,7 @@ code,
   text-overflow: ellipsis;
 }
 .quick-cmd-btn:hover {
-  background: rgba(0, 243, 255, 0.12);
+  background: color-mix(in srgb, var(--accent-red) 12%, transparent);
   border-color: var(--cyan-core);
   color: #fff;
   padding-left: 14px;
@@ -538,15 +538,15 @@ code,
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: rgba(5, 8, 16, 0.85);
-  border: 1px solid rgba(0, 243, 255, 0.15);
+  background: color-mix(in srgb, var(--bg-card) 85%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 15%, transparent);
   border-radius: var(--border-radius-md);
   overflow: hidden;
   min-height: clamp(80px, 12vh, 140px);
 }
 .terminal-header {
   height: 28px;
-  background: rgba(12, 19, 36, 0.9);
+  background: color-mix(in srgb, var(--bg-card) 90%, transparent);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -555,7 +555,7 @@ code,
   font-size: 9px;
   letter-spacing: 1px;
   color: var(--cyan-core);
-  border-bottom: 1px solid rgba(0, 243, 255, 0.1);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent-red) 10%, transparent);
 }
 .term-dot {
   width: 6px;
@@ -593,7 +593,7 @@ code,
   color: var(--amber-gold);
 }
 .log-line.out {
-  color: #e2e8f0;
+  color: var(--text-secondary);
 }
 
 /* ==========================================================================
@@ -606,9 +606,9 @@ code,
   align-items: center;
   justify-content: center;
   position: relative;
-  background: radial-gradient(circle at center, rgba(0, 243, 255, 0.04) 0%, transparent 70%);
+  background: radial-gradient(circle at center, color-mix(in srgb, var(--accent-red) 4%, transparent) 0%, transparent 70%);
   border-radius: var(--border-radius-lg);
-  border: 1px solid rgba(0, 243, 255, 0.08);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 8%, transparent);
   padding: clamp(10px, 1.5vh, 20px);
   min-width: 0;
   overflow: hidden;
@@ -629,7 +629,7 @@ code,
   position: absolute;
   inset: -8px;
   border-radius: 50%;
-  border: 1px dashed rgba(0, 243, 255, 0.2);
+  border: 1px dashed color-mix(in srgb, var(--accent-red) 20%, transparent);
   animation: rotateClockwise 60s linear infinite;
   pointer-events: none;
 }
@@ -672,7 +672,7 @@ code,
   font-size: clamp(18px, 2vw, 28px);
   font-weight: 900;
   letter-spacing: clamp(2px, 0.3vw, 4px);
-  color: #fff;
+  color: var(--text-primary);
   text-shadow: 0 0 16px var(--cyan-core);
   margin: 2px 0 clamp(2px, 0.5vh, 6px);
 }
@@ -704,7 +704,7 @@ code,
 }
 
 .voice-btn.mic-btn {
-  background: linear-gradient(135deg, rgba(0, 243, 255, 0.2), rgba(0, 168, 255, 0.3));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent-red) 20%, transparent), color-mix(in srgb, var(--accent-red) 30%, transparent));
   border: 1px solid var(--cyan-core);
   box-shadow: 0 0 16px var(--cyan-glow);
   color: #fff;
@@ -726,15 +726,15 @@ code,
   box-shadow: 0 0 24px var(--cyan-core);
 }
 .voice-btn.mic-btn.recording {
-  background: linear-gradient(135deg, rgba(255, 51, 102, 0.4), rgba(255, 0, 60, 0.6));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent-red) 40%, transparent), color-mix(in srgb, var(--accent-red) 60%, transparent));
   border-color: var(--red-laser);
   box-shadow: 0 0 24px var(--red-laser);
   animation: pulseRecording 1s infinite alternate;
 }
 
 .hud-control-toggle {
-  background: rgba(12, 20, 38, 0.8);
-  border: 1px solid rgba(0, 243, 255, 0.2);
+  background: color-mix(in srgb, var(--bg-card) 80%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 20%, transparent);
   color: var(--text-dim);
   padding: clamp(6px, 1vh, 10px) clamp(10px, 1vw, 16px);
   border-radius: 24px;
@@ -756,7 +756,7 @@ code,
 
 .speech-banner {
   margin-top: clamp(6px, 1vh, 14px);
-  background: rgba(8, 14, 28, 0.85);
+  background: color-mix(in srgb, var(--bg-card) 85%, transparent);
   border: 1px solid var(--amber-gold);
   border-radius: 20px;
   padding: clamp(4px, 0.6vh, 6px) clamp(10px, 1.2vw, 16px);
@@ -799,8 +799,8 @@ code,
 .chat-header {
   height: 48px;
   padding: 0 16px;
-  background: rgba(10, 16, 32, 0.8);
-  border-bottom: 1px solid rgba(0, 243, 255, 0.15);
+  background: color-mix(in srgb, var(--bg-card) 80%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent-red) 15%, transparent);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -896,8 +896,8 @@ code,
 
 .copy-msg-btn {
   margin-left: 8px;
-  background: rgba(0, 243, 255, 0.05);
-  border: 1px solid rgba(0, 243, 255, 0.2);
+  background: color-mix(in srgb, var(--accent-red) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 20%, transparent);
   color: var(--text-secondary);
   font-family: var(--font-mono);
   font-size: 10px;
@@ -914,7 +914,7 @@ code,
 
 .copy-msg-btn:hover {
   opacity: 1;
-  background: rgba(0, 243, 255, 0.15);
+  background: color-mix(in srgb, var(--accent-red) 15%, transparent);
   border-color: var(--cyan-core);
   color: var(--cyan-core);
   box-shadow: 0 0 8px var(--cyan-glow);
@@ -936,14 +936,14 @@ code,
   word-break: break-word;
 }
 .jarvis-msg .msg-content {
-  background: rgba(14, 24, 48, 0.7);
-  border: 1px solid rgba(0, 243, 255, 0.15);
-  color: #e2e8f0;
+  background: color-mix(in srgb, var(--bg-card) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 15%, transparent);
+  color: var(--text-secondary);
   border-top-left-radius: 2px;
 }
 .user-msg .msg-content {
-  background: rgba(40, 28, 12, 0.6);
-  border: 1px solid rgba(255, 170, 0, 0.25);
+  background: color-mix(in srgb, var(--accent-red) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 25%, transparent);
   color: #fff;
   border-top-right-radius: 2px;
 }
@@ -967,7 +967,7 @@ code,
 }
 .msg-content pre {
   background: #080d1a;
-  border: 1px solid rgba(0, 243, 255, 0.2);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 20%, transparent);
   border-radius: 6px;
   padding: 10px;
   font-family: var(--font-mono);
@@ -979,7 +979,7 @@ code,
 .msg-content code:not(pre code) {
   font-family: var(--font-mono);
   font-size: 11px;
-  background: rgba(0, 243, 255, 0.1);
+  background: color-mix(in srgb, var(--accent-red) 10%, transparent);
   color: var(--cyan-core);
   padding: 2px 5px;
   border-radius: 3px;
@@ -989,14 +989,14 @@ code,
 .tool-execution-card {
   margin: 6px 0;
   padding: 8px 12px;
-  background: rgba(6, 12, 24, 0.9);
+  background: color-mix(in srgb, var(--bg-card) 90%, transparent);
   border-left: 3px solid var(--cyan-core);
   border-radius: 4px;
   font-family: var(--font-mono);
   font-size: 11px;
 }
 .tool-execution-card.search {
-  border-color: #38bdf8;
+  border-color: var(--accent-red);
 }
 .tool-execution-card.cmd {
   border-color: var(--amber-gold);
@@ -1015,7 +1015,7 @@ code,
 /* BADGE DE FERRAMENTA ATIVA (BANNER INFERIOR) */
 .tool-banner {
   padding: 8px 16px;
-  background: rgba(0, 243, 255, 0.08);
+  background: color-mix(in srgb, var(--accent-red) 8%, transparent);
   border-top: 1px solid var(--cyan-border);
   border-bottom: 1px solid var(--cyan-border);
   display: flex;
@@ -1026,7 +1026,7 @@ code,
 .tool-spinner {
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(0, 243, 255, 0.2);
+  border: 2px solid color-mix(in srgb, var(--accent-red) 20%, transparent);
   border-top-color: var(--cyan-core);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -1050,7 +1050,7 @@ code,
 /* COMPOSITOR DE ENTRADA DO CHAT */
 .chat-composer {
   padding: clamp(8px, 1.2vh, 12px) clamp(10px, 1.2vw, 16px);
-  background: rgba(9, 14, 28, 0.95);
+  background: color-mix(in srgb, var(--bg-card) 95%, transparent);
   border-top: 1px solid var(--cyan-border);
   display: flex;
   flex-direction: column;
@@ -1080,7 +1080,7 @@ code,
   height: 14px;
   border: 1px solid var(--cyan-border);
   border-radius: 3px;
-  background: rgba(0, 0, 0, 0.4);
+  background: color-mix(in srgb, var(--bg-card) 40%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1093,7 +1093,7 @@ code,
 }
 .auto-mode-toggle input:checked + .checkbox-custom::after {
   content: '✓';
-  color: #000;
+  color: var(--bg-space);
   font-size: 10px;
   font-weight: bold;
 }
@@ -1132,7 +1132,7 @@ code,
   background: transparent;
   border: none;
   outline: none;
-  color: #fff;
+  color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: 13px;
   resize: none;
@@ -1170,24 +1170,24 @@ code,
   font-weight: 900;
 }
 .hud-mini-btn.btn-stop {
-  background: rgba(255, 42, 109, 0.15);
-  border: 1px solid rgba(255, 42, 109, 0.45);
-  color: #ff2a6d;
+  background: color-mix(in srgb, var(--accent-red) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 45%, transparent);
+  color: var(--accent-red);
 }
 .hud-mini-btn.btn-stop:hover {
-  background: rgba(255, 42, 109, 0.35);
-  border-color: #ff2a6d;
+  background: color-mix(in srgb, var(--accent-red) 35%, transparent);
+  border-color: var(--accent-red);
   color: #ffffff;
-  box-shadow: 0 0 10px rgba(255, 42, 109, 0.5);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent-red) 50%, transparent);
   transform: translateY(-1px);
 }
 .hud-mini-btn.btn-listen {
-  background: rgba(0, 243, 255, 0.12);
-  border: 1px solid rgba(0, 243, 255, 0.45);
+  background: color-mix(in srgb, var(--accent-red) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 45%, transparent);
   color: var(--cyan-core);
 }
 .hud-mini-btn.btn-listen:hover {
-  background: rgba(0, 243, 255, 0.25);
+  background: color-mix(in srgb, var(--accent-red) 25%, transparent);
   border-color: var(--cyan-core);
   color: #ffffff;
   box-shadow: 0 0 10px var(--cyan-glow);
@@ -1218,16 +1218,16 @@ code,
 
 /* BOTÃO [-] PARAR / INTERROMPER (Vermelho/Crimson neon) */
 .hud-control-btn.btn-stop {
-  background: rgba(255, 42, 109, 0.12);
-  border: 1px solid rgba(255, 42, 109, 0.45);
-  color: #ff2a6d;
-  box-shadow: 0 0 8px rgba(255, 42, 109, 0.18);
+  background: color-mix(in srgb, var(--accent-red) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 45%, transparent);
+  color: var(--accent-red);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent-red) 18%, transparent);
 }
 .hud-control-btn.btn-stop:hover {
-  background: rgba(255, 42, 109, 0.3);
-  border-color: #ff2a6d;
+  background: color-mix(in srgb, var(--accent-red) 30%, transparent);
+  border-color: var(--accent-red);
   color: #ffffff;
-  box-shadow: 0 0 14px rgba(255, 42, 109, 0.6);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--accent-red) 60%, transparent);
   transform: translateY(-1px);
 }
 .hud-control-btn.btn-stop:active {
@@ -1236,13 +1236,13 @@ code,
 
 /* BOTÃO [+] PARAR & OUVIR (Ciano neon reator) */
 .hud-control-btn.btn-listen {
-  background: rgba(0, 243, 255, 0.12);
-  border: 1px solid rgba(0, 243, 255, 0.45);
+  background: color-mix(in srgb, var(--accent-red) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 45%, transparent);
   color: var(--cyan-core);
   box-shadow: 0 0 8px var(--cyan-glow);
 }
 .hud-control-btn.btn-listen:hover {
-  background: rgba(0, 243, 255, 0.3);
+  background: color-mix(in srgb, var(--accent-red) 30%, transparent);
   border-color: var(--cyan-core);
   color: #ffffff;
   box-shadow: 0 0 14px var(--cyan-glow);
@@ -1257,9 +1257,9 @@ code,
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(255, 42, 109, 0.12);
-  border: 1px solid rgba(255, 42, 109, 0.45);
-  color: #ff2a6d;
+  background: color-mix(in srgb, var(--accent-red) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 45%, transparent);
+  color: var(--accent-red);
   font-family: var(--font-hud);
   font-size: 10px;
   font-weight: 700;
@@ -1270,10 +1270,10 @@ code,
   transition: all 0.2s ease;
 }
 .hud-action-pill.pill-stop:hover {
-  background: rgba(255, 42, 109, 0.25);
-  border-color: #ff2a6d;
+  background: color-mix(in srgb, var(--accent-red) 25%, transparent);
+  border-color: var(--accent-red);
   color: #fff;
-  box-shadow: 0 0 12px rgba(255, 42, 109, 0.5);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent-red) 50%, transparent);
   transform: translateY(-1px);
 }
 .hud-action-pill.pill-stop .pill-symbol {
@@ -1282,7 +1282,7 @@ code,
 }
 
 .hud-send-btn {
-  background: linear-gradient(135deg, var(--cyan-core), #0099ff);
+  background: linear-gradient(135deg, var(--cyan-core), var(--accent-red));
   border: none;
   color: #000;
   font-family: var(--font-hud);
@@ -1307,7 +1307,7 @@ code,
 }
 
 .hud-composer-mic-btn {
-  background: rgba(12, 20, 38, 0.9);
+  background: color-mix(in srgb, var(--bg-card) 90%, transparent);
   border: 1px solid var(--cyan-border);
   color: var(--cyan-core);
   padding: 8px 11px;
@@ -1320,14 +1320,14 @@ code,
   font-size: 13px;
 }
 .hud-composer-mic-btn:hover {
-  background: rgba(0, 243, 255, 0.15);
+  background: color-mix(in srgb, var(--accent-red) 15%, transparent);
   border-color: var(--cyan-core);
   box-shadow: 0 0 10px var(--cyan-glow);
 }
 .hud-composer-mic-btn.active,
 .hud-composer-mic-btn.listening,
 .hud-composer-mic-btn.recording {
-  background: linear-gradient(135deg, rgba(255, 51, 102, 0.4), rgba(255, 0, 60, 0.6));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent-red) 40%, transparent), color-mix(in srgb, var(--accent-red) 60%, transparent));
   border-color: var(--red-laser);
   color: #fff;
   box-shadow: 0 0 14px var(--red-laser);
@@ -1336,7 +1336,7 @@ code,
 
 .voice-btn.mic-btn.active,
 .voice-btn.mic-btn.listening {
-  background: linear-gradient(135deg, rgba(255, 51, 102, 0.4), rgba(255, 0, 60, 0.6));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent-red) 40%, transparent), color-mix(in srgb, var(--accent-red) 60%, transparent));
   border-color: var(--red-laser);
   box-shadow: 0 0 24px var(--red-laser);
   animation: pulseRecording 1s infinite alternate;
@@ -1353,10 +1353,10 @@ code,
   width: 500px;
   max-width: 90vw;
   height: calc(100vh - 64px);
-  background: rgba(13, 13, 13, 0.96);
+  background: color-mix(in srgb, var(--bg-card) 96%, transparent);
   backdrop-filter: blur(20px);
   border-left: 1px solid var(--border-color);
-  box-shadow: -8px 0 30px rgba(0, 0, 0, 0.8);
+  box-shadow: -8px 0 30px color-mix(in srgb, var(--bg-card) 80%, transparent);
   z-index: 100;
   display: flex;
   flex-direction: column;
@@ -1369,7 +1369,7 @@ code,
 .drawer-header {
   height: 56px;
   padding: 0 20px;
-  background: #111111;
+  background: var(--bg-card);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1384,7 +1384,7 @@ code,
   font-family: var(--font-hud);
   font-size: 13px;
   letter-spacing: 1.5px;
-  color: #fff;
+  color: var(--text-primary);
 }
 .close-drawer-btn {
   background: transparent;
@@ -1415,7 +1415,7 @@ code,
 }
 .dossier-card {
   background: var(--bg-card);
-  border: 1px solid rgba(0, 243, 255, 0.15);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 15%, transparent);
   border-radius: var(--border-radius-md);
   padding: 14px;
   cursor: pointer;
@@ -1437,7 +1437,7 @@ code,
 .dossier-title {
   font-family: var(--font-hud);
   font-size: 12px;
-  color: #fff;
+  color: var(--text-primary);
   font-weight: 700;
 }
 .dossier-date {
@@ -1459,8 +1459,8 @@ code,
 
 /* FORMULÁRIOS DE CONFIGURAÇÃO */
 .settings-section {
-  background: rgba(14, 24, 48, 0.5);
-  border: 1px solid rgba(0, 243, 255, 0.12);
+  background: color-mix(in srgb, var(--bg-card) 50%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 12%, transparent);
   border-radius: var(--border-radius-md);
   padding: 16px;
   display: flex;
@@ -1484,10 +1484,10 @@ code,
 }
 .hud-input {
   flex: 1;
-  background: rgba(0, 0, 0, 0.5);
+  background: color-mix(in srgb, var(--bg-card) 50%, transparent);
   border: 1px solid var(--cyan-border);
   border-radius: 4px;
-  color: #fff;
+  color: var(--text-primary);
   padding: 8px 12px;
   font-family: var(--font-mono);
   font-size: 12px;
@@ -1535,7 +1535,7 @@ code,
 .hud-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(10, 10, 10, 0.88);
+  background: color-mix(in srgb, var(--bg-card) 88%, transparent);
   backdrop-filter: blur(8px);
   z-index: 200;
   display: flex;
@@ -1548,7 +1548,7 @@ code,
   width: 800px;
   max-width: 90vw;
   max-height: 85vh;
-  background: #0d0d0d;
+  background: var(--bg-cockpit);
   border: 1px solid var(--accent-red);
   box-shadow: 0 0 30px var(--accent-glow);
   border-radius: var(--border-radius-lg);
@@ -1559,7 +1559,7 @@ code,
 .modal-header {
   height: 56px;
   padding: 0 20px;
-  background: #111111;
+  background: var(--bg-card);
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
@@ -1573,7 +1573,7 @@ code,
 .modal-title-box h3 {
   font-family: var(--font-hud);
   font-size: 14px;
-  color: #fff;
+  color: var(--text-primary);
 }
 .modal-actions {
   display: flex;
@@ -1586,7 +1586,7 @@ code,
   overflow-y: auto;
   font-size: 13px;
   line-height: 1.7;
-  color: #e2e8f0;
+  color: var(--text-secondary);
 }
 .modal-body table {
   width: 100%;
@@ -1594,12 +1594,12 @@ code,
   margin: 16px 0;
 }
 .modal-body th, .modal-body td {
-  border: 1px solid rgba(0, 243, 255, 0.15);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 15%, transparent);
   padding: 8px 12px;
   text-align: left;
 }
 .modal-body th {
-  background: rgba(0, 243, 255, 0.1);
+  background: color-mix(in srgb, var(--accent-red) 10%, transparent);
   color: var(--cyan-core);
   font-family: var(--font-hud);
   font-size: 11px;
@@ -1656,8 +1656,8 @@ code,
 }
 
 .hud-btn-subtle {
-  background: rgba(0, 243, 255, 0.08);
-  border: 1px solid rgba(0, 243, 255, 0.2);
+  background: color-mix(in srgb, var(--accent-red) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 20%, transparent);
   color: var(--cyan-core);
   padding: 6px 12px;
   border-radius: 4px;
@@ -1667,7 +1667,7 @@ code,
   transition: all 0.2s ease;
 }
 .hud-btn-subtle:hover {
-  background: rgba(0, 243, 255, 0.2);
+  background: color-mix(in srgb, var(--accent-red) 20%, transparent);
   border-color: var(--cyan-core);
   color: #fff;
 }
@@ -1721,8 +1721,8 @@ code,
 }
 
 .api-model-item {
-  background: rgba(10, 18, 36, 0.7);
-  border: 1px solid rgba(0, 243, 255, 0.15);
+  background: color-mix(in srgb, var(--bg-card) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 15%, transparent);
   border-radius: var(--border-radius-sm);
   padding: 8px 10px;
   display: flex;
@@ -1732,7 +1732,7 @@ code,
 }
 .api-model-item:hover {
   border-color: var(--cyan-core);
-  background: rgba(14, 26, 52, 0.85);
+  background: color-mix(in srgb, var(--bg-card) 85%, transparent);
 }
 
 .api-model-info {
@@ -1750,7 +1750,7 @@ code,
 .api-model-name {
   font-family: var(--font-hud);
   font-size: 11px;
-  color: #fff;
+  color: var(--text-primary);
   font-weight: 700;
 }
 
@@ -1763,10 +1763,10 @@ code,
 }
 .api-provider-tag.google { background: rgba(66, 133, 244, 0.2); color: #8ab4f8; border: 1px solid #4285f4; }
 .api-provider-tag.openai { background: rgba(16, 163, 127, 0.2); color: #10a37f; border: 1px solid #10a37f; }
-.api-provider-tag.groq { background: rgba(245, 80, 54, 0.2); color: #ff7043; border: 1px solid #f55036; }
+.api-provider-tag.groq { background: rgba(245, 80, 54, 0.2); color: var(--accent-red); border: 1px solid #f55036; }
 .api-provider-tag.openrouter { background: rgba(124, 58, 237, 0.2); color: #a78bfa; border: 1px solid #7c3aed; }
-.api-provider-tag.deepseek { background: rgba(0, 168, 255, 0.2); color: #38bdf8; border: 1px solid #00a8ff; }
-.api-provider-tag.custom { background: rgba(255, 170, 0, 0.2); color: var(--amber-gold); border: 1px solid var(--amber-gold); }
+.api-provider-tag.deepseek { background: color-mix(in srgb, var(--accent-red) 20%, transparent); color: var(--accent-red); border: 1px solid var(--accent-red); }
+.api-provider-tag.custom { background: color-mix(in srgb, var(--accent-red) 20%, transparent); color: var(--amber-gold); border: 1px solid var(--amber-gold); }
 
 .status-chip {
   font-family: var(--font-mono);
@@ -1781,14 +1781,14 @@ code,
   border: 1px solid var(--green-online);
 }
 .status-chip.session {
-  background: rgba(0, 243, 255, 0.15);
+  background: color-mix(in srgb, var(--accent-red) 15%, transparent);
   color: var(--cyan-core);
   border: 1px solid var(--cyan-core);
 }
 .status-chip.pending {
-  background: rgba(255, 170, 0, 0.12);
+  background: color-mix(in srgb, var(--accent-red) 12%, transparent);
   color: var(--amber-gold);
-  border: 1px solid rgba(255, 170, 0, 0.4);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 40%, transparent);
 }
 
 .api-model-meta {
@@ -1819,8 +1819,8 @@ code,
 
 /* SESSÃO & CHAVES */
 .session-key-manager {
-  background: rgba(8, 14, 28, 0.8);
-  border: 1px solid rgba(0, 243, 255, 0.15);
+  background: color-mix(in srgb, var(--bg-card) 80%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 15%, transparent);
   border-radius: var(--border-radius-sm);
   padding: 12px;
   display: flex;
@@ -1835,9 +1835,9 @@ code,
 }
 
 .hud-select-small {
-  background: rgba(10, 16, 32, 0.9);
+  background: color-mix(in srgb, var(--bg-card) 90%, transparent);
   border: 1px solid var(--cyan-border);
-  color: #fff;
+  color: var(--text-primary);
   font-family: var(--font-mono);
   font-size: 11px;
   padding: 4px 6px;
@@ -1845,7 +1845,7 @@ code,
   outline: none;
 }
 .hud-select-small option {
-  background: #0d162a;
+  background: var(--bg-card);
 }
 
 .key-input-wrapper {
@@ -1880,7 +1880,7 @@ code,
 }
 
 .hud-action-btn-small {
-  background: linear-gradient(135deg, var(--cyan-core), #0099ff);
+  background: linear-gradient(135deg, var(--cyan-core), var(--accent-red));
   border: none;
   color: #000;
   font-family: var(--font-hud);
@@ -1909,12 +1909,12 @@ code,
   color: var(--green-online);
 }
 .key-feedback-msg.error {
-  background: rgba(255, 51, 102, 0.1);
+  background: color-mix(in srgb, var(--accent-red) 10%, transparent);
   border: 1px solid var(--red-laser);
   color: #fca5a5;
 }
 .key-feedback-msg.info {
-  background: rgba(0, 243, 255, 0.1);
+  background: color-mix(in srgb, var(--accent-red) 10%, transparent);
   border: 1px solid var(--cyan-core);
   color: var(--cyan-core);
 }
@@ -1925,8 +1925,8 @@ code,
 }
 
 .add-api-model-form {
-  background: rgba(12, 20, 40, 0.75);
-  border: 1px dashed rgba(0, 243, 255, 0.3);
+  background: color-mix(in srgb, var(--bg-card) 75%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--accent-red) 30%, transparent);
   border-radius: var(--border-radius-sm);
   padding: 12px;
   display: flex;
@@ -1942,8 +1942,8 @@ code,
 }
 
 .chip-btn {
-  background: rgba(0, 243, 255, 0.08);
-  border: 1px solid rgba(0, 243, 255, 0.2);
+  background: color-mix(in srgb, var(--accent-red) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 20%, transparent);
   color: var(--text-secondary);
   font-family: var(--font-mono);
   font-size: 9px;
@@ -1955,7 +1955,7 @@ code,
 .chip-btn:hover {
   border-color: var(--cyan-core);
   color: #fff;
-  background: rgba(0, 243, 255, 0.2);
+  background: color-mix(in srgb, var(--accent-red) 20%, transparent);
 }
 
 .form-row-grid {
@@ -1999,10 +1999,10 @@ code,
   top: calc(100% + 8px);
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(8, 14, 28, 0.95);
+  background: color-mix(in srgb, var(--bg-card) 95%, transparent);
   backdrop-filter: blur(16px);
   border: 1px solid var(--cyan-core);
-  box-shadow: 0 4px 20px rgba(0, 243, 255, 0.35);
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--accent-red) 35%, transparent);
   border-radius: 8px;
   padding: 8px 12px;
   display: flex;
@@ -2018,9 +2018,9 @@ code,
 
 .hud-input-manual {
   flex: 1;
-  background: rgba(0, 0, 0, 0.6);
+  background: color-mix(in srgb, var(--bg-card) 60%, transparent);
   border: 1px solid var(--cyan-border);
-  color: #fff;
+  color: var(--text-primary);
   font-family: var(--font-mono);
   font-size: 12px;
   padding: 6px 10px;
@@ -2033,7 +2033,7 @@ code,
 }
 
 .hud-btn-apply-model {
-  background: linear-gradient(135deg, var(--cyan-core), #00a8ff);
+  background: linear-gradient(135deg, var(--cyan-core), var(--accent-red));
   border: none;
   color: #000;
   font-family: var(--font-hud);
@@ -2067,7 +2067,7 @@ code,
    ========================================================================== */
 
 .google-models-toolkit {
-  background: rgba(14, 24, 48, 0.6);
+  background: color-mix(in srgb, var(--bg-card) 60%, transparent);
   border: 1px solid rgba(66, 133, 244, 0.3);
   border-radius: var(--border-radius-sm);
   padding: 12px;
@@ -2104,7 +2104,7 @@ code,
 .gemini-chip:hover {
   background: rgba(66, 133, 244, 0.3);
   border-color: #8ab4f8;
-  color: #fff;
+  color: var(--text-primary);
   transform: translateY(-1px);
 }
 .gemini-chip.active-chip {
@@ -2127,7 +2127,7 @@ code,
   border: 1px solid var(--green-online);
 }
 .google-synced-msg.error {
-  background: rgba(255, 51, 102, 0.1);
+  background: color-mix(in srgb, var(--accent-red) 10%, transparent);
   color: #fca5a5;
   border: 1px solid var(--red-laser);
 }
@@ -2659,21 +2659,21 @@ code,
 .hud-control-toggle.screen-btn:hover {
   border-color: var(--accent-red);
   color: var(--text-primary);
-  box-shadow: 0 0 10px rgba(239, 68, 68, 0.25);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent-red) 25%, transparent);
 }
 
 .hud-control-toggle.screen-btn.active {
   background: var(--red-bg-subtle) !important;
   border-color: var(--accent-red) !important;
-  color: #fff !important;
+  color: var(--text-primary) !important;
   box-shadow: 0 0 16px var(--accent-glow) !important;
   animation: pulseTacticalRed 2s infinite ease-in-out;
 }
 
 @keyframes pulseTacticalRed {
-  0% { box-shadow: 0 0 8px rgba(239, 68, 68, 0.3); }
-  50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.6); }
-  100% { box-shadow: 0 0 8px rgba(239, 68, 68, 0.3); }
+  0% { box-shadow: 0 0 8px color-mix(in srgb, var(--accent-red) 30%, transparent); }
+  50% { box-shadow: 0 0 20px color-mix(in srgb, var(--accent-red) 60%, transparent); }
+  100% { box-shadow: 0 0 8px color-mix(in srgb, var(--accent-red) 30%, transparent); }
 }
 
 /* BADGE FLUTUANTE DE VISÃO DE TELA NO COMPOSER */
@@ -2771,7 +2771,7 @@ code,
 .chat-report-download-btn {
   background: var(--red-bg-subtle);
   border: 1px solid var(--accent-red);
-  color: #fff;
+  color: var(--text-primary);
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;

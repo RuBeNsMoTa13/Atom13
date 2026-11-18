@@ -1,0 +1,191 @@
+/* Temas do portfólio (src/app/globals.css do Rubensmota13). GERADO por exportar_temas.py */
+:root, html[data-tema="azul-noite"] {
+  color-scheme: dark;
+  --bg-space: #0a0e1a; --bg-cockpit: #0a0e1a;
+  --bg-panel: color-mix(in srgb, #0f1526 94%, transparent);
+  --bg-card: #0f1526; --bg-card-hover: #141b2d; --bg-input: #141b2d;
+  --grid-line: #141b2d;
+  --border-color: #1f2840; --border-muted: #364263;
+  --text-primary: #e9edf7; --text-secondary: #c9cfe0; --text-muted: #98a2bd; --text-dim: #98a2bd;
+  --text-code: #fca5a5;
+  --accent-red: #ef4444; --accent-red-hover: #e11d1d;
+  --accent-glow: color-mix(in srgb, #ef4444 35%, transparent);
+  --red-bg-subtle: color-mix(in srgb, #ef4444 14%, #0a0e1a);
+  --red-bg-dark: color-mix(in srgb, #ef4444 8%, #0a0e1a);
+  --red-border-subtle: color-mix(in srgb, #ef4444 30%, #0a0e1a);
+  --cyan-core: #ef4444; --cyan-glow: color-mix(in srgb, #ef4444 35%, transparent);
+  --cyan-dim: color-mix(in srgb, #ef4444 14%, #0a0e1a); --cyan-border: color-mix(in srgb, #ef4444 30%, #0a0e1a);
+  --red-laser: #ef4444; --red-glow: color-mix(in srgb, #ef4444 40%, transparent);
+  --on-surface: #ffffff;
+}
+html[data-tema="preto"] {
+  color-scheme: dark;
+  --bg-space: #0a0a0a; --bg-cockpit: #0a0a0a;
+  --bg-panel: color-mix(in srgb, #0d0d0d 94%, transparent);
+  --bg-card: #0d0d0d; --bg-card-hover: #1a1a1a; --bg-input: #1a1a1a;
+  --grid-line: #1a1a1a;
+  --border-color: #262626; --border-muted: #404040;
+  --text-primary: #f5f5f5; --text-secondary: #d4d4d4; --text-muted: #a3a3a3; --text-dim: #a3a3a3;
+  --text-code: #fca5a5;
+  --accent-red: #ef4444; --accent-red-hover: #e11d1d;
+  --accent-glow: color-mix(in srgb, #ef4444 35%, transparent);
+  --red-bg-subtle: color-mix(in srgb, #ef4444 14%, #0a0a0a);
+  --red-bg-dark: color-mix(in srgb, #ef4444 8%, #0a0a0a);
+  --red-border-subtle: color-mix(in srgb, #ef4444 30%, #0a0a0a);
+  --cyan-core: #ef4444; --cyan-glow: color-mix(in srgb, #ef4444 35%, transparent);
+  --cyan-dim: color-mix(in srgb, #ef4444 14%, #0a0a0a); --cyan-border: color-mix(in srgb, #ef4444 30%, #0a0a0a);
+  --red-laser: #ef4444; --red-glow: color-mix(in srgb, #ef4444 40%, transparent);
+  --on-surface: #ffffff;
+}
+html[data-tema="nevoa-escura"] {
+  color-scheme: dark;
+  --bg-space: #0d1117; --bg-cockpit: #0d1117;
+  --bg-panel: color-mix(in srgb, #121821 94%, transparent);
+  --bg-card: #121821; --bg-card-hover: #1a222c; --bg-input: #1a222c;
+  --grid-line: #1a222c;
+  --border-color: #222b36; --border-muted: #3a4656;
+  --text-primary: #e8edf2; --text-secondary: #c9d1d9; --text-muted: #9aa6b4; --text-dim: #9aa6b4;
+  --text-code: #fca5a5;
+  --accent-red: #ef4444; --accent-red-hover: #e11d1d;
+  --accent-glow: color-mix(in srgb, #ef4444 35%, transparent);
+  --red-bg-subtle: color-mix(in srgb, #ef4444 14%, #0d1117);
+  --red-bg-dark: color-mix(in srgb, #ef4444 8%, #0d1117);
+  --red-border-subtle: color-mix(in srgb, #ef4444 30%, #0d1117);
+  --cyan-core: #ef4444; --cyan-glow: color-mix(in srgb, #ef4444 35%, transparent);
+  --cyan-dim: color-mix(in srgb, #ef4444 14%, #0d1117); --cyan-border: color-mix(in srgb, #ef4444 30%, #0d1117);
+  --red-laser: #ef4444; --red-glow: color-mix(in srgb, #ef4444 40%, transparent);
+  --on-surface: #ffffff;
+}
+html[data-tema="grafite"] {
+  color-scheme: dark;
+  --bg-space: #161616; --bg-cockpit: #161616;
+  --bg-panel: color-mix(in srgb, #1d1d1d 94%, transparent);
+  --bg-card: #1d1d1d; --bg-card-hover: #242424; --bg-input: #242424;
+  --grid-line: #242424;
+  --border-color: #2e2e2e; --border-muted: #4a4a4a;
+  --text-primary: #f2f2f2; --text-secondary: #d4d4d4; --text-muted: #a8a8a8; --text-dim: #a8a8a8;
+  --text-code: #fca5a5;
+  --accent-red: #ef4444; --accent-red-hover: #e11d1d;
+  --accent-glow: color-mix(in srgb, #ef4444 35%, transparent);
+  --red-bg-subtle: color-mix(in srgb, #ef4444 14%, #161616);
+  --red-bg-dark: color-mix(in srgb, #ef4444 8%, #161616);
+  --red-border-subtle: color-mix(in srgb, #ef4444 30%, #161616);
+  --cyan-core: #ef4444; --cyan-glow: color-mix(in srgb, #ef4444 35%, transparent);
+  --cyan-dim: color-mix(in srgb, #ef4444 14%, #161616); --cyan-border: color-mix(in srgb, #ef4444 30%, #161616);
+  --red-laser: #ef4444; --red-glow: color-mix(in srgb, #ef4444 40%, transparent);
+  --on-surface: #ffffff;
+}
+html[data-tema="vinho-escuro"] {
+  color-scheme: dark;
+  --bg-space: #120a0b; --bg-cockpit: #120a0b;
+  --bg-panel: color-mix(in srgb, #1a0f10 94%, transparent);
+  --bg-card: #1a0f10; --bg-card-hover: #221415; --bg-input: #221415;
+  --grid-line: #221415;
+  --border-color: #2e1b1c; --border-muted: #4a2c2e;
+  --text-primary: #f5ecec; --text-secondary: #dbcccc; --text-muted: #b39c9d; --text-dim: #b39c9d;
+  --text-code: #fca5a5;
+  --accent-red: #ef4444; --accent-red-hover: #e11d1d;
+  --accent-glow: color-mix(in srgb, #ef4444 35%, transparent);
+  --red-bg-subtle: color-mix(in srgb, #ef4444 14%, #120a0b);
+  --red-bg-dark: color-mix(in srgb, #ef4444 8%, #120a0b);
+  --red-border-subtle: color-mix(in srgb, #ef4444 30%, #120a0b);
+  --cyan-core: #ef4444; --cyan-glow: color-mix(in srgb, #ef4444 35%, transparent);
+  --cyan-dim: color-mix(in srgb, #ef4444 14%, #120a0b); --cyan-border: color-mix(in srgb, #ef4444 30%, #120a0b);
+  --red-laser: #ef4444; --red-glow: color-mix(in srgb, #ef4444 40%, transparent);
+  --on-surface: #ffffff;
+}
+html[data-tema="nevoa"] {
+  color-scheme: light;
+  --bg-space: #e2e7ec; --bg-cockpit: #e2e7ec;
+  --bg-panel: color-mix(in srgb, #f7f9fb 94%, transparent);
+  --bg-card: #f7f9fb; --bg-card-hover: #d6dde4; --bg-input: #f7f9fb;
+  --grid-line: #d6dde4;
+  --border-color: #cbd3dc; --border-muted: #98a4b2;
+  --text-primary: #0e1217; --text-secondary: #242b33; --text-muted: #46505c; --text-dim: #46505c;
+  --text-code: #b8161c;
+  --accent-red: #b8161c; --accent-red-hover: #8f1015;
+  --accent-glow: color-mix(in srgb, #b8161c 35%, transparent);
+  --red-bg-subtle: color-mix(in srgb, #b8161c 10%, #e2e7ec);
+  --red-bg-dark: color-mix(in srgb, #b8161c 6%, #e2e7ec);
+  --red-border-subtle: color-mix(in srgb, #b8161c 30%, #e2e7ec);
+  --cyan-core: #b8161c; --cyan-glow: color-mix(in srgb, #b8161c 35%, transparent);
+  --cyan-dim: color-mix(in srgb, #b8161c 14%, #e2e7ec); --cyan-border: color-mix(in srgb, #b8161c 30%, #e2e7ec);
+  --red-laser: #b8161c; --red-glow: color-mix(in srgb, #b8161c 40%, transparent);
+  --on-surface: #0e1217;
+}
+html[data-tema="papel"] {
+  color-scheme: light;
+  --bg-space: #f3f1ec; --bg-cockpit: #f3f1ec;
+  --bg-panel: color-mix(in srgb, #fffdf9 94%, transparent);
+  --bg-card: #fffdf9; --bg-card-hover: #e8e3d9; --bg-input: #fffdf9;
+  --grid-line: #e8e3d9;
+  --border-color: #e2ddd3; --border-muted: #bdb6a8;
+  --text-primary: #141210; --text-secondary: #2f2c27; --text-muted: #57524a; --text-dim: #57524a;
+  --text-code: #c01818;
+  --accent-red: #c01818; --accent-red-hover: #8f1015;
+  --accent-glow: color-mix(in srgb, #c01818 35%, transparent);
+  --red-bg-subtle: color-mix(in srgb, #c01818 10%, #f3f1ec);
+  --red-bg-dark: color-mix(in srgb, #c01818 6%, #f3f1ec);
+  --red-border-subtle: color-mix(in srgb, #c01818 30%, #f3f1ec);
+  --cyan-core: #c01818; --cyan-glow: color-mix(in srgb, #c01818 35%, transparent);
+  --cyan-dim: color-mix(in srgb, #c01818 14%, #f3f1ec); --cyan-border: color-mix(in srgb, #c01818 30%, #f3f1ec);
+  --red-laser: #c01818; --red-glow: color-mix(in srgb, #c01818 40%, transparent);
+  --on-surface: #141210;
+}
+html[data-tema="areia"] {
+  color-scheme: light;
+  --bg-space: #ebe3d4; --bg-cockpit: #ebe3d4;
+  --bg-panel: color-mix(in srgb, #faf6ee 94%, transparent);
+  --bg-card: #faf6ee; --bg-card-hover: #e0d7c6; --bg-input: #faf6ee;
+  --grid-line: #e0d7c6;
+  --border-color: #d6cbb6; --border-muted: #ac9f87;
+  --text-primary: #17130d; --text-secondary: #312a20; --text-muted: #574d3d; --text-dim: #574d3d;
+  --text-code: #b3161a;
+  --accent-red: #b3161a; --accent-red-hover: #8f1015;
+  --accent-glow: color-mix(in srgb, #b3161a 35%, transparent);
+  --red-bg-subtle: color-mix(in srgb, #b3161a 10%, #ebe3d4);
+  --red-bg-dark: color-mix(in srgb, #b3161a 6%, #ebe3d4);
+  --red-border-subtle: color-mix(in srgb, #b3161a 30%, #ebe3d4);
+  --cyan-core: #b3161a; --cyan-glow: color-mix(in srgb, #b3161a 35%, transparent);
+  --cyan-dim: color-mix(in srgb, #b3161a 14%, #ebe3d4); --cyan-border: color-mix(in srgb, #b3161a 30%, #ebe3d4);
+  --red-laser: #b3161a; --red-glow: color-mix(in srgb, #b3161a 40%, transparent);
+  --on-surface: #17130d;
+}
+html[data-tema="concreto"] {
+  color-scheme: light;
+  --bg-space: #dcdcdc; --bg-cockpit: #dcdcdc;
+  --bg-panel: color-mix(in srgb, #f5f5f5 94%, transparent);
+  --bg-card: #f5f5f5; --bg-card-hover: #d0d0d0; --bg-input: #f5f5f5;
+  --grid-line: #d0d0d0;
+  --border-color: #c2c2c2; --border-muted: #949494;
+  --text-primary: #111111; --text-secondary: #272727; --text-muted: #484848; --text-dim: #484848;
+  --text-code: #b5161b;
+  --accent-red: #b5161b; --accent-red-hover: #8f1015;
+  --accent-glow: color-mix(in srgb, #b5161b 35%, transparent);
+  --red-bg-subtle: color-mix(in srgb, #b5161b 10%, #dcdcdc);
+  --red-bg-dark: color-mix(in srgb, #b5161b 6%, #dcdcdc);
+  --red-border-subtle: color-mix(in srgb, #b5161b 30%, #dcdcdc);
+  --cyan-core: #b5161b; --cyan-glow: color-mix(in srgb, #b5161b 35%, transparent);
+  --cyan-dim: color-mix(in srgb, #b5161b 14%, #dcdcdc); --cyan-border: color-mix(in srgb, #b5161b 30%, #dcdcdc);
+  --red-laser: #b5161b; --red-glow: color-mix(in srgb, #b5161b 40%, transparent);
+  --on-surface: #111111;
+}
+html[data-tema="vinho-claro"] {
+  color-scheme: light;
+  --bg-space: #f4ecea; --bg-cockpit: #f4ecea;
+  --bg-panel: color-mix(in srgb, #fffbfa 94%, transparent);
+  --bg-card: #fffbfa; --bg-card-hover: #ece0dd; --bg-input: #fffbfa;
+  --grid-line: #ece0dd;
+  --border-color: #e5d4d1; --border-muted: #c2a6a2;
+  --text-primary: #170f0e; --text-secondary: #322523; --text-muted: #5a4643; --text-dim: #5a4643;
+  --text-code: #b81419;
+  --accent-red: #b81419; --accent-red-hover: #8f1015;
+  --accent-glow: color-mix(in srgb, #b81419 35%, transparent);
+  --red-bg-subtle: color-mix(in srgb, #b81419 10%, #f4ecea);
+  --red-bg-dark: color-mix(in srgb, #b81419 6%, #f4ecea);
+  --red-border-subtle: color-mix(in srgb, #b81419 30%, #f4ecea);
+  --cyan-core: #b81419; --cyan-glow: color-mix(in srgb, #b81419 35%, transparent);
+  --cyan-dim: color-mix(in srgb, #b81419 14%, #f4ecea); --cyan-border: color-mix(in srgb, #b81419 30%, #f4ecea);
+  --red-laser: #b81419; --red-glow: color-mix(in srgb, #b81419 40%, transparent);
+  --on-surface: #170f0e;
+}

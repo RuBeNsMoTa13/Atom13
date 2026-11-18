@@ -3,16 +3,22 @@
  * Suporta cache estático e instalação como aplicativo autônomo.
  */
 
-const CACHE_NAME = 'atom-tactical-v3';
+const CACHE_NAME = 'atom-tactical-v4';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
   '/css/style.css',
+  '/css/themes.css',
+  '/css/atom-char.css',
+  '/css/atom-ui.css',
   '/js/app.js',
   '/js/api.js',
   '/js/audio.js',
-  '/js/reactor.js',
+  '/js/atom-char.js',
+  '/js/atom-bodies.js',
+  '/js/themes.js',
+  '/js/conversas.js',
   '/icons/atom-icon.svg'
 ];
 

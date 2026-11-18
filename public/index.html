@@ -17,13 +17,14 @@
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/themes.css">
+  <link rel="stylesheet" href="css/atom-char.css">
+  <link rel="stylesheet" href="css/atom-ui.css">
+  <script>try{var t=localStorage.getItem('atom_tema');if(t)document.documentElement.dataset.tema=t;}catch(e){}</script>
 </head>
 <body class="atom-theme">
   <!-- Scanlines & Background HUD Grids -->
   <div class="hud-background-grid"></div>
-  <div class="hud-scanlines"></div>
-  <div class="hud-glow-orb glow-top-left"></div>
-  <div class="hud-glow-orb glow-bottom-right"></div>
 
   <!-- MAIN HUD WRAPPER -->
   <div class="hud-container">
@@ -32,8 +33,7 @@
     <header class="hud-header">
       <div class="header-left">
         <div class="stark-logo">
-          <span class="logo-symbol">⚛</span>
-          <span class="logo-title">A.T.O.M.</span>
+          <span class="logo-title atom-logo">AT<b>OM</b></span>
           <span class="logo-ver">TACTICAL MATRIX // V2.0</span>
         </div>
         <div class="status-indicator-badge" id="system-status-badge">
@@ -64,6 +64,20 @@
       </div>
 
       <div class="header-right">
+        <div class="atom-pop-wrap">
+          <button id="appearance-btn" class="hud-btn-nav" title="Trocar a aparência do Atom" aria-haspopup="true" aria-expanded="false">
+            <span class="btn-icon">◧</span>
+            <span>APARÊNCIA</span>
+          </button>
+          <div id="appearance-pop" class="atom-pop hidden" role="dialog" aria-label="Aparência do Atom">
+            <div class="atom-pop-title">Corpo do Atom</div>
+            <div id="body-grid" class="atom-body-grid"></div>
+            <div class="atom-pop-title">Tema</div>
+            <div class="atom-theme-group"><span class="atom-theme-label">Escuros</span><div id="theme-dark" class="atom-theme-row"></div></div>
+            <div class="atom-theme-group"><span class="atom-theme-label">Claros</span><div id="theme-light" class="atom-theme-row"></div></div>
+            <div class="atom-pop-foot">Fica salvo neste navegador.</div>
+          </div>
+        </div>
         <button id="toggle-researches-btn" class="hud-btn-nav" title="Ver Dossiês e Relatórios Salvos">
           <span class="btn-icon">📁</span>
           <span>DOSSIÊS (<span id="research-count">0</span>)</span>
@@ -176,22 +190,17 @@
       <section class="hud-centerstage">
         
         <!-- ARC REACTOR CANVAS VISUALIZER -->
-        <div class="reactor-outer-wrapper">
-          <div class="reactor-ring-decoration"></div>
-          <div class="reactor-canvas-box">
-            <canvas id="arc-reactor-canvas" width="400" height="400"></canvas>
-            
-            <!-- CENTRAL CORE OVERLAY -->
-            <div class="reactor-core-info">
-              <span class="core-subtitle" id="core-state-subtitle">ONLINE</span>
-              <h2 class="core-title" id="core-state-title">A.T.O.M.</h2>
-              <div class="audio-wave-visualizer" id="audio-waves">
-                <span class="wave-bar"></span>
-                <span class="wave-bar"></span>
-                <span class="wave-bar"></span>
-                <span class="wave-bar"></span>
-                <span class="wave-bar"></span>
-              </div>
+        <div class="atom-stage">
+          <div id="atom-char" class="atom-char s-parado" title="Clique no Atom"></div>
+          <div class="reactor-core-info atom-core-info">
+            <span class="core-subtitle" id="core-state-subtitle">ONLINE</span>
+            <h2 class="core-title" id="core-state-title">A.T.O.M.</h2>
+            <div class="audio-wave-visualizer" id="audio-waves">
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
             </div>
           </div>
         </div>
@@ -235,12 +244,22 @@
       <section class="hud-chat-panel">
         <div class="chat-header">
           <div class="chat-header-title">
-            <span class="panel-tag">FEED TÁTICO</span>
-            <h3>COMUNICAÇÃO EM TEMPO REAL</h3>
+            <span class="panel-tag">CHAT</span>
+            <h3>CONVERSA</h3>
           </div>
           <div class="chat-header-actions">
-            <button id="clear-chat-btn" class="hud-icon-btn" title="Limpar conversa">🗑️</button>
+            <button id="new-chat-btn" class="hud-mini-btn atom-new-chat" title="Começar uma conversa nova (a atual fica salva)">+ NOVA</button>
+            <button id="history-btn" class="hud-mini-btn" title="Conversas salvas neste navegador" aria-expanded="false">CONVERSAS (<span id="history-count">0</span>)</button>
+            <button id="clear-chat-btn" class="hud-icon-btn" title="Apagar esta conversa">🗑️</button>
           </div>
+        </div>
+
+        <div id="history-panel" class="atom-history hidden" aria-label="Conversas salvas">
+          <div class="atom-history-head">
+            <span>Conversas salvas neste navegador</span>
+            <button id="history-close-btn" class="hud-icon-btn" title="Fechar">✕</button>
+          </div>
+          <div id="history-list" class="atom-history-list"></div>
         </div>
 
         <!-- CHAT MESSAGES STREAM CONTAINER -->
@@ -553,7 +572,6 @@
 
   <!-- Modulos JavaScript da aplicação -->
   <script type="module" src="js/audio.js"></script>
-  <script type="module" src="js/reactor.js"></script>
   <script type="module" src="js/api.js"></script>
   <script type="module" src="js/app.js"></script>
 </body>
