@@ -32,9 +32,9 @@ if not FRONTEND_DIR.exists():
     FRONTEND_DIR = BASE_DIR / "frontend"
 
 # --- LIMITE DE USO DA CHAVE DO SERVIDOR (MODO NUVEM) ---
-# Visitantes sem chave própria usam a chave configurada no servidor, com um limite
-# de mensagens por IP por hora. Quem cola a própria chave na aba não tem limite.
-RATE_LIMIT_PER_HOUR = int(os.environ.get("ATOM_RATE_LIMIT_PER_HOUR", "20") or 0)
+# Desligado por padrão (0 = sem limite). Para ligar, defina ATOM_RATE_LIMIT_PER_HOUR
+# na Vercel: visitantes sem chave própria passam a ter N mensagens por IP por hora.
+RATE_LIMIT_PER_HOUR = int(os.environ.get("ATOM_RATE_LIMIT_PER_HOUR", "0") or 0)
 _usage: Dict[str, deque] = defaultdict(deque)
 
 
