@@ -190,21 +190,24 @@ def _transcribe_with_gemini(content: bytes, mime: str, session_key: Optional[str
     key = api_model_manager.resolve_api_key({"provider": "google", "env_var": "GEMINI_API_KEY"}, session_key)
     if not key:
         return None
-    from google import genai
     from google.genai import types
-    client = genai.Client(api_key=key)
-    resp = client.models.generate_content(
-        model=STT_MODEL,
-        contents=[types.Content(role="user", parts=[
+    from .core.api_client import genai_client, best_flash_model
+    client = genai_client(key)
+    def ask(model):
+        return client.models.generate_content(model=model, contents=parts, config=types.GenerateContentConfig(temperature=0))
+    parts = [types.Content(role="user", parts=[
             types.Part.from_bytes(data=content, mime_type=mime),
             types.Part.from_text(text=(
                 "Transcreva exatamente o que a pessoa fala neste áudio, em português do Brasil. "
                 "Responda só com o texto falado, sem aspas e sem comentários. "
                 "Se não houver fala compreensível, responda apenas: [silencio]"
             )),
-        ])],
-        config=types.GenerateContentConfig(temperature=0),
-    )
+        ])]
+    try:
+        resp = ask(STT_MODEL)
+    except Exception as e:
+        logger.warning(f"[TRANSCRIÇÃO] {STT_MODEL} falhou ({e}); tentando o Flash mais novo")
+        resp = ask(best_flash_model(client, key))
     text = (getattr(resp, "text", "") or "").strip()
     return "" if text.lower().strip("[] .") == "silencio" else text
 

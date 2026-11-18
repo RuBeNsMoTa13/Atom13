@@ -81,6 +81,42 @@ def _parse_image_base64(image_data: Optional[str]) -> Optional[tuple[str, str]]:
         return None
     return raw_b64, mime_type
 
+
+def genai_client(key: str):
+    """Cliente do Gemini sempre na API v1beta: os apelidos (gemini-flash-latest) e modelos novos só existem nela.
+    Versões novas do pacote google-genai passaram a usar v1 por padrão, o que dava 404."""
+    from google import genai
+    from google.genai import types
+    return genai.Client(api_key=key, http_options=types.HttpOptions(api_version="v1beta"))
+
+
+_best_flash_cache: Dict[str, str] = {}
+
+
+def best_flash_model(client, key: str = "") -> str:
+    """Escolhe o Gemini Flash mais novo que a chave consegue usar (reserva quando um modelo some)."""
+    if key in _best_flash_cache:
+        return _best_flash_cache[key]
+    import re as _re
+    best, best_ver = "gemini-flash-latest", -1.0
+    try:
+        for m in client.models.list():
+            name = (getattr(m, "name", "") or "").replace("models/", "")
+            actions = getattr(m, "supported_actions", None) or []
+            if actions and "generateContent" not in actions:
+                continue
+            low = name.lower()
+            if "flash" not in low or any(x in low for x in ("lite", "image", "tts", "live", "audio", "thinking", "exp", "preview")):
+                continue
+            mv = _re.search(r"gemini-(\d+(?:\.\d+)?)", low)
+            ver = float(mv.group(1)) if mv else 0.0
+            if ver > best_ver:
+                best, best_ver = name, ver
+    except Exception as e:
+        logger.warning(f"Não consegui listar modelos do Gemini para achar a reserva: {e}")
+    _best_flash_cache[key] = best
+    return best
+
 class ApiModelManager:
     def __init__(self):
         try:
@@ -210,7 +246,7 @@ class ApiModelManager:
 
         try:
             from google import genai
-            client = genai.Client(api_key=key)
+            client = genai_client(key)
             result = []
             for m in client.models.list():
                 m_name = getattr(m, 'name', '') or ''
@@ -358,7 +394,7 @@ class ApiModelManager:
                     use_sdk = False
 
                 if use_sdk:
-                    client = genai.Client(api_key=key)
+                    client = genai_client(key)
                     target_model = model_id or "gemini-flash-latest"
                     try:
                         response = client.models.generate_content(
@@ -367,7 +403,7 @@ class ApiModelManager:
                         )
                     except Exception:
                         response = client.models.generate_content(
-                            model="gemini-flash-latest",
+                            model=best_flash_model(client, key),
                             contents="Responda apenas: OK"
                         )
                     text = response.text or "OK"
@@ -448,7 +484,7 @@ class ApiModelManager:
                     use_sdk = False
 
                 if use_sdk:
-                    client = genai.Client(api_key=api_key)
+                    client = genai_client(api_key)
                     contents_list: List[Any] = []
 
                     for idx, m in enumerate(messages):
@@ -482,9 +518,10 @@ class ApiModelManager:
                                 yield chunk.text
                     except Exception as sdk_call_err:
                         # Fallback se o modelo selecionado for inexistente/descontinuado
-                        if model_id != "gemini-flash-latest":
-                            fallback_model = "gemini-flash-latest"
-                            yield f"*(Modelo '{model_id}' indisponível. Alternando para {fallback_model}...)*\n\n"
+                        fallback_model = best_flash_model(client, api_key)
+                        if fallback_model != model_id:
+                            logger.warning(f"Gemini '{model_id}' falhou ({sdk_call_err}); usando {fallback_model}")
+                            yield f"*(Modelo '{model_id}' indisponível. Usando {fallback_model}.)*\n\n"
                             fb_stream = client.models.generate_content_stream(
                                 model=fallback_model,
                                 contents=contents_list,
