@@ -6,6 +6,9 @@
 import { AtomCharacter } from './atom-char.js';
 import { THEMES } from './themes.js';
 import { Conversas } from './conversas.js';
+
+/** Ícone próprio (sprite em index.html). */
+const ic = (n) => `<svg class="ic" aria-hidden="true"><use href="#i-${n}"/></svg>`;
 import { JarvisAudio } from './audio.js';
 import { JarvisAPI } from './api.js';
 
@@ -358,7 +361,7 @@ class JarvisApp {
       this.testMicHardwareBtn.addEventListener('click', () => {
         this.logTerminal(`[TESTE HARDWARE]: Testando microfone... Fale algo nos próximos 3 segundos!`, 'cmd');
         this.testMicHardwareBtn.disabled = true;
-        this.testMicHardwareBtn.innerText = '🎙️ Captando... Fale!';
+        this.testMicHardwareBtn.innerText = 'Captando... fale!';
 
         this.audio.testMicrophoneHardware(
           (currentVol) => {
@@ -368,7 +371,7 @@ class JarvisApp {
           },
           (maxVol, err) => {
             this.testMicHardwareBtn.disabled = false;
-            this.testMicHardwareBtn.innerText = '🎙️ Testar Entrada de Microfone';
+            this.testMicHardwareBtn.innerHTML = ic('microfone') + ' Testar Entrada de Microfone';
 
             if (err) {
               this.logTerminal(`[ERRO HARDWARE]: ${err}`, 'sys');
@@ -389,7 +392,7 @@ class JarvisApp {
       this.toggleKeyVisBtn.addEventListener('click', () => {
         const isPass = this.sessionApiKeyInput.type === 'password';
         this.sessionApiKeyInput.type = isPass ? 'text' : 'password';
-        this.toggleKeyVisBtn.innerText = isPass ? '🔒' : '👁️';
+        this.toggleKeyVisBtn.innerHTML = isPass ? ic('olho-fechado') : ic('olho');
       });
     }
 
@@ -408,7 +411,7 @@ class JarvisApp {
         const key = this.sessionApiKeyInput.value.trim();
         if (key) {
           sessionStorage.setItem('jarvis_key_' + prov, key);
-          this.showKeyFeedback(`✓ Chave de ${prov.toUpperCase()} gravada na memória desta sessão!`, 'success');
+          this.showKeyFeedback(`Chave de ${prov.toUpperCase()} gravada na memória desta sessão!`, 'success');
           this.logTerminal(`[SEGURANÇA]: Chave de ${prov.toUpperCase()} ativada na sessão do navegador (volátil).`, 'sys');
         } else {
           sessionStorage.removeItem('jarvis_key_' + prov);
@@ -437,7 +440,7 @@ class JarvisApp {
           return;
         }
 
-        this.showKeyFeedback('⏳ Testando conexão com a API...', 'info');
+        this.showKeyFeedback('Testando conexão com a API...', 'info');
         // Achar um model_id padrão para o provedor
         const defaultModel = prov === 'google' ? 'gemini-3.6-flash' : prov === 'groq' ? 'llama-3.3-70b-versatile' : 'gpt-4o-mini';
         const res = await JarvisAPI.testApiModel({
@@ -447,10 +450,10 @@ class JarvisApp {
         });
 
         if (res.success) {
-          this.showKeyFeedback(`✓ ${res.message}`, 'success');
+          this.showKeyFeedback(`${res.message}`, 'success');
           this.audio.playCompletionChime();
         } else {
-          this.showKeyFeedback(`✕ Falha: ${res.error}`, 'error');
+          this.showKeyFeedback(`Falha: ${res.error}`, 'error');
           this.audio.playToolBeep();
         }
       });
@@ -549,22 +552,22 @@ class JarvisApp {
     if (this.syncGoogleModelsBtn) {
       this.syncGoogleModelsBtn.addEventListener('click', async () => {
         const sessionKey = sessionStorage.getItem('jarvis_key_google');
-        this.syncGoogleModelsBtn.innerText = '⏳ Sincronizando...';
+        this.syncGoogleModelsBtn.innerText = 'Sincronizando...';
         this.syncGoogleModelsBtn.disabled = true;
 
         const res = await JarvisAPI.getGoogleModels(sessionKey);
-        this.syncGoogleModelsBtn.innerText = '🔄 Sincronizar da API Google';
+        this.syncGoogleModelsBtn.innerHTML = ic('recarregar') + ' Sincronizar da API Google';
         this.syncGoogleModelsBtn.disabled = false;
 
         if (res.success && res.models && res.models.length > 0) {
           this.renderGoogleChips(res.models);
-          this.googleSyncedFeedback.innerText = `✓ ${res.models.length} modelos Google sincronizados diretamente da API!`;
+          this.googleSyncedFeedback.innerText = `${res.models.length} modelos Google sincronizados diretamente da API!`;
           this.googleSyncedFeedback.className = 'google-synced-msg success';
           this.googleSyncedFeedback.classList.remove('hidden');
           this.audio.playCompletionChime();
           this.logTerminal(`[GOOGLE API]: ${res.models.length} modelos sincronizados com sucesso.`, 'sys');
         } else {
-          this.googleSyncedFeedback.innerText = '✕ Não foi possível sincronizar da API. Verifique sua chave no .env ou no campo de sessão abaixo.';
+          this.googleSyncedFeedback.innerText = 'Não foi possível sincronizar da API. Verifique sua chave no .env ou no campo de sessão abaixo.';
           this.googleSyncedFeedback.className = 'google-synced-msg error';
           this.googleSyncedFeedback.classList.remove('hidden');
           this.audio.playToolBeep();
@@ -782,7 +785,7 @@ class JarvisApp {
     // 1. Grupo de Modelos Locais (Ollama)
     if (localList.length > 0) {
       const localGroup = document.createElement('optgroup');
-      localGroup.label = '🏠 Modelos Locais (Ollama Offline)';
+      localGroup.label = 'Modelos locais (Ollama, no seu PC)';
 
       localList.forEach((m) => {
         const opt = document.createElement('option');
@@ -796,7 +799,7 @@ class JarvisApp {
     // 2. Grupo de Modelos em Nuvem (API)
     if (apiList.length > 0) {
       const apiGroup = document.createElement('optgroup');
-      apiGroup.label = '☁️ Modelos em Nuvem (API)';
+      apiGroup.label = 'Modelos na nuvem (API)';
 
       apiList.forEach((m) => {
         const opt = document.createElement('option');
@@ -856,7 +859,7 @@ class JarvisApp {
             <code>${m.model_id}</code> &bull; Env: <code>${m.env_var || 'API_KEY'}</code>
           </div>
         </div>
-        <button class="delete-model-btn" title="Remover modelo do catálogo" data-id="${m.id}">✕</button>
+        <button class="delete-model-btn" title="Remover modelo do catálogo" data-id="${m.id}">${ic('fechar')}</button>
       `;
 
       const delBtn = card.querySelector('.delete-model-btn');
@@ -910,7 +913,7 @@ class JarvisApp {
     if (!existingOpt) {
       const customOpt = document.createElement('option');
       customOpt.value = fullId;
-      customOpt.textContent = `⚡ ${displayName} (Manual)`;
+      customOpt.textContent = `${displayName} (manual)`;
       this.modelSelect.prepend(customOpt);
     }
 
@@ -1060,10 +1063,10 @@ class JarvisApp {
       const downloadUrl = JarvisAPI.getDownloadUrl(item.filename);
       card.innerHTML = `
         <div class="dossier-head">
-          <span class="dossier-title">📄 ${item.title}</span>
+          <span class="dossier-title">${ic('arquivo')} ${item.title}</span>
           <div class="research-item-actions">
             <span class="dossier-date">${item.modified}</span>
-            <a href="${downloadUrl}" download="${item.filename}" class="research-download-icon-btn" title="Baixar relatório (.md)" onclick="event.stopPropagation()">⬇</a>
+            <a href="${downloadUrl}" download="${item.filename}" class="research-download-icon-btn" title="Baixar relatório (.md)" onclick="event.stopPropagation()">${ic('baixar')}</a>
           </div>
         </div>
         <p class="dossier-preview">${item.preview || 'Sem pré-visualização'}</p>
@@ -1313,7 +1316,7 @@ class JarvisApp {
         this.hideToolBanner();
         this.reactor.setState('IDLE');
         this.reactor.flash('confuso', 3500);
-        assistantMsg.updateContent(`⚠️ **Erro de Comunicação Neural**: ${errMsg}`);
+        assistantMsg.updateContent(`**Algo deu errado:** ${errMsg}`);
         this.logTerminal(`[ERRO]: ${errMsg}`, 'sys');
       }
     });
@@ -1419,7 +1422,7 @@ class JarvisApp {
     if (!btn) return;
     const originalHTML = btn.innerHTML;
     btn.classList.add('copied');
-    btn.innerHTML = '✓ Copiado!';
+    btn.innerHTML = ic('ok') + ' Copiado!';
     setTimeout(() => {
       btn.classList.remove('copied');
       btn.innerHTML = originalHTML;
@@ -1431,60 +1434,89 @@ class JarvisApp {
      ========================================================================== */
 
   setupAppearance() {
-    const btn = document.getElementById('appearance-btn');
-    const pop = document.getElementById('appearance-pop');
-    const grid = document.getElementById('body-grid');
-    if (!btn || !pop || !grid) return;
+    // Menus que abrem ao clicar e fecham ao clicar fora ou com Esc
+    const menus = [];
+    const bindMenu = (btn, pop) => {
+      if (!btn || !pop) return;
+      const toggle = (open) => {
+        pop.classList.toggle('hidden', !open);
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      };
+      menus.push(toggle);
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const willOpen = pop.classList.contains('hidden');
+        menus.forEach((t) => t(false));
+        toggle(willOpen);
+      });
+      pop.addEventListener('click', (e) => e.stopPropagation());
+    };
+    document.addEventListener('click', () => menus.forEach((t) => t(false)));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') menus.forEach((t) => t(false)); });
 
+    // ---- Vestiário: corpo do Atom (separado do tema do site)
+    const grid = document.getElementById('body-grid');
+    bindMenu(document.getElementById('wardrobe-btn'), document.getElementById('wardrobe-pop'));
+    const markBody = () => grid.querySelectorAll('.atom-body-card').forEach((c) => {
+      c.classList.toggle('active', c.dataset.body === this.reactor.bodyId);
+    });
     AtomCharacter.bodies.forEach((b) => {
       const card = document.createElement('button');
       card.type = 'button';
       card.className = 'atom-body-card';
       card.dataset.body = b.id;
       card.innerHTML = `<span class="atom-body-mini"><span class="atom-char s-parado"><span class="ch">${b.html}</span></span></span><span class="atom-body-name">${b.name}</span>`;
-      card.addEventListener('click', () => {
-        this.reactor.setBody(b.id);
-        markBody();
-      });
+      card.addEventListener('click', () => { this.reactor.setBody(b.id); markBody(); });
       grid.appendChild(card);
-    });
-    const markBody = () => grid.querySelectorAll('.atom-body-card').forEach((c) => {
-      c.classList.toggle('active', c.dataset.body === this.reactor.bodyId);
     });
     markBody();
 
-    const currentTheme = () => document.documentElement.dataset.tema || 'azul-noite';
-    const markTheme = () => pop.querySelectorAll('.atom-swatch').forEach((sw) => {
-      sw.classList.toggle('active', sw.dataset.tema === currentTheme());
-    });
-    THEMES.forEach((t) => {
-      const sw = document.createElement('button');
-      sw.type = 'button';
-      sw.className = 'atom-swatch';
-      sw.dataset.tema = t.id;
-      sw.title = t.name;
-      sw.setAttribute('aria-label', 'Tema ' + t.name);
-      sw.style.background = t.bg;
-      sw.style.setProperty('--sw-red', t.red);
-      sw.addEventListener('click', () => {
-        document.documentElement.dataset.tema = t.id;
-        try { localStorage.setItem('atom_tema', t.id); } catch (e) {}
-        const meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.setAttribute('content', t.bg);
-        markTheme();
-      });
-      document.getElementById(t.dark ? 'theme-dark' : 'theme-light').appendChild(sw);
-    });
-    markTheme();
-
-    const toggle = (open) => {
-      pop.classList.toggle('hidden', !open);
-      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    // ---- Tema do site: igual à navbar do portfólio (sol/lua + menu de temas)
+    const html = document.documentElement;
+    const store = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+    const read = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+    const modeOf = (dark) => (dark ? 'escuro' : 'claro');
+    const defaults = { escuro: THEMES.find((t) => t.dark).id, claro: THEMES.find((t) => !t.dark).id };
+    const palette = (mode) => {
+      const id = read('atom_pal_' + mode);
+      return THEMES.some((t) => t.id === id && modeOf(t.dark) === mode) ? id : defaults[mode];
     };
-    btn.addEventListener('click', (e) => { e.stopPropagation(); toggle(pop.classList.contains('hidden')); });
-    pop.addEventListener('click', (e) => e.stopPropagation());
-    document.addEventListener('click', () => toggle(false));
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') toggle(false); });
+    const modeBtn = document.getElementById('mode-toggle-btn');
+    const apply = (mode) => {
+      const id = palette(mode);
+      html.dataset.modo = mode;
+      html.dataset.tema = id;
+      store('atom_modo', mode);
+      const t = THEMES.find((x) => x.id === id);
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta && t) meta.setAttribute('content', t.bg);
+      if (modeBtn) {
+        const label = mode === 'claro' ? 'Mudar para o tema escuro' : 'Mudar para o tema claro';
+        modeBtn.title = label;
+        modeBtn.setAttribute('aria-label', label);
+        modeBtn.innerHTML = `<svg class="ic" aria-hidden="true"><use href="#i-${mode === 'claro' ? 'lua' : 'sol'}"/></svg>`;
+      }
+      document.querySelectorAll('.atom-theme-item').forEach((el) => {
+        const on = el.dataset.tema === id && el.dataset.modo === mode;
+        el.classList.toggle('active', on);
+        el.setAttribute('aria-checked', on ? 'true' : 'false');
+      });
+    };
+    THEMES.forEach((t) => {
+      const mode = modeOf(t.dark);
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'atom-theme-item';
+      item.setAttribute('role', 'menuitemradio');
+      item.dataset.tema = t.id;
+      item.dataset.modo = mode;
+      item.innerHTML = `<span class="atom-theme-swatch" aria-hidden="true"><span style="background:${t.bg}"></span><span style="background:${t.line}"></span><span class="red"></span></span><span class="atom-theme-name">${t.name}</span><span class="atom-theme-dot" aria-hidden="true">●</span>`;
+      item.addEventListener('click', () => { store('atom_pal_' + mode, t.id); apply(mode); });
+      document.getElementById(t.dark ? 'theme-dark' : 'theme-light').appendChild(item);
+    });
+    bindMenu(document.getElementById('theme-menu-btn'), document.getElementById('theme-menu'));
+    modeBtn?.addEventListener('click', () => apply(html.dataset.modo === 'claro' ? 'escuro' : 'claro'));
+    apply(html.dataset.modo === 'claro' ? 'claro' : 'escuro');
   }
 
   /* ==========================================================================
@@ -1514,7 +1546,7 @@ class JarvisApp {
     const msg = text || 'Oi! Sou o A.T.O.M., assistente do Rubens Mota. Posso pesquisar na web e no arXiv, montar dossiês e, se você deixar, enxergar a sua tela. Como posso ajudar?';
     return `
       <div class="chat-msg atom-msg jarvis-msg">
-        <div class="msg-avatar">⚛</div>
+        <div class="msg-avatar"><span class="atom-av" aria-hidden="true"><i></i><i></i></span></div>
         <div class="msg-body">
           <div class="msg-meta">
             <span class="msg-sender">A.T.O.M.</span>
@@ -1585,7 +1617,7 @@ class JarvisApp {
           <span class="atom-history-title">${this.escapeHtml(c.title)}</span>
           <span class="atom-history-meta">${when} · ${n} ${n === 1 ? 'pergunta' : 'perguntas'}</span>
         </button>
-        <button type="button" class="atom-history-del" title="Apagar esta conversa">✕</button>`;
+        <button type="button" class="atom-history-del" title="Apagar esta conversa">${ic('lixeira')}</button>`;
       row.querySelector('.atom-history-open').addEventListener('click', () => this.openConversation(c.id));
       row.querySelector('.atom-history-del').addEventListener('click', () => {
         Conversas.remove(c.id);
@@ -1601,12 +1633,12 @@ class JarvisApp {
     msgEl.className = `chat-msg ${role === 'user' ? 'user-msg' : 'atom-msg jarvis-msg'}`;
 
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const avatar = role === 'user' ? 'U' : '⚛';
+    const avatar = role === 'user' ? ic('pessoa') : '<span class="atom-av" aria-hidden="true"><i></i><i></i></span>';
     const sender = role === 'user' ? 'OPERADOR' : 'A.T.O.M.';
 
     const screenBadgeHtml = hasScreenFrame ? `
       <div class="tactical-label" style="margin-bottom: 6px; font-size: 10px; color: var(--accent-red); display: flex; align-items: center; gap: 4px;">
-        <span>👁️</span> FRAME DE TELA ANEXADO (MULTIMODAL)
+        ${ic('olho')} TELA ENVIADA JUNTO
       </div>
     ` : '';
 
@@ -1616,7 +1648,7 @@ class JarvisApp {
         <div class="msg-meta">
           <span class="msg-sender">${sender}</span>
           <span class="msg-time">${now}</span>
-          <button class="copy-msg-btn" title="Copiar mensagem">📋 Copiar</button>
+          <button class="copy-msg-btn" title="Copiar mensagem">${ic('copiar')} Copiar</button>
         </div>
         ${screenBadgeHtml}
         <div class="msg-content">${this.renderMarkdown(content)}</div>
@@ -1641,12 +1673,12 @@ class JarvisApp {
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     msgEl.innerHTML = `
-      <div class="msg-avatar">⚛</div>
+      <div class="msg-avatar"><span class="atom-av" aria-hidden="true"><i></i><i></i></span></div>
       <div class="msg-body">
         <div class="msg-meta">
           <span class="msg-sender">A.T.O.M.</span>
           <span class="msg-time">${now}</span>
-          <button class="copy-msg-btn" title="Copiar resposta">📋 Copiar</button>
+          <button class="copy-msg-btn" title="Copiar resposta">${ic('copiar')} Copiar</button>
         </div>
         <div class="msg-tools-container"></div>
         <div class="msg-content"><span class="streaming-cursor">█</span></div>
@@ -1678,7 +1710,7 @@ class JarvisApp {
         const toolTypeClass = toolEvent.tool.includes('search') ? 'search' : toolEvent.tool.includes('command') ? 'cmd' : 'dossier';
         badge.className = `tool-execution-card ${toolTypeClass}`;
         badge.innerHTML = `
-          <div class="tool-header-line">⚡ ${toolEvent.label}</div>
+          <div class="tool-header-line">${ic('raio')} ${toolEvent.label}</div>
           <div>${toolEvent.details}</div>
         `;
         toolsContainer.appendChild(badge);
@@ -1689,11 +1721,11 @@ class JarvisApp {
         card.innerHTML = `
           <div class="report-card-info">
             <span class="report-card-tag">DOSSIÊ TÁTICO FINALIZADO</span>
-            <span class="report-card-title">📄 ${filename}</span>
+            <span class="report-card-title">${ic('arquivo')} ${filename}</span>
           </div>
           <div class="report-card-actions">
-            <a href="${downloadUrl}" download="${filename}" class="chat-report-download-btn" title="Baixar relatório em Markdown">⬇ BAIXAR (.MD)</a>
-            <button class="hud-btn-subtle read-dossier-btn" style="padding: 5px 8px; font-size: 11px; cursor: pointer;">📖 LER</button>
+            <a href="${downloadUrl}" download="${filename}" class="chat-report-download-btn" title="Baixar relatório em Markdown">${ic('baixar')} BAIXAR (.MD)</a>
+            <button class="hud-btn-subtle read-dossier-btn" style="padding: 5px 8px; font-size: 11px; cursor: pointer;">${ic('livro')} LER</button>
           </div>
         `;
         const readBtn = card.querySelector('.read-dossier-btn');
@@ -1709,12 +1741,12 @@ class JarvisApp {
         card.className = 'tool-execution-card dossier';
         const downloadUrl = JarvisAPI.getDownloadUrl(fileData.filename);
         card.innerHTML = `
-          <div class="tool-header-line">📄 DOSSIÊ SALVO EM MARKDOWN</div>
+          <div class="tool-header-line">${ic('arquivo')} DOSSIÊ SALVO EM MARKDOWN</div>
           <div style="margin: 4px 0;"><strong>${fileData.title || fileData.filename}</strong></div>
           <div style="font-size: 10px; color: #a3a3a3;">${fileData.filename} (${fileData.size || 0} bytes)</div>
           <div style="display: flex; gap: 8px; margin-top: 6px;">
-            <a href="${downloadUrl}" download="${fileData.filename}" class="chat-report-download-btn" style="font-size: 10px; padding: 3px 8px;">⬇ Baixar (.md)</a>
-            <button class="hud-btn-subtle" style="margin-top: 0; padding: 3px 8px; font-size: 10px; cursor: pointer;">📂 Abrir no Windows</button>
+            <a href="${downloadUrl}" download="${fileData.filename}" class="chat-report-download-btn" style="font-size: 10px; padding: 3px 8px;">${ic('baixar')} Baixar (.md)</a>
+            <button class="hud-btn-subtle" style="margin-top: 0; padding: 3px 8px; font-size: 10px; cursor: pointer;">${ic('pasta')} Abrir no Windows</button>
           </div>
         `;
         const btn = card.querySelector('button');

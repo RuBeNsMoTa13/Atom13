@@ -279,7 +279,7 @@ export class JarvisAudio {
         msg = "Nenhum microfone encontrado conectado ao computador.";
       }
       if (this.onErrorMessage) this.onErrorMessage(msg);
-      if (transcriptEl) transcriptEl.innerText = `⚠️ ${msg}`;
+      if (transcriptEl) transcriptEl.innerText = msg;
       if (bannerEl) bannerEl.classList.remove('hidden');
       alert(msg);
       return;
@@ -365,7 +365,7 @@ export class JarvisAudio {
         zeroCount = 0;
 
         if (!this.currentText && transcriptEl) {
-          transcriptEl.innerText = `🗣️ Captando voz [Volume: ${vol}%] - Fale seu comando...`;
+          transcriptEl.innerText = `Captando voz [Volume: ${vol}%] - Fale seu comando...`;
         }
       } else {
         if (!this.hasSpoken) {
@@ -433,7 +433,7 @@ export class JarvisAudio {
 
     // Cenário A: O navegador já transcreveu texto via Web Speech API nativo
     if (recognizedText) {
-      if (transcriptEl) transcriptEl.innerText = `✔ "${recognizedText}"`;
+      if (transcriptEl) transcriptEl.innerText = `"${recognizedText}"`;
       setTimeout(() => {
         if (bannerEl) bannerEl.classList.add('hidden');
       }, 1500);
@@ -455,7 +455,7 @@ export class JarvisAudio {
       if (audioBlob.size > 800) {
         this.isTranscribing = true;
         if (this.onStateChange) this.onStateChange('THINKING');
-        if (transcriptEl) transcriptEl.innerText = '⚡ A.T.O.M. decodificando comando de voz via IA...';
+        if (transcriptEl) transcriptEl.innerText = 'A.T.O.M. entendendo comando de voz via IA...';
         if (this.onStatusMessage) this.onStatusMessage("Transcrevendo áudio via servidor neural...");
 
         try {
@@ -464,7 +464,7 @@ export class JarvisAudio {
 
           if (res && res.success && res.text && res.text.trim()) {
             const finalSpoken = res.text.trim();
-            if (transcriptEl) transcriptEl.innerText = `✔ "${finalSpoken}"`;
+            if (transcriptEl) transcriptEl.innerText = `"${finalSpoken}"`;
             setTimeout(() => {
               if (bannerEl) bannerEl.classList.add('hidden');
             }, 1500);
@@ -484,7 +484,7 @@ export class JarvisAudio {
             return;
           } else {
             const err = res?.error || "Nenhuma palavra compreensível identificada.";
-            if (transcriptEl) transcriptEl.innerText = `⚠️ ${err}`;
+            if (transcriptEl) transcriptEl.innerText = err;
             if (this.onStatusMessage) this.onStatusMessage(`[TRANSCRIÇÃO]: ${err}`);
             setTimeout(() => {
               if (bannerEl) bannerEl.classList.add('hidden');
@@ -493,10 +493,10 @@ export class JarvisAudio {
         } catch (postErr) {
           this.isTranscribing = false;
           console.error("Erro na transcrição de áudio:", postErr);
-          if (transcriptEl) transcriptEl.innerText = '⚠️ Erro de conexão ao transcrever áudio.';
+          if (transcriptEl) transcriptEl.innerText = 'Erro de conexão ao transcrever áudio.';
         }
       } else {
-        if (transcriptEl) transcriptEl.innerText = '⚠️ Áudio muito curto ou sem fala.';
+        if (transcriptEl) transcriptEl.innerText = 'Áudio muito curto ou sem fala.';
         setTimeout(() => {
           if (bannerEl) bannerEl.classList.add('hidden');
         }, 2000);
@@ -567,7 +567,7 @@ export class JarvisAudio {
 
         // Priorizar voz em português
         if (v.lang.includes('pt') || v.lang.includes('PT')) {
-          option.textContent += ' ★';
+          option.textContent += ' (recomendada)';
           if (!this.selectedVoice) {
             defaultIdx = idx;
             this.selectedVoice = v;

@@ -20,9 +20,10 @@
   <link rel="stylesheet" href="css/themes.css">
   <link rel="stylesheet" href="css/atom-char.css">
   <link rel="stylesheet" href="css/atom-ui.css">
-  <script>try{var t=localStorage.getItem('atom_tema');if(t)document.documentElement.dataset.tema=t;}catch(e){}</script>
+  <script>try{var m=localStorage.getItem('atom_modo')==='claro'?'claro':'escuro',p=localStorage.getItem('atom_pal_'+m);document.documentElement.dataset.modo=m;document.documentElement.dataset.tema=p||(m==='claro'?'nevoa':'azul-noite');}catch(e){}</script>
 </head>
 <body class="atom-theme">
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><symbol id="i-editar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 3.5l3 3L6 15H3v-3z"/><path d="M10 5l3 3"/></symbol><symbol id="i-recarregar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 9a5.5 5.5 0 1 1-1.6-3.9"/><path d="M13.5 2.5v3h-3"/></symbol><symbol id="i-fechar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 4.5l9 9M13.5 4.5l-9 9"/></symbol><symbol id="i-pasta" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 5V14a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V6.5a1 1 0 0 0-1-1H9L7.5 3.5h-4a1 1 0 0 0-1 1z"/></symbol><symbol id="i-ajustes" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h6M12 5h3M3 13h2M8 13h7"/><circle cx="10.5" cy="5" r="1.5"/><circle cx="6.5" cy="13" r="1.5"/></symbol><symbol id="i-calculadora" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2.5" width="10" height="13" rx="1"/><path d="M6.5 5.5h5"/><path d="M6.5 9h.01M9 9h.01M11.5 9h.01M6.5 12h.01M9 12h.01M11.5 12h.01" stroke-width="2"/></symbol><symbol id="i-nota" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2.5h7l3 3v10H4z"/><path d="M11 2.5v3h3M6.5 9h5M6.5 12h3.5"/></symbol><symbol id="i-grafico" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15h12"/><path d="M5 12V9M9 12V5M13 12V7.5"/></symbol><symbol id="i-artigo" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 3.5h11v11h-11z"/><path d="M6 6.5h6M6 9h6M6 11.5h3.5"/></symbol><symbol id="i-globo" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="6.5"/><path d="M2.5 9h13M9 2.5c-2.2 2.4-2.2 10.6 0 13M9 2.5c2.2 2.4 2.2 10.6 0 13"/></symbol><symbol id="i-olho" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.8 9S4.5 4 9 4s7.2 5 7.2 5-2.7 5-7.2 5S1.8 9 1.8 9z"/><circle cx="9" cy="9" r="2.2"/></symbol><symbol id="i-olho-fechado" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7c1.5 2 3.7 3.2 6.5 3.2S14 9 15.5 7"/><path d="M5 9.6L4 11.5M9 10.2v2M13 9.6l1 1.9"/></symbol><symbol id="i-microfone" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2" width="5" height="8.5" rx="2.5"/><path d="M4 8.5a5 5 0 0 0 10 0M9 13.5V16M6.5 16h5"/></symbol><symbol id="i-som" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h2.5L9 4v10l-3.5-3H3z"/><path d="M12 6.5a3.5 3.5 0 0 1 0 5M14 4.5a6.5 6.5 0 0 1 0 9"/></symbol><symbol id="i-raio" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2L4.5 10H9l-1 6 5.5-8H9z"/></symbol><symbol id="i-lixeira" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h12M7 5V3h4v2M4.5 5l.8 10h7.4l.8-10"/><path d="M7.5 8v4.5M10.5 8v4.5"/></symbol><symbol id="i-copiar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="9" height="9" rx="1"/><path d="M12 6V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h2"/></symbol><symbol id="i-enviar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h11M10 5l4 4-4 4"/></symbol><symbol id="i-escudo" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2l5.5 2v4.5c0 3.4-2.3 5.9-5.5 7.5-3.2-1.6-5.5-4.1-5.5-7.5V4z"/></symbol><symbol id="i-baixar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2.5v9M5.5 8L9 11.5 12.5 8M3 14.5h12"/></symbol><symbol id="i-salvar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h9.5L15 5.5V15H3z"/><path d="M6 3v4h5V3M6 15v-4.5h6V15"/></symbol><symbol id="i-arquivo" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 2.5h6l3 3v10h-9z"/><path d="M10.5 2.5v3h3"/></symbol><symbol id="i-livro" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4c2-1 4.5-1 6.5.5 2-1.5 4.5-1.5 6.5-.5v10.5c-2-1-4.5-1-6.5.5-2-1.5-4.5-1.5-6.5-.5z"/><path d="M9 4.5V15"/></symbol><symbol id="i-cadeado" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="8" width="11" height="7.5" rx="1"/><path d="M6 8V6a3 3 0 0 1 6 0v2"/></symbol><symbol id="i-ok" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 9.5l3.5 3.5 7.5-8"/></symbol><symbol id="i-alerta" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2.5l7 12.5H2z"/><path d="M9 7.5v3.5M9 13h.01" stroke-width="1.8"/></symbol><symbol id="i-pessoa" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="6" r="3"/><path d="M3 15.5c.8-3 3.2-4.5 6-4.5s5.2 1.5 6 4.5"/></symbol><symbol id="i-paleta" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2a7 7 0 1 0 0 14c1 0 1.4-.7 1.1-1.5-.4-1 .2-2 1.3-2H13a3 3 0 0 0 3-3C16 5.2 12.9 2 9 2Z"/><circle cx="5.6" cy="8.4" r="1" fill="currentColor" stroke="none"/><circle cx="8.2" cy="5.4" r="1" fill="currentColor" stroke="none"/><circle cx="11.8" cy="6.2" r="1" fill="currentColor" stroke="none"/></symbol><symbol id="i-sol" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3.2"/><path d="M9 1.8v1.7M9 14.5v1.7M1.8 9h1.7M14.5 9h1.7M3.9 3.9l1.2 1.2M12.9 12.9l1.2 1.2M3.9 14.1l1.2-1.2M12.9 5.1l1.2-1.2"/></symbol><symbol id="i-lua" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 10.6A6 6 0 0 1 7.4 3.5a6 6 0 1 0 7.1 7.1Z"/></symbol><symbol id="i-cabide" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6.5V6a1.6 1.6 0 1 0-1.6-1.6"/><path d="M9 6.5L2.5 11.5c-.6.5-.3 1.5.5 1.5h12c.8 0 1.1-1 .5-1.5z"/></symbol><symbol id="i-parar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="4.5" width="9" height="9" rx="1"/></symbol><symbol id="i-estrela" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2.5l2 4.2 4.5.6-3.3 3.1.8 4.5L9 12.7l-4 2.2.8-4.5-3.3-3.1 4.5-.6z"/></symbol><symbol id="i-tela" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="3" width="13" height="9.5" rx="1"/><path d="M6.5 15.5h5M9 12.5v3"/></symbol><symbol id="i-nuvem" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 14h8a3 3 0 0 0 .4-6A4.5 4.5 0 0 0 4.7 7.2 3.4 3.4 0 0 0 5 14z"/></symbol></svg>
   <!-- Scanlines & Background HUD Grids -->
   <div class="hud-background-grid"></div>
 
@@ -34,7 +35,6 @@
       <div class="header-left">
         <div class="stark-logo">
           <span class="logo-title atom-logo">AT<b>OM</b></span>
-          <span class="logo-ver">TACTICAL MATRIX // V2.0</span>
         </div>
         <div class="status-indicator-badge" id="system-status-badge">
           <span class="pulse-dot"></span>
@@ -51,39 +51,51 @@
             </select>
             <span class="select-arrow">▼</span>
           </div>
-          <button id="toggle-manual-model-btn" class="hud-icon-btn" title="Digitar nome de qualquer modelo manualmente">✏️</button>
-          <button id="refresh-models-btn" class="hud-icon-btn" title="Recarregar lista de modelos">↻</button>
+          <button id="toggle-manual-model-btn" class="hud-icon-btn" title="Digitar nome de qualquer modelo manualmente"><svg class="ic" aria-hidden="true"><use href="#i-editar"/></svg></button>
+          <button id="refresh-models-btn" class="hud-icon-btn" title="Recarregar lista de modelos"><svg class="ic" aria-hidden="true"><use href="#i-recarregar"/></svg></button>
         </div>
 
         <!-- BARRA FLUTUANTE PARA DIGITAR QUALQUER MODELO MANUALMENTE -->
         <div id="manual-model-bar" class="manual-model-bar hidden">
           <input type="text" id="manual-model-input" class="hud-input-manual" placeholder="Digite o modelo (ex: gemini-3.6-flash, gpt-4o)...">
           <button id="apply-manual-model-btn" class="hud-btn-apply-model" title="Aplicar modelo">APLICAR</button>
-          <button id="cancel-manual-model-btn" class="hud-btn-cancel-model" title="Fechar">✕</button>
+          <button id="cancel-manual-model-btn" class="hud-btn-cancel-model" title="Fechar"><svg class="ic" aria-hidden="true"><use href="#i-fechar"/></svg></button>
         </div>
       </div>
 
       <div class="header-right">
         <div class="atom-pop-wrap">
-          <button id="appearance-btn" class="hud-btn-nav" title="Trocar a aparência do Atom" aria-haspopup="true" aria-expanded="false">
-            <span class="btn-icon">◧</span>
-            <span>APARÊNCIA</span>
+          <button id="wardrobe-btn" class="hud-btn-nav atom-wardrobe-btn" title="Trocar o corpo do Atom" aria-haspopup="true" aria-expanded="false">
+            <span class="btn-icon"><svg class="ic" aria-hidden="true"><use href="#i-cabide"/></svg></span>
+            <span>VESTIÁRIO</span>
           </button>
-          <div id="appearance-pop" class="atom-pop hidden" role="dialog" aria-label="Aparência do Atom">
-            <div class="atom-pop-title">Corpo do Atom</div>
+          <div id="wardrobe-pop" class="atom-pop hidden" role="dialog" aria-label="Vestiário do Atom">
+            <div class="atom-pop-title">Vestiário · corpo do Atom</div>
             <div id="body-grid" class="atom-body-grid"></div>
-            <div class="atom-pop-title">Tema</div>
-            <div class="atom-theme-group"><span class="atom-theme-label">Escuros</span><div id="theme-dark" class="atom-theme-row"></div></div>
-            <div class="atom-theme-group"><span class="atom-theme-label">Claros</span><div id="theme-light" class="atom-theme-row"></div></div>
-            <div class="atom-pop-foot">Fica salvo neste navegador.</div>
+            <div class="atom-pop-foot">O rosto e as reações são os mesmos em todos. Fica salvo neste navegador.</div>
           </div>
         </div>
+        <div class="atom-pop-wrap">
+          <button id="theme-menu-btn" class="atom-square-btn" title="Temas" aria-label="Temas" aria-haspopup="menu" aria-expanded="false">
+            <svg class="ic" aria-hidden="true"><use href="#i-paleta"/></svg>
+          </button>
+          <div id="theme-menu" class="atom-pop atom-theme-menu hidden" role="menu" aria-label="Temas">
+            <span class="atom-theme-group-title">Escuro</span>
+            <div id="theme-dark"></div>
+            <div class="atom-theme-sep"></div>
+            <span class="atom-theme-group-title">Claro</span>
+            <div id="theme-light"></div>
+          </div>
+        </div>
+        <button id="mode-toggle-btn" class="atom-square-btn" title="Mudar para o tema claro" aria-label="Mudar para o tema claro">
+          <svg class="ic" aria-hidden="true"><use href="#i-sol"/></svg>
+        </button>
         <button id="toggle-researches-btn" class="hud-btn-nav" title="Ver Dossiês e Relatórios Salvos">
-          <span class="btn-icon">📁</span>
+          <span class="btn-icon"><svg class="ic" aria-hidden="true"><use href="#i-pasta"/></svg></span>
           <span>DOSSIÊS (<span id="research-count">0</span>)</span>
         </button>
         <button id="toggle-settings-btn" class="hud-btn-nav" title="Configurações e Baixar Novos Modelos">
-          <span class="btn-icon">⚙</span>
+          <span class="btn-icon"><svg class="ic" aria-hidden="true"><use href="#i-ajustes"/></svg></span>
           <span>SISTEMA</span>
         </button>
       </div>
@@ -164,11 +176,11 @@
             <h4>COMANDOS RÁPIDOS</h4>
           </div>
           <div class="quick-btn-group">
-            <button class="quick-cmd-btn" data-prompt="Abra a calculadora">🧮 Abrir Calculadora</button>
-            <button class="quick-cmd-btn" data-prompt="Abra o bloco de notas">📝 Bloco de Notas</button>
-            <button class="quick-cmd-btn" data-prompt="A.T.O.M., qual o status do sistema e uso de hardware?">📊 Diagnóstico Tático</button>
-            <button class="quick-cmd-btn" data-prompt="A.T.O.M., pesquise artigos científicos no arXiv sobre quantum computing e faça um resumo">🔬 Pesquisar no arXiv</button>
-            <button class="quick-cmd-btn" data-prompt="A.T.O.M., pesquise na web as novidades sobre tecnologia hoje e faça um resumo">🌐 Pesquisar Notícias</button>
+            <button class="quick-cmd-btn" data-prompt="Abra a calculadora"><svg class="ic" aria-hidden="true"><use href="#i-calculadora"/></svg> Abrir Calculadora</button>
+            <button class="quick-cmd-btn" data-prompt="Abra o bloco de notas"><svg class="ic" aria-hidden="true"><use href="#i-nota"/></svg> Bloco de Notas</button>
+            <button class="quick-cmd-btn" data-prompt="A.T.O.M., qual o status do sistema e uso de hardware?"><svg class="ic" aria-hidden="true"><use href="#i-grafico"/></svg> Diagnóstico do sistema</button>
+            <button class="quick-cmd-btn" data-prompt="A.T.O.M., pesquise artigos científicos no arXiv sobre quantum computing e faça um resumo"><svg class="ic" aria-hidden="true"><use href="#i-artigo"/></svg> Pesquisar no arXiv</button>
+            <button class="quick-cmd-btn" data-prompt="A.T.O.M., pesquise na web as novidades sobre tecnologia hoje e faça um resumo"><svg class="ic" aria-hidden="true"><use href="#i-globo"/></svg> Pesquisar notícias</button>
           </div>
         </div>
 
@@ -213,22 +225,22 @@
           </button>
 
           <button id="screen-share-btn" class="hud-control-toggle screen-btn" title="Compartilhar tela com o A.T.O.M. (Visão Multimodal)">
-            <span class="toggle-icon">👁️</span>
+            <span class="toggle-icon"><svg class="ic" aria-hidden="true"><use href="#i-olho"/></svg></span>
             <span class="toggle-label" id="screen-btn-label">ENXERGAR TELA</span>
           </button>
 
           <button id="mic-toggle-btn" class="voice-btn mic-btn" title="Parar o A.T.O.M. e começar a ouvir você (Atalho: +)">
-            <span class="mic-icon">🎙️</span>
+            <span class="mic-icon"><svg class="ic" aria-hidden="true"><use href="#i-microfone"/></svg></span>
             <span class="mic-label" id="mic-btn-label">FALAR COM A.T.O.M. [+]</span>
           </button>
 
           <button id="tts-toggle-btn" class="hud-control-toggle active" title="Alternar resposta por voz (Text-To-Speech)">
-            <span class="toggle-icon">🔊</span>
+            <span class="toggle-icon"><svg class="ic" aria-hidden="true"><use href="#i-som"/></svg></span>
             <span class="toggle-label">VOZ ATIVA</span>
           </button>
 
           <button id="sfx-toggle-btn" class="hud-control-toggle active" title="Alternar efeitos sonoros de interface">
-            <span class="toggle-icon">⚡</span>
+            <span class="toggle-icon"><svg class="ic" aria-hidden="true"><use href="#i-raio"/></svg></span>
             <span class="toggle-label">SFX TÁTICO</span>
           </button>
         </div>
@@ -250,14 +262,14 @@
           <div class="chat-header-actions">
             <button id="new-chat-btn" class="hud-mini-btn atom-new-chat" title="Começar uma conversa nova (a atual fica salva)">+ NOVA</button>
             <button id="history-btn" class="hud-mini-btn" title="Conversas salvas neste navegador" aria-expanded="false">CONVERSAS (<span id="history-count">0</span>)</button>
-            <button id="clear-chat-btn" class="hud-icon-btn" title="Apagar esta conversa">🗑️</button>
+            <button id="clear-chat-btn" class="hud-icon-btn" title="Apagar esta conversa"><svg class="ic" aria-hidden="true"><use href="#i-lixeira"/></svg></button>
           </div>
         </div>
 
         <div id="history-panel" class="atom-history hidden" aria-label="Conversas salvas">
           <div class="atom-history-head">
             <span>Conversas salvas neste navegador</span>
-            <button id="history-close-btn" class="hud-icon-btn" title="Fechar">✕</button>
+            <button id="history-close-btn" class="hud-icon-btn" title="Fechar"><svg class="ic" aria-hidden="true"><use href="#i-fechar"/></svg></button>
           </div>
           <div id="history-list" class="atom-history-list"></div>
         </div>
@@ -267,12 +279,12 @@
           
           <!-- WELCOME MESSAGE -->
           <div class="chat-msg atom-msg jarvis-msg">
-            <div class="msg-avatar">⚛</div>
+            <div class="msg-avatar"><span class="atom-av" aria-hidden="true"><i></i><i></i></span></div>
             <div class="msg-body">
               <div class="msg-meta">
                 <span class="msg-sender">A.T.O.M.</span>
                 <span class="msg-time">AGORA</span>
-                <button class="copy-msg-btn" title="Copiar mensagem">📋 Copiar</button>
+                <button class="copy-msg-btn" title="Copiar mensagem"><svg class="ic" aria-hidden="true"><use href="#i-copiar"/></svg> Copiar</button>
               </div>
               <div class="msg-content">
                 Matriz Tática A.T.O.M. inicializada e operacional sob o comando de Rubens Mota. 
@@ -301,10 +313,10 @@
               <!-- Miniatura ao vivo do que está sendo compartilhado (estilo Discord) -->
               <video id="screen-live-preview" class="screen-live-preview" autoplay muted playsinline title="Clique para ampliar"></video>
               <span class="screen-live-dot"></span>
-              <span class="screen-preview-icon">👁️</span>
+              <span class="screen-preview-icon"><svg class="ic" aria-hidden="true"><use href="#i-olho"/></svg></span>
               <span class="screen-preview-text">TELA AO VIVO</span>
             </div>
-            <button id="stop-screen-share-btn" class="screen-preview-close" title="Encerrar compartilhamento de tela">✕ ENCERRAR</button>
+            <button id="stop-screen-share-btn" class="screen-preview-close" title="Encerrar compartilhamento de tela"><svg class="ic" aria-hidden="true"><use href="#i-fechar"/></svg> ENCERRAR</button>
           </div>
 
           <div class="composer-toolbar">
@@ -324,7 +336,7 @@
               </button>
             </div>
 
-            <span class="composer-hint">💡 [Enter] Enviar</span>
+            <span class="composer-hint">[Enter] envia</span>
           </div>
 
           <div class="composer-input-row">
@@ -337,12 +349,12 @@
             ></textarea>
 
             <button id="composer-mic-btn" class="hud-composer-mic-btn" title="Ativar microfone de voz">
-              <span class="mic-glyph">🎙️</span>
+              <span class="mic-glyph"><svg class="ic" aria-hidden="true"><use href="#i-microfone"/></svg></span>
             </button>
 
             <button id="send-btn" class="hud-send-btn" title="Enviar mensagem [Enter]">
               <span>ENVIAR</span>
-              <span class="send-arrow">➔</span>
+              <span class="send-arrow"><svg class="ic" aria-hidden="true"><use href="#i-enviar"/></svg></span>
             </button>
           </div>
         </div>
@@ -358,8 +370,8 @@
           <h3>DOSSIÊS & PESQUISAS MARKDOWN</h3>
         </div>
         <div class="drawer-actions">
-          <button id="open-research-folder-btn" class="hud-action-btn">📂 ABRIR PASTA NO WINDOWS</button>
-          <button class="close-drawer-btn" data-drawer="researches-drawer">✕</button>
+          <button id="open-research-folder-btn" class="hud-action-btn"><svg class="ic" aria-hidden="true"><use href="#i-pasta"/></svg> ABRIR PASTA NO WINDOWS</button>
+          <button class="close-drawer-btn" data-drawer="researches-drawer"><svg class="ic" aria-hidden="true"><use href="#i-fechar"/></svg></button>
         </div>
       </div>
       
@@ -377,7 +389,7 @@
           <span class="panel-tag">CONFIGURAÇÕES</span>
           <h3>PARÂMETROS DO SISTEMA</h3>
         </div>
-        <button class="close-drawer-btn" data-drawer="settings-drawer">✕</button>
+        <button class="close-drawer-btn" data-drawer="settings-drawer"><svg class="ic" aria-hidden="true"><use href="#i-fechar"/></svg></button>
       </div>
 
       <div class="drawer-content settings-layout">
@@ -406,7 +418,7 @@
         <div class="settings-section">
           <div class="section-title-wrap">
             <h4>MODELOS EM NUVEM (VIA API)</h4>
-            <span class="security-badge" title="Chaves nunca são gravadas em arquivos JSON do projeto">🛡️ ZERO-PERSISTÊNCIA GIT</span>
+            <span class="security-badge" title="Chaves nunca são gravadas em arquivos JSON do projeto"><svg class="ic" aria-hidden="true"><use href="#i-escudo"/></svg> ZERO-PERSISTÊNCIA GIT</span>
           </div>
           <p class="settings-desc">
             Use modelos em nuvem (Google Gemini, OpenAI, Groq, OpenRouter, etc.). 
@@ -423,10 +435,10 @@
           <div class="google-models-toolkit">
             <div class="toolkit-head">
               <span class="hud-label">MODELOS GOOGLE GEMINI (CLIQUE PARA USAR):</span>
-              <button id="sync-google-models-btn" class="hud-btn-subtle" title="Consultar todos os modelos ativos na sua chave Google">🔄 Sincronizar da API Google</button>
+              <button id="sync-google-models-btn" class="hud-btn-subtle" title="Consultar todos os modelos ativos na sua chave Google"><svg class="ic" aria-hidden="true"><use href="#i-recarregar"/></svg> Sincronizar da API Google</button>
             </div>
             <div class="quick-gemini-chips" id="quick-gemini-chips">
-              <button class="gemini-chip" data-model="gemini-3.6-flash" title="Google Gemini 3.6 Flash (Recomendado)">gemini-3.6-flash ★</button>
+              <button class="gemini-chip" data-model="gemini-3.6-flash" title="Google Gemini 3.6 Flash (Recomendado)">gemini-3.6-flash · recomendado</button>
               <button class="gemini-chip" data-model="gemini-3.8-flash" title="Google Gemini 3.8 Flash (Raciocínio Rápido)">gemini-3.8-flash</button>
               <button class="gemini-chip" data-model="gemini-3.6-pro" title="Google Gemini 3.6 Pro (Máxima Capacidade)">gemini-3.6-pro</button>
               <button class="gemini-chip" data-model="gemini-3.7-flash" title="Google Gemini 3.7 Flash">gemini-3.7-flash</button>
@@ -449,13 +461,13 @@
               </select>
               <div class="key-input-wrapper">
                 <input type="password" id="session-api-key-input" class="hud-input" placeholder="Cole sua chave aqui...">
-                <button id="toggle-key-visibility-btn" class="key-vis-btn" title="Mostrar/Ocultar">👁️</button>
+                <button id="toggle-key-visibility-btn" class="key-vis-btn" title="Mostrar/Ocultar"><svg class="ic" aria-hidden="true"><use href="#i-olho"/></svg></button>
               </div>
             </div>
             <div class="session-key-actions">
-              <button id="test-api-key-btn" class="hud-btn-subtle">⚡ Testar Conexão</button>
-              <button id="save-session-key-btn" class="hud-action-btn-small">💾 Ativar na Sessão</button>
-              <button id="clear-session-key-btn" class="hud-btn-subtle text-red">✕ Limpar</button>
+              <button id="test-api-key-btn" class="hud-btn-subtle"><svg class="ic" aria-hidden="true"><use href="#i-raio"/></svg> Testar Conexão</button>
+              <button id="save-session-key-btn" class="hud-action-btn-small"><svg class="ic" aria-hidden="true"><use href="#i-salvar"/></svg> Ativar na Sessão</button>
+              <button id="clear-session-key-btn" class="hud-btn-subtle text-red"><svg class="ic" aria-hidden="true"><use href="#i-fechar"/></svg> Limpar</button>
             </div>
             <div id="key-test-feedback" class="key-feedback-msg hidden"></div>
           </div>
@@ -538,7 +550,7 @@
           </div>
           <div style="display: flex; gap: 8px; margin-top: 8px;">
             <button id="test-voice-btn" class="hud-btn-subtle">▶ Testar Voz</button>
-            <button id="test-mic-hardware-btn" class="hud-btn-subtle">🎙️ Testar Entrada de Microfone</button>
+            <button id="test-mic-hardware-btn" class="hud-btn-subtle"><svg class="ic" aria-hidden="true"><use href="#i-microfone"/></svg> Testar Entrada de Microfone</button>
           </div>
         </div>
 
@@ -554,9 +566,9 @@
             <h3 id="modal-dossier-title">Título do Dossiê</h3>
           </div>
           <div class="modal-actions">
-            <button id="modal-download-btn" class="hud-action-btn modal-download-btn" title="Baixar relatório em Markdown">⬇ BAIXAR RELATÓRIO</button>
+            <button id="modal-download-btn" class="hud-action-btn modal-download-btn" title="Baixar relatório em Markdown"><svg class="ic" aria-hidden="true"><use href="#i-baixar"/></svg> BAIXAR RELATÓRIO</button>
             <button id="modal-open-win-btn" class="hud-action-btn">ABRIR ARQUIVO</button>
-            <button id="close-modal-btn" class="close-drawer-btn">✕</button>
+            <button id="close-modal-btn" class="close-drawer-btn"><svg class="ic" aria-hidden="true"><use href="#i-fechar"/></svg></button>
           </div>
         </div>
         <div class="modal-body" id="modal-dossier-content">
