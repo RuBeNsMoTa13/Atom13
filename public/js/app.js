@@ -883,6 +883,17 @@ class JarvisApp {
     return m ? m[1] : null;
   }
 
+  /** O provedor tem chave (na Vercel/.env ou colada nesta aba)? Sem chave, os modelos dele não aparecem. */
+  hasKeyFor(provider) {
+    try { if (sessionStorage.getItem('jarvis_key_' + provider)) return true; } catch (e) {}
+    return (this.apiModels || []).some((m) => m.provider === provider && m.has_env_key);
+  }
+
+  /** Modelos do catálogo que dá para usar agora (o provedor tem chave). */
+  usableCatalog() {
+    return (this.apiModels || []).filter((m) => this.hasKeyFor(m.provider));
+  }
+
   renderModelSelect() {
     const sel = this.modelSelect;
     const previous = this.currentModel;
@@ -917,7 +928,7 @@ class JarvisApp {
       sel.appendChild(g);
     });
 
-    const rest = (this.apiModels || []).filter((m) => !shown.has(m.id));
+    const rest = this.usableCatalog().filter((m) => !shown.has(m.id));
     if (rest.length) {
       const g = document.createElement('optgroup');
       g.label = 'Modelos na nuvem (catálogo)';
@@ -928,7 +939,7 @@ class JarvisApp {
     if (previous && !shown.has(previous)) add(sel, previous, previous.replace(/^api:[a-z]+:/, '') + ' (manual)');
     if (!previous) {
       if (this.localModels && this.localModels.length) this.currentModel = this.defaultModel || this.localModels[0].name;
-      else if (this.apiModels && this.apiModels.length) this.currentModel = this.apiModels[0].id;
+      else if (this.usableCatalog().length) this.currentModel = this.usableCatalog()[0].id;
     }
     sel.value = this.currentModel;
     if (this.engineModelTag) this.engineModelTag.innerText = this.currentModel || '';
@@ -938,12 +949,20 @@ class JarvisApp {
     if (!this.apiModelsCatalog) return;
     this.apiModelsCatalog.innerHTML = '';
 
-    if (this.apiModels.length === 0) {
-      this.apiModelsCatalog.innerHTML = '<div class="catalog-empty">Nenhum modelo de API cadastrado no catálogo.</div>';
-      return;
+    // Só aparece o que a chave libera; provedores sem chave ficam escondidos até você colar a chave deles
+    const usable = this.usableCatalog();
+    const hidden = [...new Set((this.apiModels || []).filter((m) => !this.hasKeyFor(m.provider)).map((m) => m.provider))];
+    if (usable.length === 0) {
+      this.apiModelsCatalog.innerHTML = '<div class="catalog-empty">Nenhuma chave de API ativa. Cole uma chave abaixo para liberar os modelos dela.</div>';
+    }
+    if (hidden.length) {
+      const note = document.createElement('div');
+      note.className = 'catalog-empty';
+      note.textContent = `Sem chave: ${hidden.map((p) => p.toUpperCase()).join(', ')}. Os modelos ${hidden.length > 1 ? 'deles' : 'dele'} só aparecem quando você colar a chave.`;
+      this.apiModelsCatalog.appendChild(note);
     }
 
-    this.apiModels.forEach((m) => {
+    usable.forEach((m) => {
       const card = document.createElement('div');
       card.className = 'api-model-item';
 
