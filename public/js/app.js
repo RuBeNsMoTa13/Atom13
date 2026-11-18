@@ -1065,7 +1065,7 @@ class JarvisApp {
 
   /** Painel da versão web: só o que faz sentido medir na nuvem. */
   updateWebTelemetry() {
-    const set = (id, txt) => { const el = document.getElementById(id); if (el && el.textContent !== txt) el.textContent = txt; };
+    const set = (id, txt) => { const el = document.getElementById(id); if (el && el.textContent !== txt) { el.textContent = txt; el.title = txt; } };
     const opt = this.modelSelect && this.modelSelect.selectedOptions ? this.modelSelect.selectedOptions[0] : null;
     set('web-model', (opt && opt.textContent.trim()) || this.currentModel || 'nenhum');
     const prov = this.providerOf(this.currentModel);
