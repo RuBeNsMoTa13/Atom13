@@ -139,6 +139,18 @@ def get_google_models(session_key: Optional[str] = None):
     models = api_model_manager.list_google_models(session_key=session_key)
     return {"success": True, "models": models}
 
+class ListModelsRequest(BaseModel):
+    provider: str
+    session_key: Optional[str] = None
+
+
+@app.post("/api/models/list")
+def list_models_for_key(req: ListModelsRequest):
+    """Lista todos os modelos que a chave do provedor libera (chave vai no corpo, nunca na URL)."""
+    models = api_model_manager.list_provider_models(req.provider, session_key=req.session_key)
+    return {"success": bool(models), "models": models}
+
+
 @app.post("/api/models/api")
 def add_api_model(req: AddApiModelRequest):
     """Cadastra um novo modelo de API (apenas metadados e provedor, sem chaves)."""

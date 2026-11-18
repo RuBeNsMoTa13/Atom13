@@ -206,8 +206,10 @@ class JarvisApp {
     }
 
     if (this.composerMicBtn) {
+      // Único botão de ouvir: se o Atom estiver falando ou respondendo, ele para e já começa a ouvir
       this.composerMicBtn.addEventListener('click', () => {
-        this.audio.toggleListening();
+        if (this.audio.isListening) this.audio.toggleListening();
+        else this.stopAndListen();
         this.updateMicBtnState();
       });
     }
@@ -411,11 +413,16 @@ class JarvisApp {
         const key = this.sessionApiKeyInput.value.trim();
         if (key) {
           sessionStorage.setItem('jarvis_key_' + prov, key);
-          this.showKeyFeedback(`Chave de ${prov.toUpperCase()} gravada na memória desta sessão!`, 'success');
+          this.showKeyFeedback(`Chave de ${prov.toUpperCase()} ativada. Buscando os modelos dela...`, 'info');
+          this.loadLiveModels(prov).then((n) => {
+            if (n) this.showKeyFeedback(`Chave de ${prov.toUpperCase()} ativada. ${n} modelos liberados no seletor lá em cima.`, 'success');
+            else this.showKeyFeedback(`Chave de ${prov.toUpperCase()} ativada, mas não consegui listar os modelos dela. Confira se a chave está certa.`, 'error');
+          });
           this.logTerminal(`[SEGURANÇA]: Chave de ${prov.toUpperCase()} ativada na sessão do navegador (volátil).`, 'sys');
         } else {
           sessionStorage.removeItem('jarvis_key_' + prov);
           this.showKeyFeedback(`Chave de ${prov.toUpperCase()} removida da sessão.`, 'info');
+          if (this.liveModels) { delete this.liveModels[prov]; this.renderModelSelect(); }
         }
         this.renderApiModelsCatalog();
       });
@@ -776,53 +783,99 @@ class JarvisApp {
 
   async loadModels() {
     const data = await JarvisAPI.getModels();
-    this.modelSelect.innerHTML = '';
-
-    const localList = data.local_models || data.models || [];
-    const apiList = data.api_models || [];
-    this.apiModels = apiList;
-
-    // 1. Grupo de Modelos Locais (Ollama)
-    if (localList.length > 0) {
-      const localGroup = document.createElement('optgroup');
-      localGroup.label = 'Modelos locais (Ollama, no seu PC)';
-
-      localList.forEach((m) => {
-        const opt = document.createElement('option');
-        opt.value = m.name;
-        opt.textContent = `${m.name} (${m.size_gb ? m.size_gb + ' GB' : 'Local'})`;
-        localGroup.appendChild(opt);
-      });
-      this.modelSelect.appendChild(localGroup);
-    }
-
-    // 2. Grupo de Modelos em Nuvem (API)
-    if (apiList.length > 0) {
-      const apiGroup = document.createElement('optgroup');
-      apiGroup.label = 'Modelos na nuvem (API)';
-
-      apiList.forEach((m) => {
-        const opt = document.createElement('option');
-        opt.value = m.id;
-        opt.textContent = `${m.name} [${m.provider.toUpperCase()}]`;
-        apiGroup.appendChild(opt);
-      });
-      this.modelSelect.appendChild(apiGroup);
-    }
-
-    // Definir modelo padrão se ainda não definido
-    if (!this.currentModel) {
-      if (localList.length > 0) {
-        this.currentModel = data.default_model || localList[0].name;
-      } else if (apiList.length > 0) {
-        this.currentModel = apiList[0].id;
-      }
-    }
-    this.modelSelect.value = this.currentModel;
-    this.engineModelTag.innerText = this.currentModel;
-
-    this.logTerminal(`[MODELOS]: ${localList.length} locais (Ollama) e ${apiList.length} em nuvem (API) carregados.`, 'sys');
+    this.localModels = data.local_models || data.models || [];
+    this.apiModels = data.api_models || [];
+    this.defaultModel = data.default_model;
+    this.liveModels = this.liveModels || {};
+    this.renderModelSelect();
+    this.logTerminal(`[MODELOS]: ${this.localModels.length} locais (Ollama) e ${this.apiModels.length} em nuvem (API) carregados.`, 'sys');
     this.renderApiModelsCatalog();
+
+    // Provedores com chave (na sessão ou na Vercel/.env): mostra todos os modelos que a chave libera
+    const providers = new Set(['google', 'openai', 'groq', 'openrouter', 'deepseek'].filter((p) => {
+      try { if (sessionStorage.getItem('jarvis_key_' + p)) return true; } catch (e) {}
+      return false;
+    }));
+    this.apiModels.filter((m) => m.has_env_key).forEach((m) => providers.add(m.provider));
+    await Promise.all([...providers].map((p) => this.loadLiveModels(p, true)));
+  }
+
+  /** Busca todos os modelos que a chave do provedor libera e coloca no seletor. */
+  async loadLiveModels(provider, silent = false) {
+    let key = null;
+    try { key = sessionStorage.getItem('jarvis_key_' + provider); } catch (e) {}
+    const res = await JarvisAPI.listProviderModels(provider, key);
+    const list = (res && res.models) || [];
+    this.liveModels = this.liveModels || {};
+    if (list.length) this.liveModels[provider] = list;
+    else delete this.liveModels[provider];
+    this.renderModelSelect();
+    if (!silent) {
+      this.logTerminal(`[MODELOS]: ${list.length} modelos de ${provider.toUpperCase()} liberados pela chave.`, 'sys');
+    }
+    return list.length;
+  }
+
+  /** Provedor de um id de modelo (catálogo, lista da chave ou prefixo api:provedor:). */
+  providerOf(modelId) {
+    const inCatalog = (this.apiModels || []).find((m) => m.id === modelId);
+    if (inCatalog) return inCatalog.provider;
+    for (const [prov, list] of Object.entries(this.liveModels || {})) {
+      if (list.some((m) => m.id === modelId)) return prov;
+    }
+    const m = /^api:([a-z]+):/.exec(modelId || '');
+    return m ? m[1] : null;
+  }
+
+  renderModelSelect() {
+    const sel = this.modelSelect;
+    const previous = this.currentModel;
+    sel.innerHTML = '';
+    const names = { google: 'Google Gemini', openai: 'OpenAI', groq: 'Groq', openrouter: 'OpenRouter', deepseek: 'DeepSeek' };
+    const add = (group, value, text) => {
+      const opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = text;
+      group.appendChild(opt);
+    };
+    const shown = new Set();
+
+    if (this.localModels && this.localModels.length) {
+      const g = document.createElement('optgroup');
+      g.label = 'Modelos locais (Ollama, no seu PC)';
+      this.localModels.forEach((m) => { add(g, m.name, `${m.name} (${m.size_gb ? m.size_gb + ' GB' : 'local'})`); shown.add(m.name); });
+      sel.appendChild(g);
+    }
+
+    // Versão do nome (gemini-3.8-flash > gemini-3.6-pro), apelidos "latest" primeiro
+    const rank = (id) => {
+      if (/latest/.test(id)) return 1000;
+      const v = /(\d+(?:\.\d+)?)/.exec(id);
+      return v ? parseFloat(v[1]) : 0;
+    };
+    Object.entries(this.liveModels || {}).forEach(([prov, list]) => {
+      const g = document.createElement('optgroup');
+      g.label = `${names[prov] || prov} · todos os modelos da sua chave (${list.length})`;
+      [...list].sort((a, b) => rank(b.model_id) - rank(a.model_id) || a.model_id.localeCompare(b.model_id))
+        .forEach((m) => { add(g, m.id, m.model_id); shown.add(m.id); });
+      sel.appendChild(g);
+    });
+
+    const rest = (this.apiModels || []).filter((m) => !shown.has(m.id));
+    if (rest.length) {
+      const g = document.createElement('optgroup');
+      g.label = 'Modelos na nuvem (catálogo)';
+      rest.forEach((m) => { add(g, m.id, `${m.name} [${m.provider.toUpperCase()}]`); shown.add(m.id); });
+      sel.appendChild(g);
+    }
+
+    if (previous && !shown.has(previous)) add(sel, previous, previous.replace(/^api:[a-z]+:/, '') + ' (manual)');
+    if (!previous) {
+      if (this.localModels && this.localModels.length) this.currentModel = this.defaultModel || this.localModels[0].name;
+      else if (this.apiModels && this.apiModels.length) this.currentModel = this.apiModels[0].id;
+    }
+    sel.value = this.currentModel;
+    if (this.engineModelTag) this.engineModelTag.innerText = this.currentModel || '';
   }
 
   renderApiModelsCatalog() {
@@ -1231,9 +1284,9 @@ class JarvisApp {
 
     // Resolver chave de sessão volátil se for um modelo de API
     let sessionKey = null;
-    const selectedApiModel = this.apiModels.find(m => m.id === this.currentModel);
-    if (selectedApiModel) {
-      sessionKey = sessionStorage.getItem('jarvis_key_' + selectedApiModel.provider);
+    const selectedProvider = this.providerOf(this.currentModel);
+    if (selectedProvider) {
+      sessionKey = sessionStorage.getItem('jarvis_key_' + selectedProvider);
     }
 
     // Criar controlador de aborto para permitir interrupção imediata via [-]

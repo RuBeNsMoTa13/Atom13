@@ -22,6 +22,20 @@ export const JarvisAPI = {
   /**
    * Consulta os modelos do Google Gemini disponíveis na API.
    */
+  /** Todos os modelos que a chave do provedor libera. A chave vai no corpo do POST, nunca na URL. */
+  async listProviderModels(provider, sessionKey = null) {
+    try {
+      const res = await fetch(`${API_BASE}/api/models/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider, session_key: sessionKey || null })
+      });
+      return await res.json();
+    } catch (e) {
+      return { success: false, models: [], error: e.message };
+    }
+  },
+
   async getGoogleModels(sessionKey = null) {
     try {
       const url = sessionKey ? `${API_BASE}/api/models/google?session_key=${encodeURIComponent(sessionKey)}` : `${API_BASE}/api/models/google`;

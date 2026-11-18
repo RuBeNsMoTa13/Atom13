@@ -231,6 +231,47 @@ class ApiModelManager:
 
         return None
 
+    def list_provider_models(self, provider: str, session_key: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Todos os modelos de conversa que a chave do provedor libera (Google ou APIs no padrão OpenAI)."""
+        provider = (provider or "").lower()
+        if provider == "google":
+            skip = ("embedding", "bison", "aqa", "imagen", "veo", "lyria", "robotics", "transcribe",
+                    "tts", "image-generation", "native-audio", "live", "gemma")
+            return [m for m in self.list_google_models(session_key)
+                    if not any(x in m["model_id"].lower() for x in skip)]
+
+        cfg = PROVIDER_DEFAULTS.get(provider)
+        if not cfg or not cfg.get("base_url"):
+            return []
+        key = self.resolve_api_key({"provider": provider, "env_var": cfg["env_var"]}, session_key)
+        if not key:
+            return []
+        import urllib.request
+        req = urllib.request.Request(cfg["base_url"].rstrip("/") + "/models",
+                                     headers={"Authorization": f"Bearer {key}", "User-Agent": "atom"})
+        try:
+            with urllib.request.urlopen(req, timeout=15) as r:
+                data = json.loads(r.read().decode("utf-8"))
+        except Exception as e:
+            logger.warning(f"Não consegui listar modelos de {provider}: {e}")
+            return []
+        skip = ("embedding", "whisper", "tts", "dall-e", "moderation", "image", "audio", "transcribe",
+                "realtime", "search", "guard", "davinci", "babbage")
+        out = []
+        for m in data.get("data", []):
+            mid = str(m.get("id", ""))
+            if not mid or any(x in mid.lower() for x in skip):
+                continue
+            out.append({
+                "id": f"api:{provider}:{mid}",
+                "name": m.get("name") or mid,
+                "model_id": mid,
+                "provider": provider,
+                "description": (m.get("description") or "")[:150],
+            })
+        out.sort(key=lambda x: x["model_id"])
+        return out
+
     def list_google_models(self, session_key: Optional[str] = None) -> List[Dict[str, Any]]:
         """
         Consulta a API do Google Gemini em tempo real e retorna todos os modelos disponíveis para a chave.
