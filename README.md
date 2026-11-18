@@ -33,13 +33,13 @@ O sistema conta com um cockpit HUD imersivo estilo sci-fi com animação quânti
 
 ### 3. 📄 Central de Dossiês & Downloads Seguros
 - Geração automática de relatórios Markdown estruturados com frontmatter YAML, metadados de autoria (*Rubens Mota*), tags e síntese executiva.
-- Proteção estrita contra *path traversal* (`../`) na resolução de arquivos com [get_research_file_path()](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/backend/tools/markdown_tool.py#L18-L37).
+- Proteção estrita contra *path traversal* (`../`) na resolução de arquivos com [get_research_file_path()](https://github.com/RuBeNsMoTa13/atom13/blob/main/backend/tools/markdown_tool.py#L18-L37).
 - Download direto via endpoint `GET /api/researches/{filename}/download` (`FileResponse`).
 - Botões de download com 1 clique integrados diretamente nos balões do chat e no modal de leitura.
 - Fallback em `localStorage` para leitura offline de relatórios no navegador.
 
 ### 4. 🌐 Arquitetura Híbrida Adaptativa (Local Windows vs. Nuvem Render)
-- A função [is_cloud_environment()](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/backend/tools/system_tool.py) identifica automaticamente o ambiente através de variáveis (`RENDER`, `PORT`, `RAILWAY_ENVIRONMENT`, etc.):
+- A função [is_cloud_environment()](https://github.com/RuBeNsMoTa13/atom13/blob/main/backend/tools/system_tool.py) identifica automaticamente o ambiente através de variáveis (`RENDER`, `PORT`, `RAILWAY_ENVIRONMENT`, etc.):
   - **Em Desktop Windows:** Executa ferramentas do sistema (`calc.exe`, `notepad.exe`, comandos PowerShell) localmente via `subprocess.Popen`.
   - **Em Container Nuvem:** Bloqueia comandos destrutivos via allowlist e emite eventos SSE `client_action` com ação `open_url` para que links e ferramentas sejam abertos diretamente no navegador do operador.
 
@@ -50,8 +50,8 @@ O sistema conta com um cockpit HUD imersivo estilo sci-fi com animação quânti
 - **Reator Atômico Quântico:** Animação a 60fps em HTML5 Canvas com órbitas elípticas, elétrons pulsantes e núcleo reativo.
 
 ### 6. 📱 Suporte a PWA (Progressive Web App)
-- Manifesto configurado em [manifest.json](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/frontend/manifest.json) com identidade e ícones vetoriais [atom-icon.svg](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/frontend/icons/atom-icon.svg).
-- [sw.js](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/frontend/sw.js) para cache da casca da aplicação e instalação como app autônomo no Windows, Android e iOS.
+- Manifesto configurado em [manifest.json](https://github.com/RuBeNsMoTa13/atom13/blob/main/public/manifest.json) com identidade e ícones vetoriais [atom-icon.svg](https://github.com/RuBeNsMoTa13/atom13/blob/main/public/icons/atom-icon.svg).
+- [sw.js](https://github.com/RuBeNsMoTa13/atom13/blob/main/public/sw.js) para cache da casca da aplicação e instalação como app autônomo no Windows, Android e iOS.
 
 ---
 
@@ -73,7 +73,7 @@ O sistema conta com um cockpit HUD imersivo estilo sci-fi com animação quânti
 
 ### Método 1: Iniciar em 1 Clique (Windows)
 Dê um duplo clique no inicializador:
-👉 **[run_atom.bat](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/run_atom.bat)**
+👉 **[run_atom.bat](https://github.com/RuBeNsMoTa13/atom13/blob/main/run_atom.bat)**
 
 O script verifica o motor Ollama, inicia o Uvicorn e abre automaticamente o Cockpit HUD em `http://localhost:8000`.
 
@@ -89,7 +89,7 @@ Acesse no seu navegador: **`http://localhost:8000`**
 
 ### Método 3: Deploy em Nuvem (Render)
 1. Conecte este repositório no [Render](https://render.com) como um **Web Service (Python 3)**.
-2. O arquivo [Procfile](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/Procfile) já comanda o startup:
+2. O arquivo [Procfile](https://github.com/RuBeNsMoTa13/atom13/blob/main/Procfile) já comanda o startup:
    ```text
    web: python -m uvicorn backend.server:app --host 0.0.0.0 --port $PORT
    ```
@@ -99,16 +99,16 @@ Acesse no seu navegador: **`http://localhost:8000`**
 
 ## 📚 Documentação Técnica Completa
 
-Toda a documentação técnica detalhada, fluxos e governança estão centralizados no diretório [docs/](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs):
+Toda a documentação técnica detalhada, fluxos e governança estão centralizados no diretório [docs/](https://github.com/RuBeNsMoTa13/atom13/blob/main/docs):
 
-- 🗂️ **[docs/README.md](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/README.md)**: Índice geral navegável.
-- 🎯 **[docs/todo.md](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/todo.md)**: Backlog oficial e rastreabilidade de tarefas.
-- 🏛️ **[docs/arquitetura/atom.md](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/arquitetura/atom.md)**: Arquitetura completa e diagramas.
-- 👁️ **[docs/fluxos/visao-multimodal.md](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/fluxos/visao-multimodal.md)**: Fluxo de visão computacional de tela.
-- 🔬 **[docs/fluxos/pesquisa-e-sintese.md](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/fluxos/pesquisa-e-sintese.md)**: Busca web, Jina Reader e arXiv.
-- 📡 **[docs/api/endpoints.md](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/api/endpoints.md)**: Especificação de rotas REST e eventos SSE.
-- 🌐 **[docs/deploy/render-e-local.md](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/deploy/render-e-local.md)**: Guia completo de deploy e ambiente.
-- 🎨 **[docs/design-system/escuro-e-vermelho.md](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/design-system/escuro-e-vermelho.md)**: Design system escuro e vermelho.
+- 🗂️ **[docs/README.md](https://github.com/RuBeNsMoTa13/atom13/blob/main/docs/README.md)**: Índice geral navegável.
+- 🎯 **[docs/todo.md](https://github.com/RuBeNsMoTa13/atom13/blob/main/docs/todo.md)**: Backlog oficial e rastreabilidade de tarefas.
+- 🏛️ **[docs/arquitetura/atom.md](https://github.com/RuBeNsMoTa13/atom13/blob/main/docs/arquitetura/atom.md)**: Arquitetura completa e diagramas.
+- 👁️ **[docs/fluxos/visao-multimodal.md](https://github.com/RuBeNsMoTa13/atom13/blob/main/docs/fluxos/visao-multimodal.md)**: Fluxo de visão computacional de tela.
+- 🔬 **[docs/fluxos/pesquisa-e-sintese.md](https://github.com/RuBeNsMoTa13/atom13/blob/main/docs/fluxos/pesquisa-e-sintese.md)**: Busca web, Jina Reader e arXiv.
+- 📡 **[docs/api/endpoints.md](https://github.com/RuBeNsMoTa13/atom13/blob/main/docs/api/endpoints.md)**: Especificação de rotas REST e eventos SSE.
+- 🌐 **[docs/deploy/render-e-local.md](https://github.com/RuBeNsMoTa13/atom13/blob/main/docs/deploy/render-e-local.md)**: Guia completo de deploy e ambiente.
+- 🎨 **[docs/design-system/escuro-e-vermelho.md](https://github.com/RuBeNsMoTa13/atom13/blob/main/docs/design-system/escuro-e-vermelho.md)**: Design system escuro e vermelho.
 
 ---
 

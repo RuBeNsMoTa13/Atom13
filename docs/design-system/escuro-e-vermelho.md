@@ -13,7 +13,7 @@ O **Design System escuro e vermelho** foi concebido por Rubens Mota para dotar o
 
 ## 1. Tokens de Cores Oficiais
 
-Definidos em `:root` no arquivo [frontend/css/style.css](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/frontend/css/style.css):
+Definidos em `:root` no arquivo [frontend/css/style.css](https://github.com/RuBeNsMoTa13/atom13/blob/main/frontend/css/style.css):
 
 ```css
 :root {
@@ -69,7 +69,7 @@ O A.T.O.M. utiliza uma combinação harmoniosa de duas fontes do Google Fonts:
 
 ## 4. Reator Atômico Quântico (Canvas 2D)
 
-Implementado no módulo [frontend/js/reactor.js](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/frontend/js/reactor.js):
+Implementado no módulo [frontend/js/reactor.js](https://github.com/RuBeNsMoTa13/atom13/blob/main/frontend/js/reactor.js):
 - Renderizado a **60fps** em um `<canvas width="400" height="400">`.
 - Composto por:
   1. **Núcleo Central:** Circunferência pulsante com gradiente radial `#ef4444` -> `#dc2626` e sombra difusa.
