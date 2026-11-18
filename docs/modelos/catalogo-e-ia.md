@@ -38,7 +38,7 @@ graph TD
 
 ## 2. Catálogo Oficial de Modelos em Nuvem
 
-Configurados no arquivo [config/api_models.json](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/config/api_models.json):
+Configurados no arquivo [config/api_models.json](https://github.com/RuBeNsMoTa13/atom13/blob/main/config/api_models.json):
 
 ### 2.1. `api:google:gemini-flash-latest` — Gemini Flash (Mais Recente - Auto) ★
 - **Provedor:** Google AI Studio (API v1beta / Google GenAI SDK v2).
@@ -68,7 +68,7 @@ Configurados no arquivo [config/api_models.json](file:///c:/Users/Rubens/Desktop
 
 ## 3. Integração com Motor Local (Ollama)
 
-O arquivo [backend/core/ollama_client.py](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/backend/core/ollama_client.py) gerencia a comunicação com o daemon Ollama na porta `11434`.
+O arquivo [backend/core/ollama_client.py](https://github.com/RuBeNsMoTa13/atom13/blob/main/backend/core/ollama_client.py) gerencia a comunicação com o daemon Ollama na porta `11434`.
 
 ### 3.1. Modelos Locais Recomendados para o A.T.O.M.
 | Modelo | Tag de Download | Tamanho VRAM | Perfil de Desempenho |
@@ -122,7 +122,7 @@ O A.T.O.M. adota uma política estrita de três camadas para proteção de crede
 
 ## 6. Mecanismos de Fallback e Resiliência Neural
 
-No arquivo [backend/core/atom.py](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/backend/core/atom.py) e [api_client.py](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/backend/core/api_client.py):
+No arquivo [backend/core/atom.py](https://github.com/RuBeNsMoTa13/atom13/blob/main/backend/core/atom.py) e [api_client.py](https://github.com/RuBeNsMoTa13/atom13/blob/main/backend/core/api_client.py):
 
 - **Fallback para Visão:** Se o operador compartilhar a tela (`image_base64` presente) e o modelo ativo for exclusivamente textual (ex: modelos locais do Ollama), o cérebro do A.T.O.M. redireciona a requisição visual automaticamente para `gemini-flash-latest` com aviso informativo no terminal.
 - **Fallback de Chave Ausente:** Se a chave do provedor selecionado não for encontrada no `.env` nem na sessão, o sistema emite um evento SSE de erro instruindo o operador com links diretos para obter a chave gratuita no Google AI Studio ou Groq Cloud.

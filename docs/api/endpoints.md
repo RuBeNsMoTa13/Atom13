@@ -7,7 +7,7 @@ Status: Atualizado
 
 # Especificação da API: Endpoints REST & Eventos SSE
 
-Este documento fornece a referência técnica exata de todos os endpoints HTTP e do protocolo de streaming Server-Sent Events (SSE) implementados no [backend/server.py](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/backend/server.py).
+Este documento fornece a referência técnica exata de todos os endpoints HTTP e do protocolo de streaming Server-Sent Events (SSE) implementados no [backend/server.py](https://github.com/RuBeNsMoTa13/atom13/blob/main/backend/server.py).
 
 ---
 

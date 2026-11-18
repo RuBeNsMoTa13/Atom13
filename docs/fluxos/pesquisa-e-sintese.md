@@ -39,7 +39,7 @@ graph TD
 ## 2. Componentes de Pesquisa
 
 ### 2.1. DuckDuckGo Engine (`ddgs`)
-Localizado em [backend/tools/search_tool.py](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/backend/tools/search_tool.py):
+Localizado em [backend/tools/search_tool.py](https://github.com/RuBeNsMoTa13/atom13/blob/main/backend/tools/search_tool.py):
 - Utiliza a nova biblioteca Python `ddgs` (substituindo a antiga `duckduckgo_search` para evitar avisos de depreciação).
 - Parâmetros: `max_results=5`, região `wt-wt` ou `pt-br`, filtro `safesearch='moderate'`.
 - Extrai título, link e snippet textual direto de cada fonte.
@@ -66,7 +66,7 @@ Localizado em [backend/tools/search_tool.py](file:///c:/Users/Rubens/Desktop/pro
 
 ## 3. Persistência de Dossiês em Markdown
 
-Quando o operador solicita a geração de um relatório ou resumo estruturado, o arquivo é gerado via [save_research_markdown()](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/backend/tools/markdown_tool.py#L38-L90):
+Quando o operador solicita a geração de um relatório ou resumo estruturado, o arquivo é gerado via [save_research_markdown()](https://github.com/RuBeNsMoTa13/atom13/blob/main/backend/tools/markdown_tool.py#L38-L90):
 
 ### 3.1. Estrutura do Frontmatter YAML
 ```markdown
@@ -85,5 +85,5 @@ O backend expõe a rota:
 ```http
 GET /api/researches/{filename}/download
 ```
-- **Proteção contra Path Traversal:** A função [get_research_file_path()](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/backend/tools/markdown_tool.py#L18-L37) rejeita qualquer requisição contendo barras, `..` ou extensões que não sejam `.md`.
+- **Proteção contra Path Traversal:** A função [get_research_file_path()](https://github.com/RuBeNsMoTa13/atom13/blob/main/backend/tools/markdown_tool.py#L18-L37) rejeita qualquer requisição contendo barras, `..` ou extensões que não sejam `.md`.
 - **Cabeçalhos de Download:** Responde com `FileResponse` e cabeçalho `Content-Disposition: attachment; filename="{filename}"`, forçando o navegador a salvar o arquivo sem tentar executá-lo.

@@ -19,7 +19,7 @@ Este documento orienta a configuração do ambiente, instalação de dependênci
 - **Navegador Moderno:** Chrome, Edge ou Brave (compatíveis com Web Speech API e `getDisplayMedia`).
 
 ### 1.2. Inicialização via Script Automatizado
-O projeto possui o script executável [run_atom.bat](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/run_atom.bat):
+O projeto possui o script executável [run_atom.bat](https://github.com/RuBeNsMoTa13/atom13/blob/main/run_atom.bat):
 1. Dê um duplo clique em `run_atom.bat`.
 2. O script verifica se o serviço Ollama está ativo na porta 11434.
 3. Inicia o Uvicorn na porta 8000 com flag `--reload`.
@@ -44,7 +44,7 @@ python -m uvicorn backend.server:app --host 127.0.0.1 --port 8000 --reload
 O repositório já está 100% pré-configurado para implantação como um **Web Service** no [Render](https://render.com).
 
 ### 2.1. Arquivo Procfile
-Na raiz do repositório, o arquivo [Procfile](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/Procfile) comanda a inicialização do container:
+Na raiz do repositório, o arquivo [Procfile](https://github.com/RuBeNsMoTa13/atom13/blob/main/Procfile) comanda a inicialização do container:
 ```text
 web: python -m uvicorn backend.server:app --host 0.0.0.0 --port $PORT
 ```
@@ -52,7 +52,7 @@ O Render injeta automaticamente a variável de ambiente `$PORT`, garantindo bind
 
 ### 2.2. Passo a Passo de Implantação
 1. No painel do Render, clique em **New +** e selecione **Web Service**.
-2. Conecte sua conta do GitHub e selecione o repositório `RuBeNsMoTa13/jarvis-gravity` (ou o nome do seu fork).
+2. Conecte sua conta do GitHub e selecione o repositório `RuBeNsMoTa13/atom13` (ou o nome do seu fork).
 3. Selecione a branch: `Web-Atom` (ou `main`).
 4. Configure as seguintes opções:
    - **Environment:** `Python 3`

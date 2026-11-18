@@ -50,7 +50,7 @@ sequenceDiagram
 
 ## 2. Parâmetros de Otimização Visual
 
-Para garantir que a transmissão visual não cause esgotamento de memória no backend ou travamento em conexões móveis, as seguintes diretrizes são aplicadas no arquivo [frontend/js/app.js](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/frontend/js/app.js):
+Para garantir que a transmissão visual não cause esgotamento de memória no backend ou travamento em conexões móveis, as seguintes diretrizes são aplicadas no arquivo [frontend/js/app.js](https://github.com/RuBeNsMoTa13/atom13/blob/main/frontend/js/app.js):
 
 | Parâmetro | Valor Configurado | Justificativa Técnica |
 | :--- | :--- | :--- |
@@ -64,7 +64,7 @@ Para garantir que a transmissão visual não cause esgotamento de memória no ba
 
 ## 3. Compatibilidade Multimodal no Backend
 
-No arquivo [backend/core/api_client.py](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/backend/core/api_client.py), o sistema lida de forma polimórfica com os diferentes provedores:
+No arquivo [backend/core/api_client.py](https://github.com/RuBeNsMoTa13/atom13/blob/main/backend/core/api_client.py), o sistema lida de forma polimórfica com os diferentes provedores:
 
 ### 3.1. Google Gemini (SDK Oficial `google-genai` v2)
 ```python
@@ -86,5 +86,5 @@ content_parts = [
 ---
 
 ## 4. Tratamento de Erros e Resiliência
-- Se o usuário encerrar o compartilhamento nativo através do botão flutuante do sistema operacional ("Parar compartilhamento"), o evento `track.onended` dispara automaticamente [stopScreenShare()](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/frontend/js/app.js), desligando os seletores visuais sem quebrar o estado da aplicação.
+- Se o usuário encerrar o compartilhamento nativo através do botão flutuante do sistema operacional ("Parar compartilhamento"), o evento `track.onended` dispara automaticamente [stopScreenShare()](https://github.com/RuBeNsMoTa13/atom13/blob/main/frontend/js/app.js), desligando os seletores visuais sem quebrar o estado da aplicação.
 - Caso o modelo selecionado não possua capacidades visuais nativas, o backend realiza fallback transparente para `gemini-flash-latest`.
