@@ -1,0 +1,2492 @@
+/**
+ * APLICAÇÃO PRINCIPAL J.A.R.V.I.S.
+ * Conecta UI, Arc Reactor, Sistema de Áudio/Voz e API de IA Local.
+ */
+
+import { AtomCharacter } from './atom-char.js';
+import { THEMES } from './themes.js';
+import { Conversas, Arquivos } from './conversas.js';
+
+/** Ícone próprio (sprite em index.html). */
+const ic = (n) => `<svg class="ic" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+import { JarvisAudio } from './audio.js';
+import { AtomLive } from './live.js';
+import { JarvisAPI } from './api.js';
+
+class JarvisApp {
+  constructor() {
+    this.messages = [];
+    this.currentModel = '';
+    this.isGenerating = false;
+    this.pollTelemetryTimer = null;
+
+    // Estado da Visão de Tela Multimodal
+    this.screenStream = null;
+    this.screenVideo = null;
+    this.isScreenSharing = false;
+
+    // Personagem do A.T.O.M. (rosto padrão + corpo trocável)
+    this.reactor = new AtomCharacter('atom-char');
+
+    // Inicializar Sistema de Áudio
+    this.audio = new JarvisAudio(
+      (speechText) => this.handleSpeechInput(speechText),
+      (state) => {
+        this.reactor.setState(state);
+        this.updateMicBtnState();
+      },
+      (errMsg) => {
+        this.logTerminal(`[SISTEMA DE VOZ]: ${errMsg}`, 'sys');
+      },
+      (statusMsg) => {
+        this.logTerminal(`[VOZ]: ${statusMsg}`, 'sys');
+      }
+    );
+
+    // Inicializar Elementos de UI
+    this.bindDOMElements();
+    this.setupEventListeners();
+    this.setupKeyboardShortcuts();
+    this.setupAppearance();
+    this.setupConversations();
+
+    // Inicialização do Sistema
+    this.bootSystem();
+  }
+
+  bindDOMElements() {
+    // Cabeçalho & Seletores
+    this.modelSelect = document.getElementById('model-select');
+    this.refreshModelsBtn = document.getElementById('refresh-models-btn');
+    this.statusText = document.getElementById('status-text');
+    this.researchCountBadge = document.getElementById('research-count');
+
+    // Telemetria
+    this.cpuVal = document.getElementById('cpu-val');
+    this.cpuBar = document.getElementById('cpu-bar');
+    this.cpuSubinfo = document.getElementById('cpu-subinfo');
+    this.cpuPcTotal = document.getElementById('cpu-pc-total');
+
+    this.ramVal = document.getElementById('ram-val');
+    this.ramBar = document.getElementById('ram-bar');
+    this.ramSubinfo = document.getElementById('ram-subinfo');
+    this.ramPcTotal = document.getElementById('ram-pc-total');
+
+    this.diskVal = document.getElementById('disk-val');
+    this.diskBar = document.getElementById('disk-bar');
+    this.diskSubinfo = document.getElementById('disk-subinfo');
+
+    this.ollamaStatus = document.getElementById('ollama-status');
+    this.ollamaSubinfo = document.getElementById('ollama-subinfo');
+    this.engineModelTag = document.getElementById('engine-model-tag');
+
+    // Terminal
+    this.terminalOutput = document.getElementById('terminal-output');
+    this.clearTermBtn = document.getElementById('clear-term-btn');
+
+    // Chat
+    this.chatMessages = document.getElementById('chat-messages');
+    this.chatInput = document.getElementById('chat-input');
+    this.sendBtn = document.getElementById('send-btn');
+    this.clearChatBtn = document.getElementById('clear-chat-btn');
+    this.toolBanner = document.getElementById('tool-banner');
+    this.toolBannerName = document.getElementById('tool-banner-name');
+    this.toolBannerDetail = document.getElementById('tool-banner-detail');
+    this.autonomousToggle = document.getElementById('autonomous-toggle');
+
+    // Controles de Áudio & Voz
+    this.micBtn = document.getElementById('mic-toggle-btn');
+    this.composerMicBtn = document.getElementById('composer-mic-btn');
+    this.ttsToggleBtn = document.getElementById('tts-toggle-btn');
+    this.sfxToggleBtn = document.getElementById('sfx-toggle-btn');
+
+    // Botões de Interrupção [-] e Escuta [+]
+    this.stopJarvisBtn = document.getElementById('stop-jarvis-btn');
+    this.listenJarvisBtn = document.getElementById('listen-jarvis-btn');
+    this.quickStopBtn = document.getElementById('quick-stop-btn');
+    this.currentAbortController = null;
+
+    // Drawers & Modais
+    this.toggleResearchesBtn = document.getElementById('toggle-researches-btn');
+    this.toggleSettingsBtn = document.getElementById('toggle-settings-btn');
+    this.researchesDrawer = document.getElementById('researches-drawer');
+    this.settingsDrawer = document.getElementById('settings-drawer');
+    this.researchesList = document.getElementById('researches-list');
+    this.openResearchFolderBtn = document.getElementById('open-research-folder-btn');
+
+    // Configurações
+    this.pullModelInput = document.getElementById('pull-model-input');
+    this.pullModelBtn = document.getElementById('pull-model-btn');
+    this.pullProgressBox = document.getElementById('pull-progress-box');
+    this.pullStatusText = document.getElementById('pull-status-text');
+    this.pullPercentText = document.getElementById('pull-percent-text');
+    this.pullBarFill = document.getElementById('pull-bar-fill');
+    this.tempSlider = document.getElementById('temp-slider');
+    this.tempVal = document.getElementById('temp-val');
+
+    this.voiceSelect = document.getElementById('voice-select');
+    this.voiceRate = document.getElementById('voice-rate');
+    this.voiceRateVal = document.getElementById('voice-rate-val');
+    this.voicePitch = document.getElementById('voice-pitch');
+    this.voicePitchVal = document.getElementById('voice-pitch-val');
+    this.testVoiceBtn = document.getElementById('test-voice-btn');
+    this.testMicHardwareBtn = document.getElementById('test-mic-hardware-btn');
+
+    // Modelos de API
+    this.apiModels = [];
+    this.apiModelsCatalog = document.getElementById('api-models-catalog');
+    this.sessionKeyProvider = document.getElementById('session-key-provider');
+    this.sessionApiKeyInput = document.getElementById('session-api-key-input');
+    this.toggleKeyVisBtn = document.getElementById('toggle-key-visibility-btn');
+    this.testApiKeyBtn = document.getElementById('test-api-key-btn');
+    this.saveSessionKeyBtn = document.getElementById('save-session-key-btn');
+    this.clearSessionKeyBtn = document.getElementById('clear-session-key-btn');
+    this.keyTestFeedback = document.getElementById('key-test-feedback');
+    this.toggleAddModelBtn = document.getElementById('toggle-add-model-btn');
+    this.addApiModelContainer = document.getElementById('add-api-model-container');
+    this.newModelProvider = document.getElementById('new-model-provider');
+    this.newModelName = document.getElementById('new-model-name');
+    this.newModelId = document.getElementById('new-model-id');
+    this.newModelBaseUrl = document.getElementById('new-model-base-url');
+    this.submitNewModelBtn = document.getElementById('submit-new-model-btn');
+
+    // Entrada Manual de Modelo & Toolkit Google
+    this.toggleManualModelBtn = document.getElementById('toggle-manual-model-btn');
+    this.manualModelBar = document.getElementById('manual-model-bar');
+    this.manualModelInput = document.getElementById('manual-model-input');
+    this.applyManualModelBtn = document.getElementById('apply-manual-model-btn');
+    this.cancelManualModelBtn = document.getElementById('cancel-manual-model-btn');
+    this.syncGoogleModelsBtn = document.getElementById('sync-google-models-btn');
+    this.googleSyncedFeedback = document.getElementById('google-synced-feedback');
+
+    // Modal Dossiê
+    this.dossierModal = document.getElementById('dossier-modal');
+    this.modalDossierTitle = document.getElementById('modal-dossier-title');
+    this.modalDossierContent = document.getElementById('modal-dossier-content');
+    this.modalOpenWinBtn = document.getElementById('modal-open-win-btn');
+    this.modalDownloadBtn = document.getElementById('modal-download-btn');
+    this.closeModalBtn = document.getElementById('close-modal-btn');
+
+    // Visão de Tela Multimodal (A.T.O.M.)
+    this.screenShareBtn = document.getElementById('screen-share-btn');
+    this.screenBtnLabel = document.getElementById('screen-btn-label');
+    this.screenPreviewBadge = document.getElementById('screen-preview-badge');
+    this.stopScreenShareBtn = document.getElementById('stop-screen-share-btn');
+  }
+
+  setupEventListeners() {
+    // Visão de Tela Multimodal
+    if (this.screenShareBtn) {
+      this.screenShareBtn.addEventListener('click', () => this.toggleScreenShare());
+    }
+    if (this.stopScreenShareBtn) {
+      this.stopScreenShareBtn.addEventListener('click', () => this.stopScreenShare());
+    }
+
+    // Envio de Mensagem
+    this.sendBtn.addEventListener('click', () => this.handleUserSubmit());
+    this.chatInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        this.handleUserSubmit();
+      }
+    });
+
+    // Auto-ajustar altura do textarea
+    this.chatInput.addEventListener('input', () => {
+      this.chatInput.style.height = 'auto';
+      this.chatInput.style.height = `${Math.min(this.chatInput.scrollHeight, 220)}px`;
+    });
+
+    // Microfone
+    // Botões de falar (o grande, embaixo do Atom, e o do campo de mensagem) funcionam igual.
+    // Toque: ouve e para sozinho quando você se cala. Segurar: ouve enquanto estiver apertado.
+    // Com o Atom falando ou respondendo: ele para e já começa a ouvir.
+    const stopBtn = document.getElementById('composer-stop-btn');
+    if (stopBtn) stopBtn.addEventListener('click', () => { if (this.liveOn) this.stopLive(); else this.interruptJarvis(); this.updateMicBtnState(); });
+
+    [this.micBtn, this.composerMicBtn].filter(Boolean).forEach((btn) => {
+      btn.addEventListener('pointerdown', (e) => {
+        if (e.button !== undefined && e.button !== 0) return;
+        e.preventDefault();
+        try { btn.setPointerCapture(e.pointerId); } catch (err) {}
+        this.talkPress();
+      });
+      const release = () => this.talkRelease();
+      btn.addEventListener('pointerup', release);
+      btn.addEventListener('pointercancel', release);
+      btn.addEventListener('click', (e) => e.preventDefault());
+    });
+    this.setupConversaMode();
+    this.setupLive();
+    this.setupShortcutsPanel();
+    this.audio.onMouth = (v) => this.reactor.setAudioLevel(v);
+
+    // Toggles de Áudio
+    this.ttsToggleBtn.addEventListener('click', () => {
+      this.audio.ttsEnabled = !this.audio.ttsEnabled;
+      this.ttsToggleBtn.classList.toggle('active', this.audio.ttsEnabled);
+      const tl = document.getElementById('tts-label');
+      if (tl) tl.textContent = this.audio.ttsEnabled ? 'VOZ ATIVADA' : 'VOZ DESATIVADA';
+      if (!this.audio.ttsEnabled) this.audio.stopSpeaking();
+    });
+
+    this.sfxToggleBtn.addEventListener('click', () => {
+      this.audio.sfxEnabled = !this.audio.sfxEnabled;
+      this.sfxToggleBtn.classList.toggle('active', this.audio.sfxEnabled);
+      const sl = document.getElementById('sfx-label');
+      if (sl) sl.textContent = this.audio.sfxEnabled ? 'EFEITOS SONOROS ATIVADOS' : 'EFEITOS SONOROS DESATIVADOS';
+    });
+
+    // BOTÃO [-]: Interromper JARVIS imediatamente
+
+    // BOTÃO [+]: Parar JARVIS e começar a ouvir o operador
+    if (this.listenJarvisBtn) {
+      this.listenJarvisBtn.addEventListener('click', () => this.stopAndListen());
+    }
+
+    // ATALHOS GLOBAIS DE TECLADO: [-]/Esc INTERROMPER | [+] OUVIR | segurar Espaço para falar
+    window.addEventListener('keydown', (e) => {
+      const activeTag = document.activeElement ? document.activeElement.tagName : '';
+      const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(activeTag) || (document.activeElement && document.activeElement.isContentEditable);
+
+      if (e.code === 'Space' && !isTyping) {
+        e.preventDefault();
+        if (!e.repeat && !this.liveOn) this.talkPress();
+        return;
+      }
+
+      // L liga e desliga o modo Live
+      if ((e.key === 'l' || e.key === 'L') && !isTyping && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        this.toggleLive();
+        return;
+      }
+
+      if (e.key === 'Escape' && this.liveOn) {
+        e.preventDefault();
+        this.stopLive();
+        return;
+      }
+
+      // Tecla [-], NumpadSubtract ou Escape: Interrompe JARVIS
+      if ((e.key === '-' && !isTyping) || e.code === 'NumpadSubtract' || e.key === 'Escape') {
+        if (this.isGenerating || ('speechSynthesis' in window && window.speechSynthesis.speaking) || e.code === 'NumpadSubtract' || e.key === 'Escape') {
+          e.preventDefault();
+          this.interruptJarvis();
+          return;
+        }
+      }
+
+      // Tecla [+], NumpadAdd: Parar e Ouvir (fora de campos de texto)
+      if ((e.key === '+' && !isTyping) || e.code === 'NumpadAdd') {
+        e.preventDefault();
+        this.stopAndListen();
+        return;
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      if (e.code !== 'Space' || !this.spaceDown) return;
+      e.preventDefault();
+      this.talkRelease();
+    });
+
+    // Comandos Rápidos
+    document.querySelectorAll('.quick-cmd-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const prompt = btn.getAttribute('data-prompt');
+        if (prompt) {
+          this.chatInput.value = prompt;
+          this.handleUserSubmit();
+        }
+      });
+    });
+
+    // Apagar a conversa atual (as outras continuam salvas)
+    this.clearChatBtn.addEventListener('click', () => {
+      if (this.messages.length && !confirm('Apagar esta conversa deste navegador?')) return;
+      Conversas.remove(this.conversationId);
+      this.startNewConversation('Conversa apagada. Pode mandar a próxima.');
+      this.audio.playToolBeep();
+    });
+
+    // Cópia rápida de mensagens via delegação de eventos
+    this.chatMessages.addEventListener('click', (e) => {
+      const copyBtn = e.target.closest('.copy-msg-btn');
+      if (copyBtn) {
+        const msgBody = copyBtn.closest('.msg-body');
+        const contentDiv = msgBody ? msgBody.querySelector('.msg-content') : null;
+        if (contentDiv) {
+          const textToCopy = contentDiv.innerText || contentDiv.textContent || '';
+          this.copyToClipboard(textToCopy, copyBtn);
+        }
+      }
+    });
+
+    // Limpar Terminal
+    this.clearTermBtn.addEventListener('click', () => {
+      this.terminalOutput.innerHTML = '<div class="log-line sys">[SYSTEM] Terminal limpo.</div>';
+    });
+
+    // Alternância de Modelos
+    this.modelSelect.addEventListener('change', (e) => {
+      this.currentModel = e.target.value;
+      this.engineModelTag.innerText = this.currentModel;
+      this.logTerminal(`[MODELO ATIVO]: Alternado para ${this.currentModel}`, 'sys');
+      this.audio.playToolBeep();
+    });
+
+    this.refreshModelsBtn.addEventListener('click', () => {
+      this.loadModels();
+      this.audio.playToolBeep();
+    });
+
+    // Drawers
+    this.toggleResearchesBtn.addEventListener('click', () => this.toggleDrawer('researches-drawer'));
+    this.toggleSettingsBtn.addEventListener('click', () => this.toggleDrawer('settings-drawer'));
+
+    document.querySelectorAll('.close-drawer-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-drawer');
+        if (id) {
+          document.getElementById(id).classList.remove('open');
+        } else {
+          this.dossierModal.classList.add('hidden');
+        }
+      });
+    });
+
+    this.openResearchFolderBtn.addEventListener('click', () => {
+      JarvisAPI.openResearch();
+      this.logTerminal(`[SISTEMA]: Abrindo diretório de pesquisas no Windows Explorer...`, 'cmd');
+    });
+
+    // Baixar Novo Modelo (Pull)
+    this.pullModelBtn.addEventListener('click', () => this.handlePullModel());
+
+    // Sliders de Configuração
+    this.tempSlider.addEventListener('input', (e) => {
+      this.tempVal.innerText = parseFloat(e.target.value).toFixed(2);
+    });
+
+    this.voiceRate.addEventListener('input', (e) => {
+      this.audio.voiceRate = parseFloat(e.target.value);
+      this.voiceRateVal.innerText = `${this.audio.voiceRate.toFixed(2)}x`;
+    });
+
+    this.voicePitch.addEventListener('input', (e) => {
+      this.audio.voicePitch = parseFloat(e.target.value);
+      this.voicePitchVal.innerText = this.audio.voicePitch.toFixed(2);
+    });
+
+    this.voiceSelect.addEventListener('change', (e) => {
+      const idx = parseInt(e.target.value, 10);
+      if (this.audio.voices[idx]) {
+        this.audio.selectedVoice = this.audio.voices[idx];
+        try { localStorage.setItem('atom_voz_navegador', this.audio.voices[idx].name); } catch (err) {}
+      }
+    });
+
+    this.testVoiceBtn.addEventListener('click', () => {
+      this.audio.previewVoice(this.audio.voiceEngine, this.audio.geminiVoice)
+        .catch((err) => this.showVoiceError(err));
+    });
+
+    this.setupVoices();
+
+    if (this.testMicHardwareBtn) {
+      this.testMicHardwareBtn.addEventListener('click', () => {
+        this.logTerminal(`[TESTE HARDWARE]: Testando microfone... Fale algo nos próximos 3 segundos!`, 'cmd');
+        this.testMicHardwareBtn.disabled = true;
+        this.testMicHardwareBtn.innerText = 'Captando... fale!';
+
+        this.audio.testMicrophoneHardware(
+          (currentVol) => {
+            if (currentVol > 4) {
+              this.logTerminal(`[SINAL DE ÁUDIO]: Nível detectado: ${currentVol}%`, 'out');
+            }
+          },
+          (maxVol, err) => {
+            this.testMicHardwareBtn.disabled = false;
+            this.testMicHardwareBtn.innerHTML = ic('microfone') + ' Testar Entrada de Microfone';
+
+            if (err) {
+              this.logTerminal(`[ERRO HARDWARE]: ${err}`, 'sys');
+              alert(`Erro no microfone: ${err}`);
+            } else if (maxVol > 5) {
+              this.logTerminal(`[SUCESSO]: Microfone funcionando perfeitamente! Volume máximo detectado: ${maxVol}%`, 'sys');
+              this.audio.playCompletionChime();
+            } else {
+              this.logTerminal(`[AVISO]: Volume detectado foi 0% ou muito baixo. Verifique se o microfone está desmutado e configurado como dispositivo padrão no Windows (Configurações > Sistema > Som).`, 'sys');
+            }
+          }
+        );
+      });
+    }
+
+    // Eventos de Modelos de API & Chaves de Sessão
+    if (this.toggleKeyVisBtn) {
+      this.toggleKeyVisBtn.addEventListener('click', () => {
+        const isPass = this.sessionApiKeyInput.type === 'password';
+        this.sessionApiKeyInput.type = isPass ? 'text' : 'password';
+        this.toggleKeyVisBtn.innerHTML = isPass ? ic('olho-fechado') : ic('olho');
+      });
+    }
+
+    if (this.sessionKeyProvider) {
+      this.sessionKeyProvider.addEventListener('change', () => {
+        const prov = this.sessionKeyProvider.value;
+        const stored = sessionStorage.getItem('jarvis_key_' + prov) || '';
+        this.sessionApiKeyInput.value = stored;
+        this.keyTestFeedback.classList.add('hidden');
+      });
+    }
+
+    if (this.saveSessionKeyBtn) {
+      // Reconhece o tipo da chave pelo começo dela e escolhe o provedor certo
+      const guessProvider = (key) => {
+        if (/^AIza[0-9A-Za-z_-]{20,}$/.test(key)) return 'google';
+        if (/^gsk_/.test(key)) return 'groq';
+        if (/^sk-or-/.test(key)) return 'openrouter';
+        if (/^sk-ant-/.test(key)) return 'claude';
+        if (/^sk-/.test(key)) return this.sessionKeyProvider.value === 'deepseek' ? 'deepseek' : 'openai';
+        return null;
+      };
+      this.sessionApiKeyInput.addEventListener('input', () => {
+        const g = guessProvider(this.sessionApiKeyInput.value.trim());
+        if (g && g !== 'claude' && this.sessionKeyProvider.value !== g) this.sessionKeyProvider.value = g;
+      });
+      this.saveSessionKeyBtn.addEventListener('click', () => {
+        const prov = this.sessionKeyProvider.value;
+        const key = this.sessionApiKeyInput.value.trim();
+        const kind = key ? guessProvider(key) : null;
+        if (key && kind === 'claude') {
+          this.showKeyFeedback('Essa é uma chave do Claude (Anthropic). O Atom ainda não usa esse tipo: use Google AI Studio, OpenAI, Groq, OpenRouter ou DeepSeek.', 'error');
+          return;
+        }
+        if (key && prov === 'google' && kind !== 'google') {
+          this.showKeyFeedback('Isso não parece uma chave do Google AI Studio (começa com AIza). Chaves do Antigravity ou do Google Cloud não funcionam aqui; crie uma em aistudio.google.com/apikey.', 'error');
+          return;
+        }
+        if (key) {
+          sessionStorage.setItem('jarvis_key_' + prov, key);
+          this.showKeyFeedback(`Chave de ${prov.toUpperCase()} ativada. Buscando os modelos dela...`, 'info');
+          this.loadLiveModels(prov).then((n) => {
+            if (n) this.showKeyFeedback(`Chave de ${prov.toUpperCase()} ativada. ${n} modelos liberados no seletor lá em cima.`, 'success');
+            else this.showKeyFeedback(`Chave de ${prov.toUpperCase()} ativada, mas não consegui listar os modelos dela. Confira se a chave está certa.`, 'error');
+          });
+          this.logTerminal(`[SEGURANÇA]: Chave de ${prov.toUpperCase()} ativada na sessão do navegador (volátil).`, 'sys');
+        } else {
+          sessionStorage.removeItem('jarvis_key_' + prov);
+          this.showKeyFeedback(`Chave de ${prov.toUpperCase()} removida da sessão.`, 'info');
+          if (this.liveModels) { delete this.liveModels[prov]; this.renderModelSelect(); }
+        }
+        this.renderApiModelsCatalog();
+      });
+    }
+
+    if (this.clearSessionKeyBtn) {
+      this.clearSessionKeyBtn.addEventListener('click', () => {
+        const prov = this.sessionKeyProvider.value;
+        sessionStorage.removeItem('jarvis_key_' + prov);
+        this.sessionApiKeyInput.value = '';
+        this.showKeyFeedback(`Chave da sessão limpa.`, 'info');
+        this.renderApiModelsCatalog();
+      });
+    }
+
+    if (this.testApiKeyBtn) {
+      this.testApiKeyBtn.addEventListener('click', async () => {
+        const prov = this.sessionKeyProvider.value;
+        const key = this.sessionApiKeyInput.value.trim() || sessionStorage.getItem('jarvis_key_' + prov) || '';
+        if (!key) {
+          this.showKeyFeedback('Por favor, digite uma chave para testar.', 'error');
+          return;
+        }
+
+        this.showKeyFeedback('Testando conexão com a API...', 'info');
+        // Achar um model_id padrão para o provedor
+        const defaultModel = prov === 'google' ? 'gemini-3.6-flash' : prov === 'groq' ? 'llama-3.3-70b-versatile' : 'gpt-4o-mini';
+        const res = await JarvisAPI.testApiModel({
+          provider: prov,
+          model_id: defaultModel,
+          api_key: key
+        });
+
+        if (res.success) {
+          this.showKeyFeedback(`${res.message}`, 'success');
+          this.audio.playCompletionChime();
+        } else {
+          this.showKeyFeedback(`Falha: ${res.error}`, 'error');
+          this.audio.playToolBeep();
+        }
+      });
+    }
+
+    if (this.toggleAddModelBtn) {
+      this.toggleAddModelBtn.addEventListener('click', () => {
+        this.addApiModelContainer.classList.toggle('hidden');
+      });
+    }
+
+    // Chips de sugestão de modelo
+    document.querySelectorAll('.chip-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.newModelProvider.value = btn.getAttribute('data-provider');
+        this.newModelId.value = btn.getAttribute('data-model');
+        this.newModelName.value = btn.getAttribute('data-name');
+        this.addApiModelContainer.classList.remove('hidden');
+      });
+    });
+
+    // Salvar novo modelo de API no catálogo
+    if (this.submitNewModelBtn) {
+      this.submitNewModelBtn.addEventListener('click', async () => {
+        const prov = this.newModelProvider.value;
+        const name = this.newModelName.value.trim();
+        const modelId = this.newModelId.value.trim();
+        const baseUrl = this.newModelBaseUrl.value.trim() || null;
+
+        if (!modelId) {
+          alert('Por favor, informe o Model ID da API.');
+          return;
+        }
+
+        const res = await JarvisAPI.addApiModel({
+          provider: prov,
+          name: name || modelId,
+          model_id: modelId,
+          base_url: baseUrl
+        });
+
+        if (res.success) {
+          this.logTerminal(`[CATÁLOGO API]: Modelo '${name || modelId}' cadastrado.`, 'sys');
+          this.newModelName.value = '';
+          this.newModelId.value = '';
+          this.newModelBaseUrl.value = '';
+          this.addApiModelContainer.classList.add('hidden');
+          await this.loadModels();
+          this.audio.playCompletionChime();
+        } else {
+          alert(`Erro ao cadastrar modelo: ${res.error}`);
+        }
+      });
+    }
+
+    // ENTRADA MANUAL DE MODELO (QUALQUER MODELO)
+    if (this.toggleManualModelBtn) {
+      this.toggleManualModelBtn.addEventListener('click', () => {
+        this.manualModelBar.classList.toggle('hidden');
+        if (!this.manualModelBar.classList.contains('hidden')) {
+          this.manualModelInput.focus();
+        }
+      });
+    }
+
+    if (this.cancelManualModelBtn) {
+      this.cancelManualModelBtn.addEventListener('click', () => {
+        this.manualModelBar.classList.add('hidden');
+      });
+    }
+
+    const applyManualModel = () => {
+      const val = this.manualModelInput.value.trim();
+      if (!val) return;
+
+      this.setCustomModel(val);
+      this.manualModelBar.classList.add('hidden');
+      this.manualModelInput.value = '';
+    };
+
+    if (this.applyManualModelBtn) {
+      this.applyManualModelBtn.addEventListener('click', applyManualModel);
+    }
+    if (this.manualModelInput) {
+      this.manualModelInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          applyManualModel();
+        } else if (e.key === 'Escape') {
+          this.manualModelBar.classList.add('hidden');
+        }
+      });
+    }
+
+    // SINCRONIZAÇÃO DINÂMICA DE MODELOS GOOGLE VIA API
+    if (this.syncGoogleModelsBtn) {
+      this.syncGoogleModelsBtn.addEventListener('click', async () => {
+        const sessionKey = sessionStorage.getItem('jarvis_key_google');
+        this.syncGoogleModelsBtn.innerText = 'Sincronizando...';
+        this.syncGoogleModelsBtn.disabled = true;
+
+        const res = await JarvisAPI.getGoogleModels(sessionKey);
+        this.syncGoogleModelsBtn.innerHTML = ic('recarregar') + ' Sincronizar da API Google';
+        this.syncGoogleModelsBtn.disabled = false;
+
+        if (res.success && res.models && res.models.length > 0) {
+          this.renderGoogleChips(res.models);
+          this.googleSyncedFeedback.innerText = `${res.models.length} modelos Google sincronizados diretamente da API!`;
+          this.googleSyncedFeedback.className = 'google-synced-msg success';
+          this.googleSyncedFeedback.classList.remove('hidden');
+          this.audio.playCompletionChime();
+          this.logTerminal(`[GOOGLE API]: ${res.models.length} modelos sincronizados com sucesso.`, 'sys');
+        } else {
+          this.googleSyncedFeedback.innerText = 'Não foi possível sincronizar da API. Verifique sua chave no .env ou no campo de sessão abaixo.';
+          this.googleSyncedFeedback.className = 'google-synced-msg error';
+          this.googleSyncedFeedback.classList.remove('hidden');
+          this.audio.playToolBeep();
+        }
+      });
+    }
+
+    // Eventos nos chips fixos de Google Gemini
+    this.bindGeminiChips();
+
+    // Fechar modal ao clicar fora
+    this.dossierModal.addEventListener('click', (e) => {
+      if (e.target === this.dossierModal) {
+        this.dossierModal.classList.add('hidden');
+      }
+    });
+  }
+
+  updateMicBtnState() {
+    const isListening = this.audio ? this.audio.isListening : false;
+
+    if (this.micBtn) {
+      this.micBtn.classList.toggle('active', isListening);
+      this.micBtn.classList.toggle('listening', isListening);
+      this.micBtn.classList.toggle('recording', isListening);
+      const label = document.getElementById('mic-btn-label');
+      if (label) {
+        const busyBig = !isListening && this.audio && this.atomBusy();
+        label.innerText = isListening ? 'OUVINDO... TOQUE PARA MANDAR' : busyBig ? 'PARAR E FALAR' : 'FALAR COM O ATOM';
+      }
+    }
+
+    const stopBtn = document.getElementById('composer-stop-btn');
+    if (stopBtn && this.audio) {
+      const active = this.liveOn || isListening || this.audio.isTranscribing || this.atomBusy();
+      stopBtn.classList.toggle('hidden', !active);
+    }
+
+    if (this.composerMicBtn) {
+      const busy = !isListening && this.audio && this.atomBusy();
+      const icon = document.getElementById('composer-mic-icon');
+      if (icon) icon.setAttribute('href', busy ? '#i-parar' : '#i-microfone');
+      this.composerMicBtn.classList.toggle('atom-busy', busy);
+      this.composerMicBtn.classList.toggle('active', isListening);
+      this.composerMicBtn.classList.toggle('listening', isListening);
+      this.composerMicBtn.classList.toggle('recording', isListening);
+      this.composerMicBtn.title = isListening
+        ? 'Ouvindo. Toque para mandar o que você falou'
+        : busy ? 'Parar o Atom e falar' : 'Toque para falar (para sozinho quando você se cala) ou segure para falar';
+    }
+
+    if (this.statusText) {
+      this.statusText.innerText = isListening ? 'ESCUTANDO VOZ...' : 'SISTEMAS PRONTOS';
+    }
+  }
+
+  setupKeyboardShortcuts() {
+    window.addEventListener('keydown', (e) => {
+      // 1. ATALHO PRINCIPAL SOLICITADO: TECLA NUMLOCK
+      const isNumLock = e.code === 'NumLock' || e.key === 'NumLock' || e.keyCode === 144;
+      if (isNumLock) {
+        e.preventDefault();
+        if (this.liveOn) { this.liveBlockedNotice(); return; }
+        this.logTerminal(`[TECLADO]: Tecla NumLock pressionada -> Alternando microfone...`, 'cmd');
+        if (this.audio) {
+          this.audio.toggleListening();
+          this.updateMicBtnState();
+        }
+        return;
+      }
+    });
+  }
+
+  /**
+   * Alterna compartilhamento de tela com o Atom (Visão Multimodal)
+   */
+  async toggleScreenShare() {
+    if (this.isScreenSharing) {
+      this.stopScreenShare();
+    } else {
+      await this.startScreenShare();
+    }
+  }
+
+  async startScreenShare() {
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+        alert("Seu navegador não suporta compartilhamento de tela via getDisplayMedia.");
+        return;
+      }
+
+      this.screenStream = await navigator.mediaDevices.getDisplayMedia({
+        video: {
+          cursor: "always",
+          frameRate: { ideal: 5, max: 15 }
+        },
+        audio: false
+      });
+
+      this.screenVideo = document.createElement('video');
+      this.screenVideo.autoplay = true;
+      this.screenVideo.playsInline = true;
+      this.screenVideo.muted = true;
+      this.screenVideo.srcObject = this.screenStream;
+      await this.screenVideo.play();
+
+      this.isScreenSharing = true;
+      this.reactor.setSeeing(true);
+
+      // Atualizar UI
+      if (this.screenShareBtn) {
+        this.screenShareBtn.classList.add('active');
+        if (this.screenBtnLabel) this.screenBtnLabel.innerText = "TELA CONECTADA";
+      }
+      if (this.screenPreviewBadge) {
+        this.screenPreviewBadge.classList.remove('hidden');
+      }
+      const livePreview = document.getElementById('screen-live-preview');
+      if (livePreview) {
+        livePreview.srcObject = this.screenStream;
+        livePreview.play().catch(() => {});
+        livePreview.onclick = () => livePreview.classList.toggle('expanded');
+      }
+
+      // Detectar quando o usuário encerra o compartilhamento pela barra do SO/navegador
+      const track = this.screenStream.getVideoTracks()[0];
+      if (track) {
+        track.onended = () => {
+          this.stopScreenShare();
+        };
+      }
+
+      this.audio.playToolBeep();
+      this.logTerminal('[VISÃO DE TELA]: Transmissão iniciada. o Atom agora enxerga a tela.', 'sys');
+    } catch (err) {
+      console.warn("Compartilhamento de tela cancelado ou negado:", err);
+      this.stopScreenShare();
+    }
+  }
+
+  stopScreenShare() {
+    if (this.screenStream) {
+      try {
+        this.screenStream.getTracks().forEach(track => track.stop());
+      } catch (e) {}
+      this.screenStream = null;
+    }
+    if (this.screenVideo) {
+      try {
+        this.screenVideo.srcObject = null;
+      } catch (e) {}
+      this.screenVideo = null;
+    }
+    this.isScreenSharing = false;
+    this.reactor.setSeeing(false);
+
+    if (this.screenShareBtn) {
+      this.screenShareBtn.classList.remove('active');
+      if (this.screenBtnLabel) this.screenBtnLabel.innerText = "ENXERGAR TELA";
+    }
+    if (this.screenPreviewBadge) {
+      this.screenPreviewBadge.classList.add('hidden');
+    }
+    const livePreview = document.getElementById('screen-live-preview');
+    if (livePreview) {
+      livePreview.srcObject = null;
+      livePreview.classList.remove('expanded');
+    }
+
+    this.logTerminal('[VISÃO DE TELA]: Transmissão de tela encerrada.', 'sys');
+  }
+
+  captureScreenFrame() {
+    if (!this.isScreenSharing || !this.screenVideo || this.screenVideo.videoWidth === 0) {
+      return null;
+    }
+
+    let width = this.screenVideo.videoWidth;
+    let height = this.screenVideo.videoHeight;
+    const maxDim = 1280;
+
+    if (width > maxDim || height > maxDim) {
+      if (width > height) {
+        height = Math.round((height * maxDim) / width);
+        width = maxDim;
+      } else {
+        width = Math.round((width * maxDim) / height);
+        height = maxDim;
+      }
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(this.screenVideo, 0, 0, width, height);
+
+    // JPEG 0.75 para otimização de banda e memória
+    return canvas.toDataURL('image/jpeg', 0.75);
+  }
+
+  async bootSystem() {
+    this.audio.playStartupSFX();
+    this.logTerminal('[SISTEMA] Atom pronto. Arquitetura híbrida pronta (Visão + Nuvem + SO).', 'sys');
+
+    // Registrar Service Worker para PWA se suportado
+    if ('serviceWorker' in navigator) {
+      try {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      } catch (e) {}
+    }
+
+    await this.detectEnvironment();
+    await this.loadModels();
+    await this.updateTelemetry();
+    await this.loadResearches();
+
+    // Iniciar loop de telemetria a cada 3 segundos
+    this.pollTelemetryTimer = setInterval(() => this.updateTelemetry(), 3000);
+  }
+
+  async loadModels() {
+    const data = await JarvisAPI.getModels();
+    this.localModels = data.local_models || data.models || [];
+    this.apiModels = data.api_models || [];
+    this.defaultModel = data.default_model;
+    this.liveModels = this.liveModels || {};
+    this.renderModelSelect();
+    this.logTerminal(`[MODELOS]: ${this.localModels.length} locais (Ollama) e ${this.apiModels.length} em nuvem (API) carregados.`, 'sys');
+    this.renderApiModelsCatalog();
+
+    // Provedores com chave (na sessão ou na Vercel/.env): mostra todos os modelos que a chave libera
+    const providers = new Set(['google', 'openai', 'groq', 'openrouter', 'deepseek'].filter((p) => {
+      try { if (sessionStorage.getItem('jarvis_key_' + p)) return true; } catch (e) {}
+      return false;
+    }));
+    this.apiModels.filter((m) => m.has_env_key).forEach((m) => providers.add(m.provider));
+    await Promise.all([...providers].map((p) => this.loadLiveModels(p, true)));
+  }
+
+  /** Busca todos os modelos que a chave do provedor libera e coloca no seletor. */
+  async loadLiveModels(provider, silent = false) {
+    let key = null;
+    try { key = sessionStorage.getItem('jarvis_key_' + provider); } catch (e) {}
+    const res = await JarvisAPI.listProviderModels(provider, key);
+    const list = (res && res.models) || [];
+    this.liveModels = this.liveModels || {};
+    if (list.length) this.liveModels[provider] = list;
+    else delete this.liveModels[provider];
+    this.renderModelSelect();
+    if (!silent) {
+      this.logTerminal(`[MODELOS]: ${list.length} modelos de ${provider.toUpperCase()} liberados pela chave.`, 'sys');
+    }
+    return list.length;
+  }
+
+  /** Provedor de um id de modelo (catálogo, lista da chave ou prefixo api:provedor:). */
+  providerOf(modelId) {
+    const inCatalog = (this.apiModels || []).find((m) => m.id === modelId);
+    if (inCatalog) return inCatalog.provider;
+    for (const [prov, list] of Object.entries(this.liveModels || {})) {
+      if (list.some((m) => m.id === modelId)) return prov;
+    }
+    const m = /^api:([a-z]+):/.exec(modelId || '');
+    return m ? m[1] : null;
+  }
+
+  /** O provedor tem chave (na Vercel/.env ou colada nesta aba)? Sem chave, os modelos dele não aparecem. */
+  hasKeyFor(provider) {
+    try { if (sessionStorage.getItem('jarvis_key_' + provider)) return true; } catch (e) {}
+    return (this.apiModels || []).some((m) => m.provider === provider && m.has_env_key);
+  }
+
+  /** Modelos do catálogo que dá para usar agora (o provedor tem chave). */
+  usableCatalog() {
+    return (this.apiModels || []).filter((m) => this.hasKeyFor(m.provider));
+  }
+
+  renderModelSelect() {
+    const sel = this.modelSelect;
+    const previous = this.currentModel;
+    sel.innerHTML = '';
+    const names = { google: 'Google Gemini', openai: 'OpenAI', groq: 'Groq', openrouter: 'OpenRouter', deepseek: 'DeepSeek' };
+    const add = (group, value, text) => {
+      const opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = text;
+      group.appendChild(opt);
+    };
+    const shown = new Set();
+
+    if (this.localModels && this.localModels.length) {
+      const g = document.createElement('optgroup');
+      g.label = 'Modelos locais (Ollama, no seu PC)';
+      this.localModels.forEach((m) => { add(g, m.name, `${m.name} (${m.size_gb ? m.size_gb + ' GB' : 'local'})`); shown.add(m.name); });
+      sel.appendChild(g);
+    }
+
+    // Versão do nome (gemini-3.8-flash > gemini-3.6-pro), apelidos "latest" primeiro
+    const rank = (id) => {
+      if (/latest/.test(id)) return 1000;
+      const v = /(\d+(?:\.\d+)?)/.exec(id);
+      return v ? parseFloat(v[1]) : 0;
+    };
+    Object.entries(this.liveModels || {}).forEach(([prov, list]) => {
+      const g = document.createElement('optgroup');
+      g.label = `${names[prov] || prov} · todos os modelos da sua chave (${list.length})`;
+      [...list].sort((a, b) => rank(b.model_id) - rank(a.model_id) || a.model_id.localeCompare(b.model_id))
+        .forEach((m) => { add(g, m.id, m.model_id); shown.add(m.id); });
+      sel.appendChild(g);
+    });
+
+    const rest = this.usableCatalog().filter((m) => !shown.has(m.id));
+    if (rest.length) {
+      const g = document.createElement('optgroup');
+      g.label = 'Modelos na nuvem (catálogo)';
+      rest.forEach((m) => { add(g, m.id, `${m.name} [${m.provider.toUpperCase()}]`); shown.add(m.id); });
+      sel.appendChild(g);
+    }
+
+    if (previous && !shown.has(previous)) add(sel, previous, previous.replace(/^api:[a-z]+:/, '') + ' (manual)');
+    if (!previous) {
+      if (this.localModels && this.localModels.length) this.currentModel = this.defaultModel || this.localModels[0].name;
+      else if (this.usableCatalog().length) this.currentModel = this.usableCatalog()[0].id;
+    }
+    sel.value = this.currentModel;
+    if (this.engineModelTag) this.engineModelTag.innerText = this.currentModel || '';
+  }
+
+  renderApiModelsCatalog() {
+    if (!this.apiModelsCatalog) return;
+    this.apiModelsCatalog.innerHTML = '';
+
+    // Só aparece o que a chave libera; provedores sem chave ficam escondidos até você colar a chave deles
+    const usable = this.usableCatalog();
+    const hidden = [...new Set((this.apiModels || []).filter((m) => !this.hasKeyFor(m.provider)).map((m) => m.provider))];
+    if (usable.length === 0) {
+      this.apiModelsCatalog.innerHTML = '<div class="catalog-empty">Nenhuma chave de API ativa. Cole uma chave abaixo para liberar os modelos dela.</div>';
+    }
+    if (hidden.length) {
+      const note = document.createElement('div');
+      note.className = 'catalog-empty';
+      note.textContent = `Sem chave: ${hidden.map((p) => p.toUpperCase()).join(', ')}. Os modelos ${hidden.length > 1 ? 'deles' : 'dele'} só aparecem quando você colar a chave.`;
+      this.apiModelsCatalog.appendChild(note);
+    }
+
+    usable.forEach((m) => {
+      const card = document.createElement('div');
+      card.className = 'api-model-item';
+
+      const sessionKey = sessionStorage.getItem('jarvis_key_' + m.provider);
+      let statusBadge = '';
+      if (m.has_env_key) {
+        statusBadge = '<span class="status-chip env" title="Chave configurada em variável de ambiente (.env)">ENV ATIVA</span>';
+      } else if (sessionKey) {
+        statusBadge = '<span class="status-chip session" title="Chave ativa apenas nesta sessão do navegador">SESSÃO ATIVA</span>';
+      } else {
+        statusBadge = '<span class="status-chip pending" title="Defina no .env ou no campo de sessão abaixo">CHAVE PENDENTE</span>';
+      }
+
+      card.innerHTML = `
+        <div class="api-model-info">
+          <div class="api-model-top">
+            <span class="api-model-name">${m.name}</span>
+            <span class="api-provider-tag ${m.provider}">${m.provider.toUpperCase()}</span>
+            ${statusBadge}
+          </div>
+          <div class="api-model-meta">
+            <code>${m.model_id}</code> &bull; Env: <code>${m.env_var || 'API_KEY'}</code>
+          </div>
+        </div>
+        <button class="delete-model-btn" title="Remover modelo do catálogo" data-id="${m.id}">${ic('fechar')}</button>
+      `;
+
+      const delBtn = card.querySelector('.delete-model-btn');
+      delBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (confirm(`Remover '${m.name}' do catálogo de modelos?`)) {
+          await JarvisAPI.deleteApiModel(m.id);
+          this.logTerminal(`[CATÁLOGO API]: Modelo '${m.name}' removido.`, 'sys');
+          await this.loadModels();
+        }
+      });
+
+      this.apiModelsCatalog.appendChild(card);
+    });
+  }
+
+  showKeyFeedback(msg, type = 'info') {
+    if (!this.keyTestFeedback) return;
+    this.keyTestFeedback.className = `key-feedback-msg ${type}`;
+    this.keyTestFeedback.innerText = msg;
+    this.keyTestFeedback.classList.remove('hidden');
+  }
+
+  setCustomModel(modelString) {
+    const raw = modelString.trim();
+    if (!raw) return;
+
+    // Detectar provedor inteligentemente
+    let provider = 'google';
+    let cleanId = raw;
+    let displayName = raw;
+
+    if (raw.toLowerCase().startsWith('gemini-') || raw.toLowerCase().includes('gemini')) {
+      provider = 'google';
+      cleanId = raw.replace(/^(api:google:|google:)/i, '');
+      displayName = `Google ${cleanId}`;
+    } else if (raw.toLowerCase().startsWith('gpt-') || raw.toLowerCase().startsWith('o1') || raw.toLowerCase().startsWith('o3')) {
+      provider = 'openai';
+      cleanId = raw.replace(/^(api:openai:|openai:)/i, '');
+      displayName = `OpenAI ${cleanId}`;
+    } else if (raw.toLowerCase().startsWith('llama-') || raw.toLowerCase().startsWith('groq:')) {
+      provider = 'groq';
+      cleanId = raw.replace(/^(api:groq:|groq:)/i, '');
+      displayName = `Groq ${cleanId}`;
+    }
+
+    const fullId = `api:${provider}:${cleanId}`;
+
+    // Verificar se já existe no select
+    let existingOpt = Array.from(this.modelSelect.options).find(o => o.value === fullId || o.value === cleanId);
+    if (!existingOpt) {
+      const customOpt = document.createElement('option');
+      customOpt.value = fullId;
+      customOpt.textContent = `${displayName} (manual)`;
+      this.modelSelect.prepend(customOpt);
+    }
+
+    // Registrar no catálogo em memória para este cliente
+    if (!this.apiModels.some(m => m.id === fullId)) {
+      this.apiModels.unshift({
+        id: fullId,
+        name: displayName,
+        provider: provider,
+        model_id: cleanId,
+        env_var: provider === 'google' ? 'GEMINI_API_KEY' : provider === 'groq' ? 'GROQ_API_KEY' : 'OPENAI_API_KEY'
+      });
+    }
+
+    this.modelSelect.value = fullId;
+    this.currentModel = fullId;
+    this.engineModelTag.innerText = cleanId;
+
+    this.logTerminal(`[MODELO ATIVO]: Alternado para modelo manual: ${displayName} (${cleanId})`, 'sys');
+    this.audio.playToolBeep();
+    this.renderApiModelsCatalog();
+  }
+
+  bindGeminiChips() {
+    document.querySelectorAll('.gemini-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const modelId = chip.getAttribute('data-model');
+        this.setCustomModel(modelId);
+        
+        // Destaque visual no chip ativo
+        document.querySelectorAll('.gemini-chip').forEach(c => c.classList.remove('active-chip'));
+        chip.classList.add('active-chip');
+      });
+    });
+  }
+
+  renderGoogleChips(modelsList) {
+    const container = document.getElementById('quick-gemini-chips');
+    if (!container) return;
+    container.innerHTML = '';
+
+    modelsList.forEach(m => {
+      const btn = document.createElement('button');
+      btn.className = 'gemini-chip';
+      btn.setAttribute('data-model', m.model_id);
+      btn.title = m.description || m.name;
+      btn.innerText = m.model_id;
+      container.appendChild(btn);
+    });
+
+    this.bindGeminiChips();
+  }
+
+  /** Web (Vercel) ou local (PC)? O servidor confirma; até lá vale o palpite feito no <head>. */
+  async detectEnvironment() {
+    const html = document.documentElement;
+    try {
+      const res = await fetch('/api/health', { cache: 'no-store' });
+      const data = await res.json();
+      if (data && data.environment && typeof data.environment.is_cloud === 'boolean') {
+        html.dataset.ambiente = data.environment.is_cloud ? 'web' : 'local';
+      }
+    } catch (e) {}
+    this.isWeb = html.dataset.ambiente !== 'local';
+    const label = this.isWeb ? 'WEB' : 'LOCAL';
+    const tag = document.getElementById('env-tag');
+    const name = document.getElementById('env-name');
+    if (tag) tag.textContent = label;
+    if (name) name.textContent = label;
+    if (this.isWeb && this.autonomousToggle) this.autonomousToggle.checked = false;
+  }
+
+  /** Painel da versão web: só o que faz sentido medir na nuvem. */
+  updateWebTelemetry() {
+    const set = (id, txt) => { const el = document.getElementById(id); if (el && el.textContent !== txt) { el.textContent = txt; el.title = txt; } };
+    const opt = this.modelSelect && this.modelSelect.selectedOptions ? this.modelSelect.selectedOptions[0] : null;
+    set('web-model', (opt && opt.textContent.trim()) || this.currentModel || 'nenhum');
+    const prov = this.providerOf(this.currentModel);
+    let session = false;
+    try { session = !!(prov && sessionStorage.getItem('jarvis_key_' + prov)); } catch (e) {}
+    const env = prov && (this.apiModels || []).some((m) => m.provider === prov && m.has_env_key);
+    set('web-key', session ? 'sua, nesta aba' : env ? 'do Atom (Vercel)' : prov ? 'falta a chave' : '...');
+    const a = this.audio;
+    set('web-voice', !a.ttsEnabled ? 'desligada' : a.voiceEngine === 'natural' ? `${a.geminiVoice} (Gemini)` : 'do navegador');
+    const n = (this.messages || []).length;
+    set('web-msgs', `${n} ${n === 1 ? 'mensagem' : 'mensagens'}`);
+    if (this.lastLatency) set('web-latency', `${(this.lastLatency / 1000).toFixed(1)} s até a 1ª palavra`);
+  }
+
+  async updateTelemetry() {
+    if (this.isWeb) { this.updateWebTelemetry(); return; }
+    const data = await JarvisAPI.getTelemetry();
+    if (!data || !data.success) return;
+
+    // 1. CPU do JARVIS em relação ao computador
+    const jarvisCpu = data.jarvis_cpu_percent !== undefined ? Number(data.jarvis_cpu_percent) : Number(data.cpu_percent || 0);
+    const pcCpu = data.pc_cpu_total !== undefined ? Number(data.pc_cpu_total) : 0;
+    this.cpuVal.innerText = `${jarvisCpu.toFixed(1)}%`;
+    // Escala dinâmica da barra para feedback visual claro mesmo com baixo uso
+    const cpuBarFill = Math.min(Math.max(jarvisCpu * 3, jarvisCpu > 0 ? 5 : 0), 100);
+    this.cpuBar.style.width = `${cpuBarFill}%`;
+    if (this.cpuSubinfo) {
+      this.cpuSubinfo.innerText = `Impacto no PC: ${jarvisCpu.toFixed(1)}%`;
+    }
+    if (this.cpuPcTotal) {
+      this.cpuPcTotal.innerText = `Total PC: ${pcCpu}%`;
+    }
+
+    // 2. RAM do JARVIS em relação ao computador
+    const jarvisRamMb = data.jarvis_ram_mb !== undefined ? Number(data.jarvis_ram_mb) : (data.ram_used_gb ? data.ram_used_gb * 1024 : 0);
+    const pcRamTotal = data.pc_ram_total_gb || data.ram_total_gb || 0;
+    const pcRamUsed = data.pc_ram_used_gb || 0;
+    const ramPercentOfPc = data.jarvis_ram_percent !== undefined ? Number(data.jarvis_ram_percent) : 0;
+
+    if (jarvisRamMb >= 1024) {
+      this.ramVal.innerText = `${(jarvisRamMb / 1024).toFixed(2)} GB`;
+    } else {
+      this.ramVal.innerText = `${Math.round(jarvisRamMb)} MB`;
+    }
+    // Barra de preenchimento proporcional à RAM total da máquina
+    const ramBarFill = Math.min(Math.max(ramPercentOfPc * 4, ramPercentOfPc > 0 ? 6 : 0), 100);
+    this.ramBar.style.width = `${ramBarFill}%`;
+    if (this.ramSubinfo) {
+      this.ramSubinfo.innerText = `${ramPercentOfPc.toFixed(1)}% da RAM do PC`;
+    }
+    if (this.ramPcTotal) {
+      this.ramPcTotal.innerText = `PC: ${pcRamUsed} / ${pcRamTotal} GB`;
+    }
+
+    // 3. Armazenamento do Projeto e Disco
+    const projectMb = data.project_mb !== undefined ? data.project_mb : 0;
+    const diskFree = data.disk_free_gb || 0;
+    this.diskVal.innerText = `${projectMb} MB`;
+    this.diskBar.style.width = `${Math.min(data.disk_percent || 0, 100)}%`;
+    if (this.diskSubinfo) {
+      this.diskSubinfo.innerText = `PC: ${diskFree} GB livres`;
+    }
+
+    // 4. Status e Consumo do Ollama
+    if (data.ollama_connected) {
+      this.ollamaStatus.innerText = 'CONECTADO';
+      this.ollamaStatus.className = 'badge-status online';
+    } else {
+      this.ollamaStatus.innerText = 'DESCONECTADO';
+      this.ollamaStatus.className = 'badge-status offline';
+    }
+    if (this.ollamaSubinfo) {
+      if (data.ollama_ram_mb && data.ollama_ram_mb > 0) {
+        this.ollamaSubinfo.innerText = `RAM IA: ${Math.round(data.ollama_ram_mb)} MB`;
+      } else {
+        this.ollamaSubinfo.innerText = data.ollama_connected ? 'RAM IA: Em Espera' : 'RAM IA: Inativo';
+      }
+    }
+  }
+
+  /** Guarda o arquivo Markdown no navegador, com a conversa de onde ele veio. */
+  rememberFile({ filename, title, content }) {
+    if (!filename || !content) return;
+    // salva a conversa antes, para ela existir na lista com o nome certo
+    try { this.saveConversation(); } catch (e) {}
+    const conv = Conversas.get(this.conversationId);
+    Arquivos.add({
+      filename, content,
+      title: title || filename.replace(/\.md$/, ''),
+      convId: this.conversationId || null,
+      convTitle: conv ? conv.title : 'Conversa atual'
+    });
+  }
+
+  async loadResearches() {
+    // Arquivos do navegador (valem online e local) + os da pasta do PC quando roda local
+    const items = Arquivos.list().map((a) => ({ ...a, local: true }));
+    let res = null;
+    try { res = await JarvisAPI.getResearches(); } catch (e) {}
+    if (res && res.success && Array.isArray(res.items)) {
+      res.items.forEach((it) => {
+        if (!items.some((a) => a.filename === it.filename)) items.push({ ...it, local: false });
+      });
+    }
+
+    this.researchCountBadge.innerText = items.length;
+    this.researchesList.innerHTML = '';
+
+    if (items.length === 0) {
+      this.researchesList.innerHTML = `
+        <div class="empty-dossier-state">Nenhum arquivo Markdown salvo ainda. Peça ao Atom: <em>"Salve um arquivo Markdown sobre IA"</em></div>
+      `;
+      return;
+    }
+
+    items.forEach((item) => {
+      const card = document.createElement('div');
+      card.className = 'dossier-card';
+      const when = item.local
+        ? new Date(item.created).toLocaleString([], { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+        : (item.modified || '');
+      const preview = item.local
+        ? String(item.content).replace(/^---[\s\S]*?---/, '').replace(/[#|*`>-]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 140)
+        : (item.preview || 'Sem pré-visualização');
+      const conv = item.local && item.convId ? Conversas.get(item.convId) : null;
+      const convLine = item.local
+        ? (conv
+          ? `<button type="button" class="dossier-conv" title="Abrir a conversa de onde veio">${ic('livro')} Da conversa: ${this.escapeHtml(conv.title)}</button>`
+          : `<span class="dossier-conv off">Da conversa: ${this.escapeHtml(item.convTitle || 'apagada')}${item.convTitle ? ' (apagada)' : ''}</span>`)
+        : `<span class="dossier-conv off">Salvo na pasta do PC</span>`;
+      card.innerHTML = `
+        <div class="dossier-head">
+          <span class="dossier-title">${ic('arquivo')} ${this.escapeHtml(item.title || item.filename)}</span>
+          <div class="research-item-actions">
+            <span class="dossier-date">${when}</span>
+            <button type="button" class="research-download-icon-btn dl" title="Baixar arquivo (.md)">${ic('baixar')}</button>
+            ${item.local ? `<button type="button" class="research-download-icon-btn del" title="Apagar este arquivo">${ic('lixeira')}</button>` : ''}
+          </div>
+        </div>
+        <p class="dossier-preview">${this.escapeHtml(preview || 'Sem pré-visualização')}</p>
+        ${convLine}
+      `;
+      card.querySelector('.dl').addEventListener('click', (e) => { e.stopPropagation(); this.downloadFile(item.filename); });
+      card.querySelector('.del')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        Arquivos.remove(item.filename);
+        this.loadResearches();
+      });
+      card.querySelector('button.dossier-conv')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.researchesDrawer.classList.remove('open');
+        this.openConversation(item.convId);
+      });
+      card.addEventListener('click', () => this.openDossierModal(item.filename));
+      this.researchesList.appendChild(card);
+    });
+  }
+
+  downloadFile(filename) {
+    const saved = Arquivos.get(filename);
+    const url = saved
+      ? URL.createObjectURL(new Blob([saved.content], { type: 'text/markdown;charset=utf-8' }))
+      : JarvisAPI.getDownloadUrl(filename);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    this.logTerminal(`[DOWNLOAD]: Baixando ${filename}...`, 'sys');
+  }
+
+  async openDossierModal(filename) {
+    const saved = Arquivos.get(filename);
+    const res = saved ? { success: true, filename, content: saved.content } : await JarvisAPI.getResearchContent(filename);
+    if (!res || !res.success) return;
+
+    this.modalDossierTitle.innerText = res.filename;
+    
+    // Renderizar com Marked
+    if (window.marked) {
+      this.modalDossierContent.innerHTML = window.marked.parse(res.content);
+    } else {
+      this.modalDossierContent.innerText = res.content;
+    }
+
+    if (this.modalDownloadBtn) {
+      this.modalDownloadBtn.onclick = () => this.downloadFile(filename);
+    }
+
+    this.modalOpenWinBtn.onclick = () => {
+      JarvisAPI.openResearch(filename);
+      this.logTerminal(`[SISTEMA]: Abrindo ${filename} no Windows...`, 'cmd');
+    };
+
+    this.dossierModal.classList.remove('hidden');
+    this.audio.playToolBeep();
+  }
+
+  async handlePullModel() {
+    const modelName = this.pullModelInput.value.trim();
+    if (!modelName) return;
+
+    this.pullProgressBox.classList.remove('hidden');
+    this.pullStatusText.innerText = `Conectando ao repositório para ${modelName}...`;
+    this.pullBarFill.style.width = '0%';
+    this.pullPercentText.innerText = '0%';
+    this.pullModelBtn.disabled = true;
+
+    this.logTerminal(`[OLLAMA PULL]: Iniciando download do modelo '${modelName}'...`, 'cmd');
+
+    await JarvisAPI.pullModel(modelName, (progress) => {
+      if (progress.status === 'error') {
+        this.pullStatusText.innerText = `Erro: ${progress.error}`;
+        this.pullModelBtn.disabled = false;
+        this.logTerminal(`[ERRO PULL]: ${progress.error}`, 'sys');
+      } else {
+        this.pullStatusText.innerText = progress.status || 'Baixando...';
+        if (progress.percent !== undefined) {
+          this.pullPercentText.innerText = `${progress.percent}%`;
+          this.pullBarFill.style.width = `${progress.percent}%`;
+        }
+
+        if (progress.done) {
+          this.pullStatusText.innerText = 'Download concluído com sucesso!';
+          this.pullModelBtn.disabled = false;
+          this.loadModels();
+          this.audio.playCompletionChime();
+          this.logTerminal(`[OLLAMA]: Modelo ${modelName} pronto para uso!`, 'sys');
+        }
+      }
+    });
+  }
+
+  handleSpeechInput(text) {
+    if (!text || !text.trim()) return;
+    const clean = text.trim();
+
+    // "Para", "pare", "chega", "cancela"... sozinhos são ordem de parar, não mensagem
+    const bare = clean.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z ]/g, ' ').replace(/\s+/g, ' ').trim()
+      .replace(/^(atom|atomo|ei atom|ok atom) /, '');
+    if (/^(para|pare|parar|para tudo|chega|cancela|cancelar|esquece|silencio|stop|fica quieto|cala a boca|ja deu)$/.test(bare)) {
+      this.chatInput.value = '';
+      this.logTerminal(`[VOZ]: "${clean}" entendido como ordem de parar.`, 'sys');
+      this.interruptJarvis();
+      return;
+    }
+
+    // 1. Escrever visivelmente no campo de entrada do chat
+    this.chatInput.value = clean;
+    this.chatInput.style.height = 'auto';
+    this.chatInput.style.height = `${Math.min(this.chatInput.scrollHeight, 220)}px`;
+    // sem focar o campo: assim o Espaço continua sendo o botão de falar
+
+    this.logTerminal(`[COMANDO DE VOZ]: "${clean}" -> Enviando ordem...`, 'cmd');
+
+    // 2. Pequeno delay de 350ms para que o usuário veja a frase escrita no chat antes de despachar
+    setTimeout(() => {
+      this.handleUserSubmit();
+    }, 350);
+  }
+
+
+
+  toggleDrawer(id) {
+    const drawer = document.getElementById(id);
+    const isOpen = drawer.classList.contains('open');
+
+    // Fechar todos
+    this.toggleHistory(false);
+    this.researchesDrawer.classList.remove('open');
+    this.settingsDrawer.classList.remove('open');
+
+    if (!isOpen) {
+      drawer.classList.add('open');
+      if (id === 'researches-drawer') {
+        this.loadResearches();
+      }
+    }
+    this.audio.playToolBeep();
+  }
+
+  logTerminal(text, type = 'out') {
+    const line = document.createElement('div');
+    line.className = `log-line ${type}`;
+    line.innerText = text;
+    this.terminalOutput.appendChild(line);
+    this.terminalOutput.scrollTop = this.terminalOutput.scrollHeight;
+  }
+
+  /* ==========================================================================
+     SUBMISSÃO DO USUÁRIO & PROCESSAMENTO STREAMING
+     ========================================================================== */
+
+  async handleUserSubmit() {
+    if (this.isGenerating) return;
+
+    const text = this.chatInput.value.trim();
+    if (!text) return;
+
+    // No modo Live, o que você escreve vai para a mesma conversa de voz
+    if (this.liveOn) {
+      this.chatInput.value = '';
+      this.chatInput.style.height = 'auto';
+      this.appendMessage('user', text);
+      this.messages.push({ role: 'user', content: text });
+      this.saveConversation();
+      this.live.sendText(text);
+      return;
+    }
+
+    this.chatInput.value = '';
+    this.chatInput.style.height = 'auto';
+
+    // Capturar frame da tela se visão multimodal estiver ativa
+    let imageBase64 = null;
+    if (this.isScreenSharing) {
+      imageBase64 = this.captureScreenFrame();
+      if (imageBase64) {
+        this.logTerminal('[VISÃO DE TELA]: Capturado frame JPEG otimizado da interface (visão ativa).', 'cmd');
+      }
+    }
+
+    // 1. Renderizar mensagem do usuário (com indicador visual de tela se houver imagem)
+    this.appendMessage('user', text, !!imageBase64);
+    this.messages.push({ role: 'user', content: text });
+    this.saveConversation();
+
+    this.isGenerating = true;
+    this.sendAt = performance.now();
+    this.updateMicBtnState();
+    this.reactor.setState('THINKING');
+    this.audio.playToolBeep();
+
+    // 2. Criar card da resposta do A.T.O.M. com streaming
+    const assistantMsg = this.appendStreamingMessage();
+    let fullResponse = '';
+
+    const temperature = parseFloat(this.tempSlider.value) || 0.7;
+    const autonomous = this.isWeb ? false : this.autonomousToggle.checked; // abrir apps só existe no modo local
+
+    // Resolver chave de sessão volátil se for um modelo de API
+    let sessionKey = null;
+    const selectedProvider = this.providerOf(this.currentModel);
+    if (selectedProvider) {
+      sessionKey = sessionStorage.getItem('jarvis_key_' + selectedProvider);
+    }
+
+    // Criar controlador de aborto para permitir interrupção imediata via [-]
+    this.currentAbortController = new AbortController();
+
+    await JarvisAPI.chatStream({
+      messages: this.messages,
+      model: this.currentModel,
+      temperature: temperature,
+      autonomous: autonomous,
+      session_key: sessionKey,
+      image_base64: imageBase64,
+      signal: this.currentAbortController.signal,
+
+      onToken: (token) => {
+        if (!fullResponse) {
+          this.reactor.setState('SPEAKING');
+          // Com voz ligada a boca fica fechada enquanto o texto chega e só mexe quando o som sai
+          if (this.audio.ttsEnabled) this.reactor.setAudioLevel(0);
+          this.lastLatency = Math.round(performance.now() - (this.sendAt || performance.now()));
+        }
+        fullResponse += token;
+        assistantMsg.updateContent(fullResponse);
+        this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+      },
+
+      onToolStart: (toolEvent) => {
+        this.showToolBanner(toolEvent.label, toolEvent.details);
+        this.logTerminal(`[FERRAMENTA INICIADA]: ${toolEvent.label} (${toolEvent.tool})`, 'cmd');
+        assistantMsg.appendToolBadge(toolEvent);
+      },
+
+      onToolEnd: (toolEvent) => {
+        this.hideToolBanner();
+        this.logTerminal(`[FERRAMENTA CONCLUÍDA]: ${toolEvent.tool}`, 'sys');
+        if (toolEvent.tool === 'os_command' && toolEvent.data) {
+          const out = toolEvent.data.stdout || toolEvent.data.stderr || '(sem saída)';
+          this.logTerminal(`[SAÍDA]: ${out.substring(0, 160)}`, 'out');
+        }
+      },
+
+      onClientAction: (actionEvent) => {
+        if (actionEvent.action === 'open_url' && actionEvent.url) {
+          window.open(actionEvent.url, '_blank');
+          this.logTerminal(`[AÇÃO CLIENTE]: Aberto link no navegador: ${actionEvent.url}`, 'sys');
+        }
+      },
+
+      onReportCreated: (reportEvent) => {
+        const filename = reportEvent.filename;
+        // Online, o servidor pode ser outro na hora do download: baixa direto do conteúdo recebido
+        const downloadUrl = reportEvent.content
+          ? URL.createObjectURL(new Blob([reportEvent.content], { type: 'text/markdown;charset=utf-8' }))
+          : JarvisAPI.getDownloadUrl(filename);
+        assistantMsg.appendReportCreatedCard(filename, downloadUrl);
+        this.rememberFile({ filename, title: reportEvent.title, content: reportEvent.content });
+        this.loadResearches();
+        this.logTerminal(`[RELATÓRIO GERADO]: ${filename} (Download disponível)`, 'sys');
+      },
+
+      onFileCreated: (fileData) => {
+        this.loadResearches();
+        assistantMsg.appendFileCreatedCard(fileData);
+        this.logTerminal(`[ARQUIVO MARKDOWN SALVO]: ${fileData.filename} (${fileData.size} bytes)`, 'sys');
+      },
+
+      onDone: (finalContent) => {
+        this.isGenerating = false;
+        this.updateMicBtnState();
+        this.currentAbortController = null;
+        this.hideToolBanner();
+        this.reactor.setState('IDLE');
+        this.audio.playCompletionChime();
+
+        if (finalContent) {
+          this.messages.push({ role: 'assistant', content: finalContent });
+          this.saveConversation();
+          this.reactor.flash('feliz', 1500);
+          // Falar resposta se TTS estiver ativado; sem voz, a conversa contínua volta a ouvir já
+          if (!this.audio.speak(finalContent)) { this.reactor.setAudioLevel(null); this.resumeListeningSoon(); }
+        } else {
+          this.reactor.setAudioLevel(null);
+          this.resumeListeningSoon();
+        }
+      },
+
+      onError: (errMsg) => {
+        this.isGenerating = false;
+        this.reactor.setAudioLevel(null);
+        this.conversaPaused = true;
+        this.updateMicBtnState();
+        this.currentAbortController = null;
+        this.hideToolBanner();
+        this.reactor.setState('IDLE');
+        this.reactor.flash('confuso', 3500);
+        assistantMsg.updateContent(`**Algo deu errado:** ${errMsg}`);
+        this.logTerminal(`[ERRO]: ${errMsg}`, 'sys');
+      }
+    });
+  }
+
+  /**
+   * BOTÃO [-]: Interrompe completamente o A.T.O.M.
+   * Cancela geração em tempo real, fala vocal (TTS) e microfone imediatamente.
+   */
+  interruptJarvis() {
+    // 1. Cancelar requisição SSE ativa
+    if (this.currentAbortController) {
+      try {
+        this.currentAbortController.abort();
+      } catch (e) {}
+      this.currentAbortController = null;
+    }
+
+    // 2. Cancelar fala de áudio TTS (e pausar a conversa contínua até o próximo toque no microfone)
+    this.conversaPaused = true;
+    clearTimeout(this.resumeTimer);
+    this.audio.stopSpeaking();
+
+    // 3. Cancelar microfone se estiver ouvindo: descarta o que foi ouvido, não manda nada
+    if (this.audio.isTranscribing) this.audio.dropTranscription = true;
+    if (this.audio.isListening) {
+      this.audio.discardNext = true;
+      this.audio.holdToTalk = false;
+      this.chatInput.value = '';
+      this.audio.stopListening();
+      this.updateMicBtnState();
+    }
+
+    // 4. Restaurar estado de interface
+    this.isGenerating = false;
+    this.hideToolBanner();
+    this.reactor.setState('IDLE');
+
+    // 5. Feedback sonoro e no terminal
+    this.audio.playCancelSFX();
+    this.logTerminal('[COMANDO -]: Atom interrompido pelo operador.', 'sys');
+  }
+
+  /* ==========================================================================
+     CONVERSA: tocar, segurar para falar e conversa contínua
+     ========================================================================== */
+
+  atomBusy() {
+    return this.isGenerating || this.audio.isSpeaking();
+  }
+
+  /** Apertou o microfone (ou Espaço). */
+  talkPress() {
+    if (this.liveOn) return; // no Live o microfone já fica aberto
+    if (this.spaceDown) return;
+    this.spaceDown = true;
+    this.pressAt = Date.now();
+    this.pressStoppedListening = false;
+    this.conversaPaused = false;
+    this.emptyHeard = 0;
+    if (this.audio.isListening) {
+      // Já estava ouvindo: este toque encerra a fala (manda o que ouviu)
+      this.pressStoppedListening = true;
+      this.audio.holdToTalk = false;
+      this.audio.stopListening();
+      this.updateMicBtnState();
+      return;
+    }
+    this.audio.holdToTalk = true;
+    this.stopAndListen();
+  }
+
+  /** Soltou o microfone (ou Espaço). Toque curto: segue ouvindo até você se calar. Segurou: manda agora. */
+  talkRelease() {
+    if (!this.spaceDown) return;
+    this.spaceDown = false;
+    if (this.pressStoppedListening) return;
+    const held = Date.now() - (this.pressAt || 0);
+    if (held >= 450 && this.audio.isListening) {
+      this.audio.holdToTalk = false;
+      this.audio.stopListening();
+    } else {
+      this.audio.holdToTalk = false;
+    }
+    this.updateMicBtnState();
+  }
+
+  setupConversaMode() {
+    const box = document.getElementById('conversa-toggle');
+    try { this.conversa = localStorage.getItem('atom_conversa') === '1'; } catch (e) { this.conversa = false; }
+    this.conversaPaused = false;
+    this.emptyHeard = 0;
+    if (box) {
+      box.checked = this.conversa;
+      box.addEventListener('change', () => {
+        if (this.liveOn && box.checked) { box.checked = false; this.liveBlockedNotice(); return; }
+        this.conversa = box.checked;
+        try { localStorage.setItem('atom_conversa', this.conversa ? '1' : '0'); } catch (e) {}
+        this.audio.idleLimit = this.conversa ? 600 : 0;
+        this.conversaPaused = false;
+        this.logTerminal(this.conversa
+          ? '[CONVERSA]: contínua ligada. Depois de responder, o Atom volta a ouvir sozinho. Esc pausa.'
+          : '[CONVERSA]: contínua desligada. Toque ou segure o microfone para falar.', 'sys');
+        if (this.conversa && !this.atomBusy() && !this.audio.isListening) this.stopAndListen();
+      });
+    }
+    this.audio.idleLimit = this.conversa ? 600 : 0; // 60 s sem ninguém falar: pausa
+    this.audio.onSpeechDone = () => this.resumeListeningSoon();
+    this.audio.onBlocked = () => this.liveBlockedNotice();
+    this.audio.onNothingHeard = () => {
+      if (!this.conversa || this.conversaPaused) return;
+      this.emptyHeard = (this.emptyHeard || 0) + 1;
+      if (this.emptyHeard >= 3) {
+        this.conversaPaused = true;
+        this.logTerminal('[CONVERSA]: não entendi nada três vezes seguidas. Pausei; toque no microfone para voltar.', 'sys');
+        return;
+      }
+      this.resumeListeningSoon();
+    };
+    this.audio.onIdleTimeout = () => {
+      if (!this.conversa) return;
+      this.conversaPaused = true;
+      this.logTerminal('[CONVERSA]: 1 minuto sem ouvir você. Pausei; toque no microfone para voltar.', 'sys');
+    };
+  }
+
+  /** Na conversa contínua, volta a ouvir depois que o Atom termina. */
+  resumeListeningSoon() {
+    if (this.liveOn || !this.conversa || this.conversaPaused) return;
+    clearTimeout(this.resumeTimer);
+    this.resumeTimer = setTimeout(() => {
+      if (!this.conversa || this.conversaPaused || this.atomBusy() || this.audio.isListening || this.audio.isTranscribing) return;
+      this.audio.holdToTalk = false;
+      this.audio.startListening().then(() => this.updateMicBtnState());
+    }, 400);
+  }
+
+  /* ==========================================================================
+     MODO LIVE (Gemini Live): voz em tempo real, você interrompe falando
+     ========================================================================== */
+
+  setupLive() {
+    this.liveOn = false;
+    this.liveBtn = document.getElementById('live-toggle-btn');
+    if (this.liveBtn) this.liveBtn.addEventListener('click', () => this.toggleLive());
+    const banner = () => document.getElementById('speech-banner');
+    const say = (txt) => { const t = document.getElementById('speech-transcript'); if (t) t.innerText = txt; const b = banner(); if (b) b.classList.remove('hidden'); };
+    this.live = new AtomLive({
+      onState: (st) => {
+        if (!this.liveOn) return;
+        if (st === 'CONNECTING') { this.reactor.setState('THINKING'); say('Conectando no Gemini Live...'); }
+        else if (st === 'LISTENING') { this.reactor.setState('LISTENING'); }
+        else if (st === 'SPEAKING') { this.reactor.setState('SPEAKING'); }
+        this.updateLiveUi();
+      },
+      onUserText: (txt) => say(`Você: "${txt}"`),
+      onAtomText: (txt) => say(`Atom: ${txt}`),
+      onTurn: (u, a) => {
+        if (u) { this.appendMessage('user', u); this.messages.push({ role: 'user', content: u }); }
+        if (a) { this.appendMessage('assistant', a); this.messages.push({ role: 'assistant', content: a }); }
+        this.saveConversation();
+      },
+      onToolCall: (calls) => this.runLiveTools(calls),
+      onMouth: (v) => this.reactor.setAudioLevel(v),
+      onMicLevel: (v) => {
+        const t = document.getElementById('speech-transcript');
+        if (t && this.liveOn && !this.live.playing && /^Live/.test(t.innerText)) t.innerText = `Live ligado, pode falar [Vol: ${v}%]`;
+        this.liveLevel = v;
+      },
+      onError: (msg) => {
+        this.logTerminal(`[LIVE]: ${msg}`, 'sys');
+        say(msg);
+        if (!this.live.active) this.stopLive(true);
+      },
+      onFallback: (msg) => {
+        this.logTerminal(`[LIVE]: o modelo com a mesma voz do modo normal não abriu (${msg}). Tentando o de áudio nativo...`, 'sys');
+      },
+      onClose: (reason) => {
+        this.logTerminal(`[LIVE]: ${reason}`, 'sys');
+        this.stopLive(true);
+      }
+    });
+  }
+
+  /** Funções que o Gemini Live pode chamar (as mesmas ferramentas do modo normal). */
+  liveFunctions() {
+    const S = (d) => ({ type: 'STRING', description: d });
+    const f = (name, description, props = {}, required = []) => ({
+      name, description,
+      parameters: { type: 'OBJECT', properties: props, ...(required.length ? { required } : {}) }
+    });
+    const list = [
+      f('buscar_artigos', 'Busca artigos científicos no arXiv (arxiv.org). Use sempre que pedirem artigo, paper ou pesquisa acadêmica.',
+        { assunto: S('Assunto dos artigos, em português ou inglês'), quantidade: { type: 'INTEGER', description: 'Quantos artigos (1 a 5)' } }, ['assunto']),
+      f('pesquisar_web', 'Pesquisa na web e devolve títulos, sites e trechos.', { consulta: S('O que pesquisar') }, ['consulta']),
+      f('ler_pagina', 'Lê o conteúdo de uma página da web.', { url: S('Endereço completo da página') }, ['url']),
+      f('salvar_arquivo_markdown', 'Salva um arquivo Markdown (.md) que a pessoa pode baixar. Escreva o conteúdo completo, com títulos e tópicos.',
+        { titulo: S('Título do arquivo'), conteudo: S('Conteúdo completo em Markdown') }, ['titulo', 'conteudo']),
+      f('abrir_site', 'Abre um site numa nova aba do navegador da pessoa.', { url: S('Endereço do site') }, ['url']),
+    ];
+    if (!this.isWeb) {
+      list.push(
+        f('abrir_aplicativo_no_pc', 'Abre um aplicativo do Windows (calculadora, bloco de notas, vscode, explorer, paint...).', { nome: S('Nome do aplicativo') }, ['nome']),
+        f('telemetria_do_pc', 'Mostra uso de CPU, memória e disco do PC.'),
+        f('executar_comando_no_pc', 'Executa um comando no PowerShell/CMD do PC (comandos perigosos pedem confirmação).', { comando: S('Comando') }, ['comando'])
+      );
+    }
+    return list;
+  }
+
+  /** Roda as funções pedidas pelo Live no servidor e devolve o resultado. */
+  async runLiveTools(calls) {
+    const labels = {
+      buscar_artigos: 'Buscando artigos no arXiv', pesquisar_web: 'Pesquisando na web', ler_pagina: 'Lendo a página',
+      salvar_arquivo_markdown: 'Salvando arquivo Markdown', abrir_site: 'Abrindo site', abrir_aplicativo_no_pc: 'Abrindo aplicativo',
+      telemetria_do_pc: 'Lendo a telemetria do PC', executar_comando_no_pc: 'Executando comando'
+    };
+    let sessionKey = null;
+    try { sessionKey = sessionStorage.getItem('jarvis_key_google'); } catch (e) {}
+    const responses = await Promise.all(calls.map(async (c) => {
+      const label = labels[c.name] || c.name;
+      this.logTerminal(`[LIVE · FUNÇÃO]: ${label} ${c.args ? JSON.stringify(c.args).slice(0, 120) : ''}`, 'cmd');
+      try { this.showToolBanner(label, 'modo Live'); } catch (e) {}
+      let result;
+      try {
+        const res = await fetch('/api/live/tool', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: c.name, args: c.args || {}, session_key: sessionKey, autonomous: !!(this.autonomousToggle && this.autonomousToggle.checked) })
+        });
+        result = await res.json();
+      } catch (e) {
+        result = { ok: false, erro: 'Falha de conexão com o servidor do Atom.' };
+      }
+      // Efeitos no navegador
+      if (result && result.client_action === 'open_url' && result.url) window.open(result.url, '_blank', 'noopener');
+      if (c.name === 'salvar_arquivo_markdown' && result && result.ok) {
+        const url = result.content
+          ? URL.createObjectURL(new Blob([result.content], { type: 'text/markdown;charset=utf-8' }))
+          : result.download_url;
+        const holder = this.appendStreamingMessage();
+        holder.updateContent(`Arquivo Markdown salvo: **${result.titulo || result.arquivo}**`);
+        try { holder.appendReportCreatedCard(result.arquivo, url); } catch (e) {}
+        this.logTerminal(`[ARQUIVO MARKDOWN SALVO]: ${result.arquivo}`, 'sys');
+        this.rememberFile({ filename: result.arquivo, title: result.titulo, content: result.content });
+        this.loadResearches();
+        delete result.content; // não precisa mandar o arquivo inteiro de volta para o Gemini
+      }
+      return { id: c.id, name: c.name, response: { result } };
+    }));
+    try { this.hideToolBanner(); } catch (e) {}
+    this.live.sendToolResponse(responses);
+  }
+
+  toggleLive() {
+    if (this.liveOn) this.stopLive();
+    else this.startLive();
+  }
+
+  liveSystemPrompt() {
+    const recent = (this.messages || []).slice(-8)
+      .map((m) => `${m.role === 'user' ? 'Operador' : 'Atom'}: ${String(m.content).replace(/\s+/g, ' ').slice(0, 400)}`)
+      .join('\n');
+    return [
+      'Você é o A.T.O.M., assistente de voz criado por Rubens Mota. O nome é MOTA, o sobrenome dele, ao contrário.',
+      'Fale sempre em português do Brasil, de forma natural, simpática e curta, como numa conversa falada: frases curtas, sem listas, sem markdown e sem ler links em voz alta.',
+      'Se a pessoa começar a falar enquanto você fala, pare e escute.',
+      'Para fatos atuais, use a busca do Google e diga de qual site veio a informação.',
+      'Você tem funções: buscar_artigos (artigos científicos no arXiv; "artigo" sempre quer dizer isso), pesquisar_web, ler_pagina, salvar_arquivo_markdown (escreva o conteúdo completo em Markdown) e abrir_site.' + (this.isWeb ? '' : ' No PC também: abrir_aplicativo_no_pc, telemetria_do_pc e executar_comando_no_pc.'),
+      'Use as funções sempre que pedirem essas coisas, avise rapidinho que vai fazer ("vou buscar no arXiv") e, ao responder, diga o site de onde veio cada fonte.',
+      '"Arquivo X" ou "archive" na fala é o arXiv; "dossiê" ou "do CI" é arquivo Markdown.',
+      this.isScreenSharing ? 'A pessoa está compartilhando a tela com você: você recebe imagens dela de tempos em tempos.' : '',
+      recent ? `Conversa até agora:\n${recent}` : ''
+    ].filter(Boolean).join('\n');
+  }
+
+  async startLive() {
+    if (this.liveOn) return;
+    // Para o modo normal antes: nada de duas vozes ao mesmo tempo
+    if (this.currentAbortController) { try { this.currentAbortController.abort(); } catch (e) {} this.currentAbortController = null; }
+    this.isGenerating = false;
+    this.audio.stopSpeaking(true);
+    if (this.audio.isListening) { this.audio.discardNext = true; this.audio.stopListening(); }
+    this.conversaPaused = true;
+    clearTimeout(this.resumeTimer);
+
+    this.liveOn = true;
+    this.audio.blocked = true; // trava a fala normal enquanto o Live estiver ligado
+    document.documentElement.dataset.live = '1';
+    this.updateLiveUi();
+    this.updateMicBtnState();
+    this.logTerminal('[LIVE]: ligando o modo Live (Gemini). Fale à vontade; se você falar, ele para para ouvir. Esc ou L desliga.', 'cmd');
+    let sessionKey = null;
+    try { sessionKey = sessionStorage.getItem('jarvis_key_google'); } catch (e) {}
+    const voice = this.audio.geminiVoice || 'Fenrir';
+    let native = false;
+    try { native = localStorage.getItem('atom_live_nativo') === '1'; } catch (e) {}
+    await this.live.start({ voice, systemPrompt: this.liveSystemPrompt(), sessionKey, native, functions: this.liveFunctions() });
+    if (!this.liveOn) return;
+    if (this.live.active) {
+      this.logTerminal(`[LIVE]: conectado (${this.live.model}), voz ${voice}${/native-audio/.test(this.live.model || '') ? ' (áudio nativo, soa diferente do modo normal)' : ' (mesma voz do modo normal)'}.`, 'sys');
+      const t = document.getElementById('speech-transcript');
+      if (t) t.innerText = 'Live ligado, pode falar';
+      clearInterval(this.liveFrameTimer);
+      this.liveFrameTimer = setInterval(() => {
+        if (this.liveOn && this.isScreenSharing) this.live.sendFrame(this.captureScreenFrame());
+      }, 1500);
+    }
+  }
+
+  stopLive(silent = false) {
+    if (!this.liveOn && !silent) return;
+    this.liveOn = false;
+    this.audio.blocked = false;
+    delete document.documentElement.dataset.live;
+    clearInterval(this.liveFrameTimer);
+    this.live.stop(true);
+    this.reactor.setAudioLevel(null);
+    this.reactor.setState('IDLE');
+    const b = document.getElementById('speech-banner');
+    if (b && !silent) b.classList.add('hidden');
+    this.updateLiveUi();
+    this.updateMicBtnState();
+    if (!silent) this.logTerminal('[LIVE]: modo Live desligado.', 'sys');
+  }
+
+  updateLiveUi() {
+    if (!this.liveBtn) return;
+    this.liveBtn.classList.toggle('active', this.liveOn);
+    const lbl = document.getElementById('live-btn-label');
+    if (lbl) lbl.textContent = this.liveOn ? 'LIVE LIGADO' : 'MODO LIVE';
+  }
+
+  /** Lista de atalhos no canto inferior esquerdo (aberta ou fechada fica salva no navegador). */
+  setupShortcutsPanel() {
+    const box = document.getElementById('atom-shortcuts');
+    if (!box) return;
+    try { if (localStorage.getItem('atom_atalhos') === '0') box.open = false; } catch (e) {}
+    let auto = false;
+    box.addEventListener('toggle', () => {
+      if (auto) { auto = false; return; }
+      try { localStorage.setItem('atom_atalhos', box.open ? '1' : '0'); } catch (e) {}
+    });
+    // Se a tela for baixa e a lista encostar nos botões, ela fecha sozinha (o título continua lá para abrir)
+    const keepClear = () => {
+      if (!box.open) return;
+      const bar = document.querySelector('.voice-controls-bar');
+      if (!bar) return;
+      const a = box.getBoundingClientRect();
+      const b = bar.getBoundingClientRect();
+      if (a.top < b.bottom + 6 && a.bottom > b.top && a.left < b.right && a.right > b.left) { auto = true; box.open = false; }
+    };
+    requestAnimationFrame(keepClear);
+    setTimeout(keepClear, 600);
+    window.addEventListener('resize', () => { clearTimeout(this.atalhosTimer); this.atalhosTimer = setTimeout(keepClear, 150); });
+  }
+
+  /**
+   * BOTÃO [+]: Para o JARVIS imediatamente e abre o microfone para escutar o operador.
+   */
+  liveBlockedNotice() {
+    const now = Date.now();
+    if (now - (this.lastLiveNotice || 0) < 3000) return;
+    this.lastLiveNotice = now;
+    this.logTerminal('[LIVE]: o modo Live está ligado, então o microfone normal fica travado. Fale direto; para usar o modo normal, desligue o Live (L ou Esc).', 'sys');
+  }
+
+  async stopAndListen() {
+    if (this.liveOn) { this.liveBlockedNotice(); return; }
+    // 1. Interromper geração e fala
+    if (this.currentAbortController) {
+      try {
+        this.currentAbortController.abort();
+      } catch (e) {}
+      this.currentAbortController = null;
+    }
+    this.audio.stopSpeaking();
+    this.isGenerating = false;
+    this.hideToolBanner();
+
+    // 2. Iniciar escuta imediata do microfone
+    if (!this.audio.isListening) {
+      await this.audio.startListening();
+      this.updateMicBtnState();
+    }
+
+    this.audio.playToolBeep();
+    this.logTerminal('[COMANDO +]: Atom interrompido. Escuta ativada: fale agora...', 'cmd');
+  }
+
+  showToolBanner(name, detail) {
+    this.toolBannerName.innerText = name.toUpperCase();
+    this.toolBannerDetail.innerText = detail;
+    this.toolBanner.classList.remove('hidden');
+  }
+
+  hideToolBanner() {
+    this.toolBanner.classList.add('hidden');
+  }
+
+  copyToClipboard(text, btn) {
+    if (!text) return;
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(() => {
+        this.showCopiedState(btn);
+      }).catch(() => {
+        this.fallbackCopy(text, btn);
+      });
+    } else {
+      this.fallbackCopy(text, btn);
+    }
+  }
+
+  fallbackCopy(text, btn) {
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.left = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      this.showCopiedState(btn);
+    } catch (e) {
+      console.error('Falha ao copiar:', e);
+    }
+  }
+
+  showCopiedState(btn) {
+    if (!btn) return;
+    const originalHTML = btn.innerHTML;
+    btn.classList.add('copied');
+    btn.innerHTML = ic('ok') + ' Copiado!';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = originalHTML;
+    }, 2000);
+  }
+
+  /* ==========================================================================
+     APARÊNCIA (CORPO DO ATOM) & TEMAS DO PORTFÓLIO
+     ========================================================================== */
+
+  setupAppearance() {
+    // Menus que abrem ao clicar e fecham ao clicar fora ou com Esc
+    const menus = [];
+    const bindMenu = (btn, pop) => {
+      if (!btn || !pop) return;
+      const toggle = (open) => {
+        pop.classList.toggle('hidden', !open);
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      };
+      menus.push(toggle);
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const willOpen = pop.classList.contains('hidden');
+        menus.forEach((t) => t(false));
+        toggle(willOpen);
+      });
+      pop.addEventListener('click', (e) => e.stopPropagation());
+    };
+    document.addEventListener('click', () => menus.forEach((t) => t(false)));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') menus.forEach((t) => t(false)); });
+
+    // ---- Vestiário: corpo do Atom (separado do tema do site)
+    const grid = document.getElementById('body-grid');
+    bindMenu(document.getElementById('wardrobe-btn'), document.getElementById('wardrobe-pop'));
+    const markBody = () => grid.querySelectorAll('.atom-body-card').forEach((c) => {
+      c.classList.toggle('active', c.dataset.body === this.reactor.bodyId);
+    });
+    AtomCharacter.bodies.forEach((b) => {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'atom-body-card';
+      card.dataset.body = b.id;
+      card.innerHTML = `<span class="atom-body-mini"><span class="atom-char s-parado"><span class="ch">${b.html}</span></span></span><span class="atom-body-name">${b.name}</span>`;
+      card.addEventListener('click', () => { this.reactor.setBody(b.id); markBody(); });
+      grid.appendChild(card);
+    });
+    markBody();
+
+    // ---- Tema do site: igual à navbar do portfólio (sol/lua + menu de temas)
+    const html = document.documentElement;
+    const store = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+    const read = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+    const modeOf = (dark) => (dark ? 'escuro' : 'claro');
+    const defaults = { escuro: THEMES.find((t) => t.dark).id, claro: THEMES.find((t) => !t.dark).id };
+    const palette = (mode) => {
+      const id = read('atom_pal_' + mode);
+      return THEMES.some((t) => t.id === id && modeOf(t.dark) === mode) ? id : defaults[mode];
+    };
+    const modeBtn = document.getElementById('mode-toggle-btn');
+    const apply = (mode) => {
+      const id = palette(mode);
+      html.dataset.modo = mode;
+      html.dataset.tema = id;
+      store('atom_modo', mode);
+      const t = THEMES.find((x) => x.id === id);
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta && t) meta.setAttribute('content', t.bg);
+      if (modeBtn) {
+        const label = mode === 'claro' ? 'Mudar para o tema escuro' : 'Mudar para o tema claro';
+        modeBtn.title = label;
+        modeBtn.setAttribute('aria-label', label);
+        modeBtn.innerHTML = `<svg class="ic" aria-hidden="true"><use href="#i-${mode === 'claro' ? 'lua' : 'sol'}"/></svg>`;
+      }
+      document.querySelectorAll('.atom-theme-item').forEach((el) => {
+        const on = el.dataset.tema === id && el.dataset.modo === mode;
+        el.classList.toggle('active', on);
+        el.setAttribute('aria-checked', on ? 'true' : 'false');
+      });
+    };
+    THEMES.forEach((t) => {
+      const mode = modeOf(t.dark);
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'atom-theme-item';
+      item.setAttribute('role', 'menuitemradio');
+      item.dataset.tema = t.id;
+      item.dataset.modo = mode;
+      item.innerHTML = `<span class="atom-theme-swatch" aria-hidden="true"><span style="background:${t.bg}"></span><span style="background:${t.line}"></span><span class="red"></span></span><span class="atom-theme-name">${t.name}</span><span class="atom-theme-dot" aria-hidden="true">●</span>`;
+      item.addEventListener('click', () => { store('atom_pal_' + mode, t.id); apply(mode); });
+      document.getElementById(t.dark ? 'theme-dark' : 'theme-light').appendChild(item);
+    });
+    bindMenu(document.getElementById('theme-menu-btn'), document.getElementById('theme-menu'));
+    modeBtn?.addEventListener('click', () => apply(html.dataset.modo === 'claro' ? 'escuro' : 'claro'));
+    apply(html.dataset.modo === 'claro' ? 'claro' : 'escuro');
+  }
+
+  /* ==========================================================================
+     VOZES DO ATOM (NATURAL DO GEMINI OU DO NAVEGADOR)
+     ========================================================================== */
+
+  setupVoices() {
+    const VOICES = [
+      ['Fenrir', 'empolgada (padrão)'],
+      ['Charon', 'grave e tranquila'],
+      ['Puck', 'animada'],
+      ['Kore', 'firme e clara'],
+      ['Orus', 'firme, mais grave'],
+      ['Aoede', 'leve'],
+      ['Zephyr', 'clara e brilhante'],
+      ['Leda', 'jovem'],
+      ['Achird', 'amigável'],
+      ['Sulafat', 'calorosa'],
+      ['Algenib', 'rouca'],
+      ['Enceladus', 'suave, quase sussurro'],
+    ];
+    const grid = document.getElementById('natural-voices');
+    const browserGroup = document.getElementById('browser-voice-group');
+    const pitchRow = document.getElementById('voice-pitch-row');
+    const desc = document.getElementById('voice-engine-desc');
+    if (!grid) return;
+    const store = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+
+    VOICES.forEach(([name, note]) => {
+      const card = document.createElement('div');
+      card.className = 'atom-voice-card';
+      card.dataset.voice = name;
+      card.innerHTML = `<button type="button" class="atom-voice-pick"><span class="atom-voice-name">${name}</span><span class="atom-voice-note">${note}</span></button><button type="button" class="atom-voice-play" title="Ouvir ${name}" aria-label="Ouvir ${name}">${ic('tocar')}</button>`;
+      card.querySelector('.atom-voice-pick').addEventListener('click', () => {
+        this.audio.geminiVoice = name;
+        store('atom_voz_gemini', name);
+        mark();
+      });
+      card.querySelector('.atom-voice-play').addEventListener('click', async (e) => {
+        const btn = e.currentTarget;
+        btn.classList.add('loading');
+        try { await this.audio.previewVoice('natural', name); }
+        catch (err) { this.showVoiceError(err); }
+        btn.classList.remove('loading');
+      });
+      grid.appendChild(card);
+    });
+
+    const mark = () => {
+      const natural = this.audio.voiceEngine === 'natural';
+      document.querySelectorAll('.atom-seg-btn[data-engine]').forEach((b) => {
+        const on = b.dataset.engine === this.audio.voiceEngine;
+        b.classList.toggle('active', on);
+        b.setAttribute('aria-checked', on ? 'true' : 'false');
+      });
+      grid.classList.toggle('hidden', !natural);
+      if (browserGroup) browserGroup.classList.toggle('hidden', natural);
+      if (pitchRow) pitchRow.classList.toggle('hidden', natural);
+      if (desc) desc.innerText = natural
+        ? 'Vozes do Gemini, bem menos robóticas. Usam a sua chave do Google (a da Vercel ou a ativada na sessão). Se falhar, o Atom usa a voz do navegador.'
+        : 'Vozes instaladas no seu navegador. As marcadas como "mais natural" costumam soar melhor (no Edge, as "Online (Natural)").';
+      grid.querySelectorAll('.atom-voice-card').forEach((c) => c.classList.toggle('active', c.dataset.voice === this.audio.geminiVoice));
+    };
+    document.querySelectorAll('.atom-seg-btn[data-engine]').forEach((b) => b.addEventListener('click', () => {
+      this.audio.voiceEngine = b.dataset.engine;
+      store('atom_voz_motor', b.dataset.engine);
+      mark();
+    }));
+    mark();
+
+    // Voz no modo Live: o modelo de áudio nativo interpreta a voz do jeito dele
+    // (a Fenrir soa diferente); o modelo "meio a meio" fica mais perto da voz do modo normal.
+    const liveDesc = document.getElementById('live-voice-desc');
+    const markLive = () => {
+      let nativo = false;
+      try { nativo = localStorage.getItem('atom_live_nativo') === '1'; } catch (e) {}
+      document.querySelectorAll('.atom-seg-btn[data-live-nativo]').forEach((b) => {
+        const on = (b.dataset.liveNativo === '1') === nativo;
+        b.classList.toggle('active', on);
+        b.setAttribute('aria-checked', on ? 'true' : 'false');
+      });
+      if (liveDesc) liveDesc.innerText = nativo
+        ? 'Modelo de áudio nativo: responde mais rápido e com mais emoção, mas recria a voz do jeito dele, então a Fenrir fica diferente da do modo normal.'
+        : 'Usa um modelo Live que fala com as mesmas vozes do Gemini do modo normal, então a Fenrir soa igual. Vale a partir da próxima vez que ligar o Live.';
+    };
+    document.querySelectorAll('.atom-seg-btn[data-live-nativo]').forEach((b) => b.addEventListener('click', () => {
+      store('atom_live_nativo', b.dataset.liveNativo);
+      markLive();
+      if (this.liveOn) this.logTerminal('[LIVE]: a voz nova vale quando você ligar o Live de novo.', 'sys');
+    }));
+    markLive();
+  }
+
+  showVoiceError(err) {
+    const msg = (err && err.message) || String(err);
+    this.logTerminal(`[VOZ]: ${msg}`, 'sys');
+    this.showKeyFeedback(`A voz natural não respondeu: ${msg}. Ative uma chave do Google acima ou use a voz do navegador.`, 'error');
+  }
+
+  /* ==========================================================================
+     CONVERSAS SALVAS NO NAVEGADOR
+     ========================================================================== */
+
+  setupConversations() {
+    this.historyPanel = document.getElementById('history-panel');
+    this.historyList = document.getElementById('history-list');
+    this.historyBtn = document.getElementById('history-btn');
+    this.historyCount = document.getElementById('history-count');
+
+    document.getElementById('new-chat-btn')?.addEventListener('click', () => {
+      if (this.isGenerating) this.interruptJarvis();
+      this.startNewConversation();
+      this.audio.playToolBeep();
+    });
+    this.historyBtn?.addEventListener('click', () => this.toggleHistory());
+    document.getElementById('history-close-btn')?.addEventListener('click', () => this.toggleHistory(false));
+
+    const saved = Conversas.get(Conversas.currentId());
+    if (saved) this.openConversation(saved.id, true);
+    else this.startNewConversation(null, true);
+  }
+
+  welcomeHtml(text) {
+    const msg = text || 'Oi! Sou o Atom, assistente do Rubens Mota. Posso pesquisar na web, buscar artigos no arXiv, salvar arquivos Markdown e, se você deixar, enxergar a sua tela. Como posso ajudar?';
+    return `
+      <div class="chat-msg atom-msg jarvis-msg">
+        <div class="msg-avatar"><span class="atom-av" aria-hidden="true"><i></i><i></i></span></div>
+        <div class="msg-body">
+          <div class="msg-meta">
+            <span class="msg-sender">Atom</span>
+            <span class="msg-time">AGORA</span>
+          </div>
+          <div class="msg-content">${this.escapeHtml(msg)}</div>
+        </div>
+      </div>`;
+  }
+
+  escapeHtml(t) {
+    return String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  startNewConversation(welcomeText = null, silent = false) {
+    this.conversationId = Conversas.newId();
+    Conversas.setCurrent(this.conversationId);
+    this.messages = [];
+    this.chatMessages.innerHTML = this.welcomeHtml(welcomeText);
+    this.renderHistory();
+    this.toggleHistory(false);
+    if (!silent) this.reactor.flash('feliz', 1200);
+  }
+
+  openConversation(id, silent = false) {
+    const conv = Conversas.get(id);
+    if (!conv) return;
+    if (this.isGenerating) this.interruptJarvis();
+    this.conversationId = conv.id;
+    Conversas.setCurrent(conv.id);
+    this.messages = conv.messages.map((m) => ({ role: m.role, content: m.content }));
+    this.chatMessages.innerHTML = this.welcomeHtml();
+    this.messages.forEach((m) => this.appendMessage(m.role === 'user' ? 'user' : 'assistant', m.content));
+    this.renderHistory();
+    this.toggleHistory(false);
+    if (!silent) this.audio.playToolBeep();
+  }
+
+  saveConversation() {
+    Conversas.save(this.conversationId, this.messages);
+    this.renderHistory();
+  }
+
+  toggleHistory(open) {
+    if (!this.historyPanel) return;
+    const willOpen = open === undefined ? this.historyPanel.classList.contains('hidden') : open;
+    this.historyPanel.classList.toggle('hidden', !willOpen);
+    this.historyBtn?.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    if (willOpen) {
+      // uma gaveta por vez
+      this.researchesDrawer?.classList.remove('open');
+      this.settingsDrawer?.classList.remove('open');
+      this.renderHistory();
+    }
+  }
+
+  renderHistory() {
+    if (!this.historyList) return;
+    const all = Conversas.list();
+    if (this.historyCount) this.historyCount.innerText = all.length;
+    if (all.length === 0) {
+      this.historyList.innerHTML = '<div class="atom-history-empty">Nenhuma conversa salva ainda. Elas aparecem aqui assim que você manda a primeira mensagem.</div>';
+      return;
+    }
+    this.historyList.innerHTML = '';
+    all.forEach((c) => {
+      const row = document.createElement('div');
+      row.className = 'atom-history-item' + (c.id === this.conversationId ? ' active' : '');
+      const when = new Date(c.updated).toLocaleString([], { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+      const n = c.messages.filter((m) => m.role === 'user').length;
+      row.innerHTML = `
+        <button type="button" class="atom-history-open">
+          <span class="atom-history-title">${this.escapeHtml(c.title)}</span>
+          <span class="atom-history-meta">${when} · ${n} ${n === 1 ? 'pergunta' : 'perguntas'}</span>
+        </button>
+        <button type="button" class="atom-history-del atom-history-ren" title="Renomear esta conversa">${ic('editar')}</button>
+        <button type="button" class="atom-history-del" data-del="1" title="Apagar esta conversa">${ic('lixeira')}</button>`;
+      row.querySelector('.atom-history-open').addEventListener('click', () => this.openConversation(c.id));
+      row.querySelector('.atom-history-ren').addEventListener('click', () => {
+        const titleEl = row.querySelector('.atom-history-title');
+        const input = document.createElement('input');
+        input.className = 'atom-history-input';
+        input.value = c.title;
+        input.maxLength = 80;
+        input.setAttribute('aria-label', 'Novo nome da conversa');
+        titleEl.replaceWith(input);
+        input.focus(); input.select();
+        let done = false;
+        const finish = (ok) => {
+          if (done) return; done = true;
+          if (ok) Conversas.rename(c.id, input.value);
+          this.renderHistory();
+          if (this.researchesDrawer && this.researchesDrawer.classList.contains('open')) this.loadResearches();
+        };
+        input.addEventListener('click', (e) => e.stopPropagation());
+        input.addEventListener('keydown', (e) => {
+          e.stopPropagation();
+          if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+          if (e.key === 'Escape') { e.preventDefault(); finish(false); }
+        });
+        input.addEventListener('blur', () => finish(true));
+      });
+      row.querySelector('[data-del]').addEventListener('click', () => {
+        Conversas.remove(c.id);
+        if (c.id === this.conversationId) this.startNewConversation(null, true);
+        else this.renderHistory();
+      });
+      this.historyList.appendChild(row);
+    });
+  }
+
+  appendMessage(role, content, hasScreenFrame = false) {
+    const msgEl = document.createElement('div');
+    msgEl.className = `chat-msg ${role === 'user' ? 'user-msg' : 'atom-msg jarvis-msg'}`;
+
+    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const avatar = role === 'user' ? ic('pessoa') : '<span class="atom-av" aria-hidden="true"><i></i><i></i></span>';
+    const sender = role === 'user' ? 'OPERADOR' : 'Atom';
+
+    const screenBadgeHtml = hasScreenFrame ? `
+      <div class="atom-label" style="margin-bottom: 6px; font-size: 10px; color: var(--accent-red); display: flex; align-items: center; gap: 4px;">
+        ${ic('olho')} TELA ENVIADA JUNTO
+      </div>
+    ` : '';
+
+    msgEl.innerHTML = `
+      <div class="msg-avatar">${avatar}</div>
+      <div class="msg-body">
+        <div class="msg-meta">
+          <span class="msg-sender">${sender}</span>
+          <span class="msg-time">${now}</span>
+          <button class="copy-msg-btn" title="Copiar mensagem">${ic('copiar')} Copiar</button>
+        </div>
+        ${screenBadgeHtml}
+        <div class="msg-content">${this.renderMarkdown(content)}</div>
+      </div>
+    `;
+
+    const copyBtn = msgEl.querySelector('.copy-msg-btn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', () => {
+        this.copyToClipboard(content, copyBtn);
+      });
+    }
+
+    this.chatMessages.appendChild(msgEl);
+    this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+  }
+
+  appendStreamingMessage() {
+    const msgEl = document.createElement('div');
+    msgEl.className = 'chat-msg atom-msg jarvis-msg';
+
+    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    msgEl.innerHTML = `
+      <div class="msg-avatar"><span class="atom-av" aria-hidden="true"><i></i><i></i></span></div>
+      <div class="msg-body">
+        <div class="msg-meta">
+          <span class="msg-sender">Atom</span>
+          <span class="msg-time">${now}</span>
+          <button class="copy-msg-btn" title="Copiar resposta">${ic('copiar')} Copiar</button>
+        </div>
+        <div class="msg-tools-container"></div>
+        <div class="msg-content"><span class="streaming-cursor">█</span></div>
+      </div>
+    `;
+
+    this.chatMessages.appendChild(msgEl);
+    this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+
+    const contentDiv = msgEl.querySelector('.msg-content');
+    const toolsContainer = msgEl.querySelector('.msg-tools-container');
+    const copyBtn = msgEl.querySelector('.copy-msg-btn');
+
+    let currentRawMarkdown = '';
+    if (copyBtn) {
+      copyBtn.addEventListener('click', () => {
+        const textToCopy = currentRawMarkdown || contentDiv.innerText || '';
+        this.copyToClipboard(textToCopy, copyBtn);
+      });
+    }
+
+    return {
+      updateContent: (rawMarkdown) => {
+        currentRawMarkdown = rawMarkdown;
+        contentDiv.innerHTML = this.renderMarkdown(rawMarkdown);
+      },
+      appendToolBadge: (toolEvent) => {
+        const badge = document.createElement('div');
+        const toolTypeClass = toolEvent.tool.includes('search') ? 'search' : toolEvent.tool.includes('command') ? 'cmd' : 'dossier';
+        badge.className = `tool-execution-card ${toolTypeClass}`;
+        badge.innerHTML = `
+          <div class="tool-header-line">${ic('raio')} ${toolEvent.label}</div>
+          <div>${toolEvent.details}</div>
+        `;
+        toolsContainer.appendChild(badge);
+      },
+      appendReportCreatedCard: (filename, downloadUrl) => {
+        const card = document.createElement('div');
+        card.className = 'chat-report-card';
+        card.innerHTML = `
+          <div class="report-card-info">
+            <span class="report-card-tag">ARQUIVO MARKDOWN PRONTO</span>
+            <span class="report-card-title">${ic('arquivo')} ${filename}</span>
+          </div>
+          <div class="report-card-actions">
+            <a href="${downloadUrl}" download="${filename}" class="chat-report-download-btn" title="Baixar relatório em Markdown">${ic('baixar')} BAIXAR (.MD)</a>
+            <button class="hud-btn-subtle read-dossier-btn" style="padding: 5px 8px; font-size: 11px; cursor: pointer;">${ic('livro')} LER</button>
+          </div>
+        `;
+        const readBtn = card.querySelector('.read-dossier-btn');
+        if (readBtn) {
+          readBtn.addEventListener('click', () => {
+            this.openDossierModal(filename);
+          });
+        }
+        toolsContainer.appendChild(card);
+      },
+      appendFileCreatedCard: (fileData) => {
+        const card = document.createElement('div');
+        card.className = 'tool-execution-card dossier';
+        const downloadUrl = JarvisAPI.getDownloadUrl(fileData.filename);
+        card.innerHTML = `
+          <div class="tool-header-line">${ic('arquivo')} ARQUIVO MARKDOWN SALVO</div>
+          <div style="margin: 4px 0;"><strong>${fileData.title || fileData.filename}</strong></div>
+          <div style="font-size: 10px; color: #a3a3a3;">${fileData.filename} (${fileData.size || 0} bytes)</div>
+          <div style="display: flex; gap: 8px; margin-top: 6px;">
+            <a href="${downloadUrl}" download="${fileData.filename}" class="chat-report-download-btn" style="font-size: 10px; padding: 3px 8px;">${ic('baixar')} Baixar (.md)</a>
+            <button class="hud-btn-subtle" style="margin-top: 0; padding: 3px 8px; font-size: 10px; cursor: pointer;">${ic('pasta')} Abrir no Windows</button>
+          </div>
+        `;
+        const btn = card.querySelector('button');
+        btn.addEventListener('click', () => {
+          JarvisAPI.openResearch(fileData.filename);
+        });
+        toolsContainer.appendChild(card);
+      }
+    };
+  }
+
+  renderMarkdown(text) {
+    if (!text) return '';
+    if (window.marked) {
+      try {
+        return window.marked.parse(text);
+      } catch (e) {
+        console.error("Erro no parse de Markdown:", e);
+      }
+    }
+    // Fallback básico
+    return text.replace(/\n/g, '<br>');
+  }
+}
+
+// Inicializar aplicativo quando o DOM carregar
+window.addEventListener('DOMContentLoaded', () => {
+  window.jarvisApp = new JarvisApp();
+});

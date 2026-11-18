@@ -1,0 +1,27 @@
+[
+  {
+    "id": "api:google:gemini-flash-latest",
+    "name": "Gemini Flash (Mais Recente - Auto)",
+    "provider": "google",
+    "model_id": "gemini-flash-latest",
+    "env_var": "GEMINI_API_KEY",
+    "description": "Aponta automaticamente para o modelo Flash ativo mais recente do Google (Suporta Visão de Tela)"
+  },
+  {
+    "id": "api:google:gemini-3.6-flash",
+    "name": "Gemini 3.6 Flash",
+    "provider": "google",
+    "model_id": "gemini-3.6-flash",
+    "env_var": "GEMINI_API_KEY",
+    "description": "Modelo de última geração ultra-rápido com raciocínio e visão multimodal"
+  },
+  {
+    "id": "api:groq-llama-vision",
+    "name": "Groq LLaMA 4 Scout Vision (Lê Tela Grátis)",
+    "provider": "groq",
+    "model_id": "meta-llama/llama-4-scout-17b-16e-instruct",
+    "base_url": "https://api.groq.com/openai/v1",
+    "env_var": "GROQ_API_KEY",
+    "description": "Modelo multimodal gratuito na Groq capaz de enxergar sua tela"
+  }
+]

@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Atom por Rubens Mota. Assistente híbrido com visão multimodal e Pesquisa Aprofundada.">
+  <meta name="theme-color" content="#ef4444">
+  <title>Atom</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icons/atom-face.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  
+  <!-- Google Fonts: Space Grotesk (Interface) & JetBrains Mono (Telemetria & HUD) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/themes.css">
+  <link rel="stylesheet" href="css/atom-char.css">
+  <link rel="stylesheet" href="css/atom-ui.css">
+  <script>try{var m=localStorage.getItem('atom_modo')==='claro'?'claro':'escuro',p=localStorage.getItem('atom_pal_'+m);document.documentElement.dataset.modo=m;document.documentElement.dataset.tema=p||(m==='claro'?'nevoa':'azul-noite');}catch(e){}</script>
+  <script>
+    // Web ou local: palpite pelo endereço até o servidor confirmar (evita piscar o que não existe na web)
+    (function () { var h = location.hostname; document.documentElement.dataset.ambiente = (h === 'localhost' || h === '127.0.0.1' || h === '' || /^192\.168\./.test(h)) ? 'local' : 'web'; })();
+  </script>
+</head>
+<body class="atom-theme">
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><symbol id="i-editar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 3.5l3 3L6 15H3v-3z"/><path d="M10 5l3 3"/></symbol><symbol id="i-recarregar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 9a5.5 5.5 0 1 1-1.6-3.9"/><path d="M13.5 2.5v3h-3"/></symbol><symbol id="i-fechar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 4.5l9 9M13.5 4.5l-9 9"/></symbol><symbol id="i-pasta" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 5V14a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V6.5a1 1 0 0 0-1-1H9L7.5 3.5h-4a1 1 0 0 0-1 1z"/></symbol><symbol id="i-ajustes" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h6M12 5h3M3 13h2M8 13h7"/><circle cx="10.5" cy="5" r="1.5"/><circle cx="6.5" cy="13" r="1.5"/></symbol><symbol id="i-calculadora" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2.5" width="10" height="13" rx="1"/><path d="M6.5 5.5h5"/><path d="M6.5 9h.01M9 9h.01M11.5 9h.01M6.5 12h.01M9 12h.01M11.5 12h.01" stroke-width="2"/></symbol><symbol id="i-nota" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2.5h7l3 3v10H4z"/><path d="M11 2.5v3h3M6.5 9h5M6.5 12h3.5"/></symbol><symbol id="i-grafico" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15h12"/><path d="M5 12V9M9 12V5M13 12V7.5"/></symbol><symbol id="i-artigo" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 3.5h11v11h-11z"/><path d="M6 6.5h6M6 9h6M6 11.5h3.5"/></symbol><symbol id="i-globo" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="6.5"/><path d="M2.5 9h13M9 2.5c-2.2 2.4-2.2 10.6 0 13M9 2.5c2.2 2.4 2.2 10.6 0 13"/></symbol><symbol id="i-olho" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.8 9S4.5 4 9 4s7.2 5 7.2 5-2.7 5-7.2 5S1.8 9 1.8 9z"/><circle cx="9" cy="9" r="2.2"/></symbol><symbol id="i-olho-fechado" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7c1.5 2 3.7 3.2 6.5 3.2S14 9 15.5 7"/><path d="M5 9.6L4 11.5M9 10.2v2M13 9.6l1 1.9"/></symbol><symbol id="i-microfone" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2" width="5" height="8.5" rx="2.5"/><path d="M4 8.5a5 5 0 0 0 10 0M9 13.5V16M6.5 16h5"/></symbol><symbol id="i-som" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h2.5L9 4v10l-3.5-3H3z"/><path d="M12 6.5a3.5 3.5 0 0 1 0 5M14 4.5a6.5 6.5 0 0 1 0 9"/></symbol><symbol id="i-raio" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2L4.5 10H9l-1 6 5.5-8H9z"/></symbol><symbol id="i-lixeira" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h12M7 5V3h4v2M4.5 5l.8 10h7.4l.8-10"/><path d="M7.5 8v4.5M10.5 8v4.5"/></symbol><symbol id="i-copiar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="9" height="9" rx="1"/><path d="M12 6V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h2"/></symbol><symbol id="i-enviar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h11M10 5l4 4-4 4"/></symbol><symbol id="i-escudo" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2l5.5 2v4.5c0 3.4-2.3 5.9-5.5 7.5-3.2-1.6-5.5-4.1-5.5-7.5V4z"/></symbol><symbol id="i-baixar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2.5v9M5.5 8L9 11.5 12.5 8M3 14.5h12"/></symbol><symbol id="i-salvar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h9.5L15 5.5V15H3z"/><path d="M6 3v4h5V3M6 15v-4.5h6V15"/></symbol><symbol id="i-arquivo" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 2.5h6l3 3v10h-9z"/><path d="M10.5 2.5v3h3"/></symbol><symbol id="i-livro" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4c2-1 4.5-1 6.5.5 2-1.5 4.5-1.5 6.5-.5v10.5c-2-1-4.5-1-6.5.5-2-1.5-4.5-1.5-6.5-.5z"/><path d="M9 4.5V15"/></symbol><symbol id="i-cadeado" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="8" width="11" height="7.5" rx="1"/><path d="M6 8V6a3 3 0 0 1 6 0v2"/></symbol><symbol id="i-ok" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 9.5l3.5 3.5 7.5-8"/></symbol><symbol id="i-alerta" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2.5l7 12.5H2z"/><path d="M9 7.5v3.5M9 13h.01" stroke-width="1.8"/></symbol><symbol id="i-pessoa" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="6" r="3"/><path d="M3 15.5c.8-3 3.2-4.5 6-4.5s5.2 1.5 6 4.5"/></symbol><symbol id="i-paleta" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2a7 7 0 1 0 0 14c1 0 1.4-.7 1.1-1.5-.4-1 .2-2 1.3-2H13a3 3 0 0 0 3-3C16 5.2 12.9 2 9 2Z"/><circle cx="5.6" cy="8.4" r="1" fill="currentColor" stroke="none"/><circle cx="8.2" cy="5.4" r="1" fill="currentColor" stroke="none"/><circle cx="11.8" cy="6.2" r="1" fill="currentColor" stroke="none"/></symbol><symbol id="i-sol" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3.2"/><path d="M9 1.8v1.7M9 14.5v1.7M1.8 9h1.7M14.5 9h1.7M3.9 3.9l1.2 1.2M12.9 12.9l1.2 1.2M3.9 14.1l1.2-1.2M12.9 5.1l1.2-1.2"/></symbol><symbol id="i-lua" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 10.6A6 6 0 0 1 7.4 3.5a6 6 0 1 0 7.1 7.1Z"/></symbol><symbol id="i-cabide" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6.5V6a1.6 1.6 0 1 0-1.6-1.6"/><path d="M9 6.5L2.5 11.5c-.6.5-.3 1.5.5 1.5h12c.8 0 1.1-1 .5-1.5z"/></symbol><symbol id="i-parar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="4.5" width="9" height="9" rx="1"/></symbol><symbol id="i-estrela" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2.5l2 4.2 4.5.6-3.3 3.1.8 4.5L9 12.7l-4 2.2.8-4.5-3.3-3.1 4.5-.6z"/></symbol><symbol id="i-tela" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="3" width="13" height="9.5" rx="1"/><path d="M6.5 15.5h5M9 12.5v3"/></symbol><symbol id="i-nuvem" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 14h8a3 3 0 0 0 .4-6A4.5 4.5 0 0 0 4.7 7.2 3.4 3.4 0 0 0 5 14z"/></symbol><symbol id="i-tocar" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 3.5v11l9-5.5z"/></symbol></svg>
+  <!-- Scanlines & Background HUD Grids -->
+  <div class="hud-background-grid"></div>
+
+  <!-- MAIN HUD WRAPPER -->
+  <div class="hud-container">
+    
+    <!-- TOP STATUS BAR -->
+    <header class="hud-header">
+      <div class="header-left">
+        <div class="stark-logo">
+          <span class="logo-title atom-logo">AT<b>OM</b></span>
+        </div>
+        <div class="status-indicator-badge" id="system-status-badge">
+          <span class="pulse-dot"></span>
+          <span class="status-label" id="status-text">SISTEMAS PRONTOS</span>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <div class="model-selector-container">
+          <label for="model-select" class="hud-label">MODELO / LLM:</label>
+          <div class="custom-select-wrap">
+            <select id="model-select" class="hud-select" title="Selecione o modelo ativo">
+              <option value="">Carregando modelos...</option>
+            </select>
+            <span class="select-arrow">▼</span>
+          </div>
+          <button id="toggle-manual-model-btn" class="hud-icon-btn" title="Digitar nome de qualquer modelo manualmente"><svg class="ic" aria-hidden="true"><use href="#i-editar"/></svg></button>
+          <button id="refresh-models-btn" class="hud-icon-btn" title="Recarregar lista de modelos"><svg class="ic" aria-hidden="true"><use href="#i-recarregar"/></svg></button>
+        </div>
+
+        <!-- BARRA FLUTUANTE PARA DIGITAR QUALQUER MODELO MANUALMENTE -->
+        <div id="manual-model-bar" class="manual-model-bar hidden">
+          <input type="text" id="manual-model-input" class="hud-input-manual" placeholder="Digite o modelo (ex: gemini-3.6-flash, gpt-4o)...">
+          <button id="apply-manual-model-btn" class="hud-btn-apply-model" title="Aplicar modelo">APLICAR</button>
+          <button id="cancel-manual-model-btn" class="hud-btn-cancel-model" title="Fechar"><svg class="ic" aria-hidden="true"><use href="#i-fechar"/></svg></button>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="atom-pop-wrap">
+          <button id="wardrobe-btn" class="hud-btn-nav atom-wardrobe-btn" title="Trocar o corpo do Atom" aria-haspopup="true" aria-expanded="false">
+            <span class="btn-icon"><svg class="ic" aria-hidden="true"><use href="#i-cabide"/></svg></span>
+            <span>VESTIÁRIO</span>
+          </button>
+          <div id="wardrobe-pop" class="atom-pop hidden" role="dialog" aria-label="Vestiário do Atom">
+            <div class="atom-pop-title">Vestiário · corpo do Atom</div>
+            <div id="body-grid" class="atom-body-grid"></div>
+            <div class="atom-pop-foot">O rosto e as reações são os mesmos em todos. Fica salvo neste navegador.</div>
+          </div>
+        </div>
+        <div class="atom-pop-wrap">
+          <button id="theme-menu-btn" class="atom-square-btn" title="Temas" aria-label="Temas" aria-haspopup="menu" aria-expanded="false">
+            <svg class="ic" aria-hidden="true"><use href="#i-paleta"/></svg>
+          </button>
+          <div id="theme-menu" class="atom-pop atom-theme-menu hidden" role="menu" aria-label="Temas">
+            <span class="atom-theme-group-title">Escuro</span>
+            <div id="theme-dark"></div>
+            <div class="atom-theme-sep"></div>
+            <span class="atom-theme-group-title">Claro</span>
+            <div id="theme-light"></div>
+          </div>
+        </div>
+        <button id="mode-toggle-btn" class="atom-square-btn" title="Mudar para o tema claro" aria-label="Mudar para o tema claro">
+          <svg class="ic" aria-hidden="true"><use href="#i-sol"/></svg>
+        </button>
+        <button id="toggle-researches-btn" class="hud-btn-nav" title="Ver os arquivos Markdown salvos">
+          <span class="btn-icon"><svg class="ic" aria-hidden="true"><use href="#i-pasta"/></svg></span>
+          <span>ARQUIVOS (<span id="research-count">0</span>)</span>
+        </button>
+        <button id="toggle-settings-btn" class="hud-btn-nav" title="Configurações e Baixar Novos Modelos">
+          <span class="btn-icon"><svg class="ic" aria-hidden="true"><use href="#i-ajustes"/></svg></span>
+          <span>SISTEMA</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN COCKPIT BODY -->
+    <main class="hud-cockpit">
+      
+      <!-- LEFT PANEL: TELEMETRY & HARDWARE -->
+      <aside class="hud-sidebar hud-telemetry-panel">
+        <div class="panel-header">
+          <span class="panel-tag" id="env-tag">WEB</span>
+          <h3>TELEMETRIA</h3>
+        </div>
+
+        <div class="telemetry-grid">
+          <!-- VERSÃO WEB: o que faz sentido medir aqui -->
+          <div class="telemetry-card so-web atom-web-card">
+            <div class="card-head">
+              <span>VERSÃO WEB</span>
+              <span class="badge-status online">ONLINE</span>
+            </div>
+            <dl class="atom-web-rows">
+              <div><dt>Rodando em</dt><dd>Vercel (nuvem)</dd></div>
+              <div><dt>Modelo</dt><dd id="web-model">...</dd></div>
+              <div><dt>Chave</dt><dd id="web-key">...</dd></div>
+              <div><dt>Voz</dt><dd id="web-voice">...</dd></div>
+              <div><dt>Nesta conversa</dt><dd id="web-msgs">0 mensagens</dd></div>
+              <div><dt>Resposta</dt><dd id="web-latency">ainda não medida</dd></div>
+            </dl>
+            <p class="atom-web-note">CPU, memória, disco, Ollama e abrir aplicativos só existem no modo local, com o Atom rodando no seu PC.</p>
+          </div>
+
+          <!-- CPU GAUGE (A.T.O.M. PROCESS) -->
+          <div class="telemetry-card so-local">
+            <div class="card-head">
+              <span>CPU (Atom)</span>
+              <span id="cpu-val" class="metric-highlight">0.0%</span>
+            </div>
+            <div class="hud-progress-bar">
+              <div id="cpu-bar" class="hud-progress-fill" style="width: 0%"></div>
+            </div>
+            <div class="telemetry-subinfo">
+              <span id="cpu-subinfo">Impacto no PC: 0.0%</span>
+              <span id="cpu-pc-total">Total PC: 0%</span>
+            </div>
+          </div>
+
+          <!-- RAM GAUGE (A.T.O.M. MEMORY) -->
+          <div class="telemetry-card so-local">
+            <div class="card-head">
+              <span>RAM (Atom)</span>
+              <span id="ram-val" class="metric-highlight">0 MB</span>
+            </div>
+            <div class="hud-progress-bar">
+              <div id="ram-bar" class="hud-progress-fill fill-amber" style="width: 0%"></div>
+            </div>
+            <div class="telemetry-subinfo">
+              <span id="ram-subinfo">0.0% da RAM do PC</span>
+              <span id="ram-pc-total">PC: 0 GB</span>
+            </div>
+          </div>
+
+          <!-- DISK / PROJECT STORAGE GAUGE -->
+          <div class="telemetry-card so-local">
+            <div class="card-head">
+              <span>PROJETO & DISCO</span>
+              <span id="disk-val" class="metric-highlight">0 MB</span>
+            </div>
+            <div class="hud-progress-bar">
+              <div id="disk-bar" class="hud-progress-fill fill-cyan" style="width: 0%"></div>
+            </div>
+            <div class="telemetry-subinfo">
+              <span id="disk-subinfo">PC: 0 GB livres</span>
+            </div>
+          </div>
+
+          <!-- MOTOR STATUS -->
+          <div class="telemetry-card status-card so-local">
+            <div class="card-head">
+              <span>MOTOR LOCAL (OLLAMA)</span>
+              <span id="ollama-status" class="badge-status online">CONECTADO</span>
+            </div>
+            <div class="engine-meta">
+              <span id="ollama-subinfo">RAM IA: Inativo</span>
+              <span id="engine-model-tag">Atom / Híbrido</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- QUICK SYSTEM COMMANDS -->
+        <div class="quick-commands-section">
+          <div class="panel-header">
+            <span class="panel-tag">MACRO</span>
+            <h4>COMANDOS RÁPIDOS</h4>
+          </div>
+          <div class="quick-btn-group">
+            <button class="quick-cmd-btn so-local" data-prompt="Abra a calculadora"><svg class="ic" aria-hidden="true"><use href="#i-calculadora"/></svg> Abrir Calculadora</button>
+            <button class="quick-cmd-btn so-local" data-prompt="Abra o bloco de notas"><svg class="ic" aria-hidden="true"><use href="#i-nota"/></svg> Bloco de Notas</button>
+            <button class="quick-cmd-btn so-local" data-prompt="Atom, qual o status do sistema e uso de hardware?"><svg class="ic" aria-hidden="true"><use href="#i-grafico"/></svg> Diagnóstico do sistema</button>
+            <button class="quick-cmd-btn" data-prompt="Atom, pesquise artigos científicos no arXiv sobre quantum computing e faça um resumo"><svg class="ic" aria-hidden="true"><use href="#i-artigo"/></svg> Pesquisar artigos (arXiv)</button>
+            <button class="quick-cmd-btn" data-prompt="Salve um arquivo Markdown sobre as novidades de inteligência artificial"><svg class="ic" aria-hidden="true"><use href="#i-salvar"/></svg> Salvar arquivo Markdown</button>
+            <button class="quick-cmd-btn" data-prompt="Atom, pesquise na web as novidades sobre tecnologia hoje e faça um resumo"><svg class="ic" aria-hidden="true"><use href="#i-globo"/></svg> Pesquisar notícias</button>
+          </div>
+        </div>
+
+        <!-- TERMINAL HUD PREVIEW -->
+        <div class="terminal-preview-container">
+          <div class="terminal-header">
+            <span class="term-dot"></span>
+            <span>TERMINAL</span>
+            <button id="clear-term-btn" class="term-action-btn">LIMPAR</button>
+          </div>
+          <div id="terminal-output" class="terminal-logs">
+            <div class="log-line sys">[SISTEMA] Iniciando o Atom...</div>
+            <div class="log-line sys">[SISTEMA] Arquitetura híbrida pronta (Visão + Nuvem + SO).</div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- CENTER STAGE: ARC REACTOR & VOICE CORE -->
+      <section class="hud-centerstage">
+        
+        <!-- ARC REACTOR CANVAS VISUALIZER -->
+        <div class="atom-stage">
+          <div id="atom-char" class="atom-char s-parado" title="Clique no Atom"></div>
+          <div class="reactor-core-info atom-core-info">
+            <span class="core-subtitle" id="core-state-subtitle">ONLINE</span>
+            <h2 class="core-title" id="core-state-title">Atom</h2>
+            <div class="audio-wave-visualizer" id="audio-waves">
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- VOICE & MULTIMODAL CONTROLS -->
+        <div class="voice-controls-bar">
+          <button id="screen-share-btn" class="hud-control-toggle screen-btn" title="Compartilhar tela com o Atom (Visão Multimodal)">
+            <span class="toggle-icon"><svg class="ic" aria-hidden="true"><use href="#i-olho"/></svg></span>
+            <span class="toggle-label" id="screen-btn-label">ENXERGAR TELA</span>
+          </button>
+
+          <button id="mic-toggle-btn" class="voice-btn mic-btn" title="Toque para falar ou segure para falar (Espaço faz o mesmo)">
+            <span class="mic-icon"><svg class="ic" aria-hidden="true"><use href="#i-microfone"/></svg></span>
+            <span class="mic-label" id="mic-btn-label">FALAR COM O ATOM</span>
+          </button>
+
+          <button id="live-toggle-btn" class="hud-control-toggle atom-live-btn" title="Modo Live do Gemini: conversa por voz em tempo real; se você falar, ele para para ouvir (tecla L)">
+            <span class="toggle-icon"><svg class="ic" aria-hidden="true"><use href="#i-som"/></svg></span>
+            <span class="toggle-label" id="live-btn-label">MODO LIVE</span>
+          </button>
+
+          <button id="tts-toggle-btn" class="hud-control-toggle active" title="Alternar resposta por voz (Text-To-Speech)">
+            <span class="toggle-icon"><svg class="ic" aria-hidden="true"><use href="#i-som"/></svg></span>
+            <span class="toggle-label" id="tts-label">VOZ ATIVADA</span>
+          </button>
+
+          <button id="sfx-toggle-btn" class="hud-control-toggle active" title="Alternar efeitos sonoros de interface">
+            <span class="toggle-icon"><svg class="ic" aria-hidden="true"><use href="#i-raio"/></svg></span>
+            <span class="toggle-label" id="sfx-label">EFEITOS SONOROS ATIVADOS</span>
+          </button>
+        </div>
+
+        <!-- ATALHOS DE TECLADO -->
+        <details class="atom-shortcuts" id="atom-shortcuts" open>
+          <summary>ATALHOS</summary>
+          <dl>
+            <div><dt><kbd>Espaço</kbd> segure</dt><dd>fala enquanto segura</dd></div>
+            <div><dt><kbd>Espaço</kbd> toque</dt><dd>ouve até você calar</dd></div>
+            <div><dt><kbd>Esc</kbd></dt><dd>para tudo, sem mandar</dd></div>
+            <div><dt><kbd>L</kbd></dt><dd>modo Live</dd></div>
+            <div><dt><kbd>Enter</kbd></dt><dd>envia</dd></div>
+            <div><dt><kbd>Shift</kbd><kbd>Enter</kbd></dt><dd>nova linha</dd></div>
+            <div><dt><kbd>NumLock</kbd></dt><dd>microfone</dd></div>
+            <div><dt><kbd>+</kbd> numérico</dt><dd>para e ouve</dd></div>
+            <div><dt>Voz: "pare"</dt><dd>para o Atom</dd></div>
+          </dl>
+        </details>
+
+        <!-- VOICE TRANSCRIPTION BANNER -->
+        <div class="speech-banner hidden" id="speech-banner">
+          <span class="speech-indicator">● OUVINDO:</span>
+          <span class="speech-text" id="speech-transcript">...</span>
+        </div>
+      </section>
+
+      <!-- RIGHT PANEL: CHAT STREAM & ACTION FEED -->
+      <section class="hud-chat-panel">
+        <div class="chat-header">
+          <div class="chat-header-title">
+            <span class="panel-tag">CHAT</span>
+            <h3>CONVERSA</h3>
+          </div>
+          <div class="chat-header-actions">
+            <button id="new-chat-btn" class="hud-mini-btn atom-new-chat" title="Começar uma conversa nova (a atual fica salva)">+ NOVA</button>
+            <button id="history-btn" class="hud-mini-btn" title="Conversas salvas neste navegador" aria-expanded="false">CONVERSAS (<span id="history-count">0</span>)</button>
+            <button id="clear-chat-btn" class="hud-icon-btn" title="Apagar esta conversa"><svg class="ic" aria-hidden="true"><use href="#i-lixeira"/></svg></button>
+          </div>
+        </div>
+
+        <div id="history-panel" class="atom-history hidden" aria-label="Conversas salvas">
+          <div class="atom-history-head">
+            <span>Conversas salvas neste navegador</span>
+            <button id="history-close-btn" class="hud-icon-btn" title="Fechar"><svg class="ic" aria-hidden="true"><use href="#i-fechar"/></svg></button>
+          </div>
+          <div id="history-list" class="atom-history-list"></div>
+        </div>
+
+        <!-- CHAT MESSAGES STREAM CONTAINER -->
+        <div class="chat-messages-container" id="chat-messages">
+          
+          <!-- WELCOME MESSAGE -->
+          <div class="chat-msg atom-msg jarvis-msg">
+            <div class="msg-avatar"><span class="atom-av" aria-hidden="true"><i></i><i></i></span></div>
+            <div class="msg-body">
+              <div class="msg-meta">
+                <span class="msg-sender">Atom</span>
+                <span class="msg-time">AGORA</span>
+                <button class="copy-msg-btn" title="Copiar mensagem"><svg class="ic" aria-hidden="true"><use href="#i-copiar"/></svg> Copiar</button>
+              </div>
+              <div class="msg-content">
+                Atom pronto, criado por Rubens Mota. 
+                Subsistemas neurais híbridos (Google Gemini / Groq Vision / Local), busca aprofundada com DuckDuckGo & arXiv, e visão de tela em tempo real ativos. 
+                Como posso assisti-lo nas operações agora?
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- LIVE TOOL EXECUTION BADGE (DYNAMIC) -->
+        <div class="tool-banner hidden" id="tool-banner">
+          <div class="tool-spinner"></div>
+          <div class="tool-info">
+            <span class="tool-name" id="tool-banner-name">EXECUTANDO FERRAMENTA</span>
+            <span class="tool-detail" id="tool-banner-detail">Processando requisição...</span>
+          </div>
+        </div>
+
+        <!-- CHAT INPUT COMPOSER -->
+        <div class="chat-composer">
+          <!-- SCREEN VISION PREVIEW BADGE -->
+          <div id="screen-preview-badge" class="screen-preview-badge hidden">
+            <div class="screen-badge-info">
+              <!-- Miniatura ao vivo do que está sendo compartilhado (estilo Discord) -->
+              <video id="screen-live-preview" class="screen-live-preview" autoplay muted playsinline title="Clique para ampliar"></video>
+              <span class="screen-live-dot"></span>
+              <span class="screen-preview-icon"><svg class="ic" aria-hidden="true"><use href="#i-olho"/></svg></span>
+              <span class="screen-preview-text">TELA AO VIVO</span>
+            </div>
+            <button id="stop-screen-share-btn" class="screen-preview-close" title="Encerrar compartilhamento de tela"><svg class="ic" aria-hidden="true"><use href="#i-fechar"/></svg> ENCERRAR</button>
+          </div>
+
+          <div class="composer-toolbar">
+            <label class="auto-mode-toggle so-local" title="Modo Autônomo: executa comandos do sistema diretamente sem pedir confirmação">
+              <input type="checkbox" id="autonomous-toggle">
+              <span class="checkbox-custom"></span>
+              <span class="toggle-text">MODO AUTÔNOMO</span>
+            </label>
+
+            <label class="auto-mode-toggle" title="Conversa contínua: depois de responder, o Atom volta a ouvir sozinho. Esc pausa.">
+              <input type="checkbox" id="conversa-toggle">
+              <span class="checkbox-custom"></span>
+              <span class="toggle-text">CONVERSA CONTÍNUA</span>
+            </label>
+
+            <span class="composer-hint" id="composer-hint">[Enter] envia · [Shift+Enter] nova linha</span>
+          </div>
+
+          <div class="composer-input-row">
+            <textarea 
+              id="chat-input" 
+              class="hud-textarea" 
+              rows="1" 
+              placeholder="Escreva para o Atom..."
+              autocomplete="off"
+            ></textarea>
+
+            <button id="composer-stop-btn" class="hud-composer-mic-btn atom-stop-btn hidden" title="Parar tudo: o Atom para de ouvir, de pensar e de falar, sem mandar nada (Esc)">
+              <span class="mic-glyph"><svg class="ic" aria-hidden="true"><use href="#i-parar"/></svg></span>
+              <span class="atom-stop-label">PARAR</span>
+            </button>
+
+            <button id="composer-mic-btn" class="hud-composer-mic-btn" title="Toque para falar (para sozinho quando você se cala) ou segure para falar">
+              <span class="mic-glyph"><svg class="ic" aria-hidden="true"><use id="composer-mic-icon" href="#i-microfone"/></svg></span>
+            </button>
+
+            <button id="send-btn" class="hud-send-btn" title="Enviar mensagem [Enter]">
+              <span>ENVIAR</span>
+              <span class="send-arrow"><svg class="ic" aria-hidden="true"><use href="#i-enviar"/></svg></span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- DRAWER: DOSSIÊS / RESEARCHES -->
+    <div class="hud-drawer" id="researches-drawer">
+      <div class="drawer-header">
+        <div class="drawer-title">
+          <span class="panel-tag">ARQUIVOS</span>
+          <h3>ARQUIVOS MARKDOWN SALVOS</h3>
+        </div>
+        <div class="drawer-actions">
+          <button id="open-research-folder-btn" class="hud-action-btn so-local"><svg class="ic" aria-hidden="true"><use href="#i-pasta"/></svg> ABRIR PASTA NO WINDOWS</button>
+          <button class="close-drawer-btn" data-drawer="researches-drawer"><svg class="ic" aria-hidden="true"><use href="#i-fechar"/></svg></button>
+        </div>
+      </div>
+      
+      <div class="drawer-content">
+        <div class="researches-list" id="researches-list">
+          <div class="empty-dossier-state">Nenhum arquivo Markdown salvo ainda. Peça ao Atom: <em>"Salve um arquivo Markdown sobre IA"</em></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DRAWER: SETTINGS & MODEL DOWNLOAD -->
+    <div class="hud-drawer" id="settings-drawer">
+      <div class="drawer-header">
+        <div class="drawer-title">
+          <span class="panel-tag">CONFIGURAÇÕES</span>
+          <h3>PARÂMETROS DO SISTEMA</h3>
+        </div>
+        <button class="close-drawer-btn" data-drawer="settings-drawer"><svg class="ic" aria-hidden="true"><use href="#i-fechar"/></svg></button>
+      </div>
+
+      <div class="drawer-content settings-layout">
+        
+        <!-- SECTION: MODO WEB OU LOCAL -->
+        <div class="settings-section atom-env-section">
+          <h4>MODO: <span id="env-name">WEB</span></h4>
+          <p class="settings-desc so-web">Você está na versão web, hospedada na Vercel. Aqui funcionam conversa, voz, ver a tela, pesquisas na web e de artigos no arXiv, arquivos Markdown e as suas chaves de API.</p>
+          <p class="settings-desc so-web">Só no modo local (o Atom rodando no seu PC): modelos do Ollama, medidores de CPU, memória e disco, abrir aplicativos como calculadora e bloco de notas, e o modo autônomo.</p>
+          <p class="settings-desc so-local">Você está no modo local, com o Atom rodando no seu PC. Tudo funciona: Ollama, medidores do PC, abrir aplicativos, modo autônomo, além das chaves de API.</p>
+        </div>
+
+        <!-- SECTION: BAIXAR NOVO MODELO OLLAMA (SÓ LOCAL) -->
+        <div class="settings-section so-local">
+          <h4>BAIXAR NOVO MODELO (OLLAMA PULL)</h4>
+          <p class="settings-desc">Adicione qualquer modelo da biblioteca oficial Ollama (ex: <code>llama3.2</code>, <code>mistral</code>, <code>qwen2.5</code>, <code>deepseek-r1:7b</code>, <code>phi3</code>).</p>
+          <div class="pull-row">
+            <input type="text" id="pull-model-input" class="hud-input" placeholder="Ex: llama3.2 ou mistral">
+            <button id="pull-model-btn" class="hud-action-btn">BAIXAR MODELO</button>
+          </div>
+          
+          <div id="pull-progress-box" class="pull-progress-container hidden">
+            <div class="pull-meta">
+              <span id="pull-status-text">Iniciando download...</span>
+              <span id="pull-percent-text">0%</span>
+            </div>
+            <div class="hud-progress-bar">
+              <div id="pull-bar-fill" class="hud-progress-fill" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: MODELOS EM NUVEM VIA API (SEGURANÇA TOTAL DE CHAVES) -->
+        <div class="settings-section">
+          <div class="section-title-wrap">
+            <h4>MODELOS EM NUVEM (VIA API)</h4>
+            <span class="security-badge" title="Chaves nunca são gravadas em arquivos JSON do projeto"><svg class="ic" aria-hidden="true"><use href="#i-escudo"/></svg> ZERO-PERSISTÊNCIA GIT</span>
+          </div>
+          <p class="settings-desc">
+            Use modelos em nuvem (Google Gemini, OpenAI, Groq, OpenRouter, etc.). 
+            As chaves são lidas do seu <code>.env</code> local ou mantidas <strong>apenas na memória volátil do navegador nesta sessão</strong>.
+          </p>
+
+          <!-- LISTA DE MODELOS API CADASTRADOS -->
+          <div class="api-models-catalog" id="api-models-catalog">
+            <!-- Renderizado dinamicamente via app.js -->
+            <div class="catalog-loading">Carregando catálogo de modelos...</div>
+          </div>
+
+          <!-- SEÇÃO: MODELOS GOOGLE GEMINI COM SINCRONIZAÇÃO DA API -->
+          <div class="google-models-toolkit">
+            <div class="toolkit-head">
+              <span class="hud-label">MODELOS GOOGLE GEMINI (CLIQUE PARA USAR):</span>
+              <button id="sync-google-models-btn" class="hud-btn-subtle" title="Consultar todos os modelos ativos na sua chave Google"><svg class="ic" aria-hidden="true"><use href="#i-recarregar"/></svg> Sincronizar da API Google</button>
+            </div>
+            <div class="quick-gemini-chips" id="quick-gemini-chips">
+              <button class="gemini-chip" data-model="gemini-3.6-flash" title="Google Gemini 3.6 Flash (Recomendado)">gemini-3.6-flash · recomendado</button>
+              <button class="gemini-chip" data-model="gemini-3.8-flash" title="Google Gemini 3.8 Flash (Raciocínio Rápido)">gemini-3.8-flash</button>
+              <button class="gemini-chip" data-model="gemini-3.6-pro" title="Google Gemini 3.6 Pro (Máxima Capacidade)">gemini-3.6-pro</button>
+              <button class="gemini-chip" data-model="gemini-3.7-flash" title="Google Gemini 3.7 Flash">gemini-3.7-flash</button>
+              <button class="gemini-chip" data-model="gemini-flash-latest" title="Google Gemini Flash Mais Recente">gemini-flash-latest</button>
+            </div>
+            <div id="google-synced-feedback" class="google-synced-msg hidden"></div>
+          </div>
+
+          <!-- GERENCIADOR DE CHAVE VOLÁTIL DE SESSÃO -->
+          <div class="session-key-manager">
+            <span class="hud-label">CHAVE DE API PARA ESTA SESSÃO (OPCIONAL):</span>
+            <div class="session-key-row">
+              <select id="session-key-provider" class="hud-select-small">
+                <option value="google">Google (Gemini)</option>
+                <option value="openai">OpenAI</option>
+                <option value="groq">Groq Cloud</option>
+                <option value="openrouter">OpenRouter</option>
+                <option value="deepseek">DeepSeek</option>
+                <option value="custom">Custom</option>
+              </select>
+              <div class="key-input-wrapper">
+                <input type="password" id="session-api-key-input" class="hud-input" placeholder="Cole sua chave aqui...">
+                <button id="toggle-key-visibility-btn" class="key-vis-btn" title="Mostrar/Ocultar"><svg class="ic" aria-hidden="true"><use href="#i-olho"/></svg></button>
+              </div>
+            </div>
+            <div class="session-key-actions">
+              <button id="test-api-key-btn" class="hud-btn-subtle"><svg class="ic" aria-hidden="true"><use href="#i-raio"/></svg> Testar Conexão</button>
+              <button id="save-session-key-btn" class="hud-action-btn-small"><svg class="ic" aria-hidden="true"><use href="#i-salvar"/></svg> Ativar na Sessão</button>
+              <button id="clear-session-key-btn" class="hud-btn-subtle text-red"><svg class="ic" aria-hidden="true"><use href="#i-fechar"/></svg> Limpar</button>
+            </div>
+            <div id="key-test-feedback" class="key-feedback-msg hidden"></div>
+            <p class="settings-desc atom-key-types">Chaves que o Atom consegue usar: <b>Google AI Studio</b> (Gemini, começa com <code>AIza</code>), <b>OpenAI</b> (<code>sk-</code>), <b>Groq</b> (<code>gsk_</code>), <b>OpenRouter</b> (<code>sk-or-</code>), <b>DeepSeek</b> (<code>sk-</code>) ou uma API no padrão OpenAI (Custom). Chaves de outros produtos, como Antigravity, Vertex/Google Cloud ou Claude, não funcionam aqui. Ao colar, o tipo é reconhecido sozinho. Da chave do Gemini aparecem só os modelos de conversa; os de imagem, vídeo, voz e agentes ficam de fora.</p>
+          </div>
+
+          <!-- FORMULÁRIO DE CADASTRO DE NOVO MODELO (METADADOS) -->
+          <div class="add-model-toggle-row">
+            <button id="toggle-add-model-btn" class="hud-btn-subtle">+ Cadastrar Outro Modelo de API</button>
+          </div>
+
+          <div id="add-api-model-container" class="add-api-model-form hidden">
+            <span class="hud-label">CADASTRAR NOVO MODELO:</span>
+            
+            <!-- CHIPS DE SUGESTÃO RÁPIDA -->
+            <div class="suggestion-chips">
+              <button class="chip-btn" data-provider="google" data-model="gemini-3.6-flash" data-name="Gemini 3.6 Flash">Gemini 3.6 Flash</button>
+              <button class="chip-btn" data-provider="openai" data-model="gpt-4o" data-name="GPT-4o">GPT-4o</button>
+              <button class="chip-btn" data-provider="groq" data-model="deepseek-r1-distill-llama-70b" data-name="Groq DeepSeek R1">Groq R1 Distill</button>
+              <button class="chip-btn" data-provider="openrouter" data-model="anthropic/claude-3.5-sonnet" data-name="Claude 3.5 Sonnet">Claude 3.5 (OR)</button>
+            </div>
+
+            <div class="form-row-grid">
+              <div class="form-group">
+                <label class="hud-label-tiny">PROVEDOR:</label>
+                <select id="new-model-provider" class="hud-select-small">
+                  <option value="google">Google Gemini</option>
+                  <option value="openai">OpenAI</option>
+                  <option value="groq">Groq Cloud</option>
+                  <option value="openrouter">OpenRouter</option>
+                  <option value="deepseek">DeepSeek</option>
+                  <option value="custom">Custom (OpenAI Comp.)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="hud-label-tiny">NOME DE EXIBIÇÃO:</label>
+                <input type="text" id="new-model-name" class="hud-input" placeholder="Ex: Gemini 3.6 Pro">
+              </div>
+            </div>
+
+            <div class="form-row-grid mt-1">
+              <div class="form-group">
+                <label class="hud-label-tiny">MODEL ID (API):</label>
+                <input type="text" id="new-model-id" class="hud-input" placeholder="Ex: gemini-3.6-pro">
+              </div>
+              <div class="form-group">
+                <label class="hud-label-tiny">BASE URL (OPCIONAL):</label>
+                <input type="text" id="new-model-base-url" class="hud-input" placeholder="https://...">
+              </div>
+            </div>
+
+            <button id="submit-new-model-btn" class="hud-action-btn mt-2" style="width: 100%;">Salvar Modelo no Catálogo</button>
+          </div>
+        </div>
+
+        <!-- SECTION: TEMPERATURA & CRIATIVIDADE -->
+        <div class="settings-section">
+          <h4>TEMPERATURA DA REDE NEURAL</h4>
+          <div class="slider-row">
+            <input type="range" id="temp-slider" min="0" max="1" step="0.05" value="0.7" class="hud-slider">
+            <span id="temp-val" class="slider-val">0.70</span>
+          </div>
+          <span class="settings-desc">Valores menores (0.1 - 0.3) são mais determinísticos e exatos; valores maiores (0.7 - 0.9) são mais criativos. Vale nos dois modos: vai junto em toda mensagem, tanto para a chave de API (Gemini, OpenAI, Groq...) quanto para o Ollama local.</span>
+        </div>
+
+        <!-- SECTION: VOZ DO ATOM -->
+        <div class="settings-section">
+          <h4>VOZ DO ATOM</h4>
+          <div class="atom-seg" role="radiogroup" aria-label="Tipo de voz">
+            <button type="button" class="atom-seg-btn" data-engine="natural" role="radio">Natural (Gemini)</button>
+            <button type="button" class="atom-seg-btn" data-engine="navegador" role="radio">Do navegador</button>
+          </div>
+          <span class="settings-desc" id="voice-engine-desc">Vozes do Gemini, bem menos robóticas. Usam a sua chave do Google (a da Vercel ou a ativada na sessão).</span>
+          <div id="natural-voices" class="atom-voice-grid"></div>
+          <label class="hud-label mt-2">VOZ NO MODO LIVE:</label>
+          <div class="atom-seg" role="radiogroup" aria-label="Voz no modo Live">
+            <button type="button" class="atom-seg-btn" data-live-nativo="0" role="radio">Igual ao modo normal</button>
+            <button type="button" class="atom-seg-btn" data-live-nativo="1" role="radio">Áudio nativo</button>
+          </div>
+          <span class="settings-desc" id="live-voice-desc"></span>
+          <div class="form-group" id="browser-voice-group">
+            <label class="hud-label">VOZ DO NAVEGADOR:</label>
+            <select id="voice-select" class="hud-select"></select>
+          </div>
+          <div class="slider-row mt-2">
+            <label class="hud-label">VELOCIDADE:</label>
+            <input type="range" id="voice-rate" min="0.8" max="1.5" step="0.05" value="1.05" class="hud-slider">
+            <span id="voice-rate-val" class="slider-val">1.05x</span>
+          </div>
+          <div class="slider-row mt-2" id="voice-pitch-row">
+            <label class="hud-label">TOM (PITCH):</label>
+            <input type="range" id="voice-pitch" min="0.6" max="1.4" step="0.05" value="0.95" class="hud-slider">
+            <span id="voice-pitch-val" class="slider-val">0.95</span>
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 8px;">
+            <button id="test-voice-btn" class="hud-btn-subtle"><svg class="ic" aria-hidden="true"><use href="#i-tocar"/></svg> Testar voz</button>
+            <button id="test-mic-hardware-btn" class="hud-btn-subtle"><svg class="ic" aria-hidden="true"><use href="#i-microfone"/></svg> Testar Entrada de Microfone</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- MODAL DE LEITURA DE DOSSIÊ MARKDOWN -->
+    <div class="hud-modal-overlay hidden" id="dossier-modal">
+      <div class="hud-modal-window">
+        <div class="modal-header">
+          <div class="modal-title-box">
+            <span class="panel-tag">ARQUIVO MARKDOWN</span>
+            <h3 id="modal-dossier-title">Arquivo Markdown</h3>
+          </div>
+          <div class="modal-actions">
+            <button id="modal-download-btn" class="hud-action-btn modal-download-btn" title="Baixar relatório em Markdown"><svg class="ic" aria-hidden="true"><use href="#i-baixar"/></svg> BAIXAR RELATÓRIO</button>
+            <button id="modal-open-win-btn" class="hud-action-btn">ABRIR ARQUIVO</button>
+            <button id="close-modal-btn" class="close-drawer-btn"><svg class="ic" aria-hidden="true"><use href="#i-fechar"/></svg></button>
+          </div>
+        </div>
+        <div class="modal-body" id="modal-dossier-content">
+          <!-- Conteúdo Markdown formatado -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Marked.js para renderização rápida e de alta qualidade de Markdown no cliente -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- Modulos JavaScript da aplicação -->
+  <script type="module" src="js/audio.js"></script>
+  <script type="module" src="js/api.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

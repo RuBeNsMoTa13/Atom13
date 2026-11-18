@@ -1,0 +1,75 @@
+/* A.T.O.M. personagem: rosto padrão + corpos. GERADO por exportar_app.py (não editar à mão) */
+
+.atom-char{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.atom-char .ch{font-size:var(--ac-size,2.6px)}
+@keyframes ac-blink{0%,44%,48%,100%{transform:scaleY(1)}46%{transform:scaleY(.1)}}
+@keyframes ac-look{0%,20%{transform:translateX(0)}30%,50%{transform:translateX(-8em)}60%,80%{transform:translateX(7em)}90%,100%{transform:translateX(0)}}
+@keyframes ac-think{0%,100%{transform:translate(-6em,-6em)}50%{transform:translate(6em,-6em)}}
+@keyframes ac-talk{0%,100%{height:5em}25%{height:16em}50%{height:7em}75%{height:13em}}
+@keyframes ac-bar{0%,100%{transform:scaleY(.25)}50%{transform:scaleY(1)}}
+@keyframes ac-dot{0%,100%{opacity:.2}50%{opacity:1}}
+@keyframes ac-scanv{0%{left:6%}100%{left:92%}}
+@keyframes ac-zz{0%{transform:translate(0,0);opacity:0}30%{opacity:1}100%{transform:translate(10em,-18em);opacity:0}}
+@keyframes ac-q{0%,100%{transform:translateY(0)}50%{transform:translateY(-5em)}}
+@keyframes ac-floatF{0%,100%{transform:rotateX(-14deg) translateY(0)}50%{transform:rotateX(-14deg) translateY(-3em)}}
+@keyframes ac-hop{0%,100%{transform:translateY(0)}30%{transform:translateY(-10em)}50%{transform:translateY(0)}65%{transform:translateY(-4em)}80%{transform:translateY(0)}}
+@keyframes ac-rx{from{transform:rotateX(0) rotateY(20deg)}to{transform:rotateX(360deg) rotateY(20deg)}}
+@keyframes ac-ry{from{transform:rotateY(0) rotateX(70deg)}to{transform:rotateY(360deg) rotateX(70deg)}}
+@keyframes ac-rz{from{transform:rotateZ(0) rotateX(60deg) rotateY(40deg)}to{transform:rotateZ(360deg) rotateX(60deg) rotateY(40deg)}}
+@keyframes ac-tip{0%,49%{background:#e9edf7}50%,100%{background:#ef4444}}
+@keyframes ac-wob{0%,100%{transform:rotate(0)}25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)}}
+.ch{position:relative;width:100em;height:100em;flex-shrink:0;perspective:420em}
+.sc{position:absolute;inset:0;transform-style:preserve-3d;animation:ac-floatF 4s ease-in-out infinite;transform:rotateX(-14deg)}
+.cb{position:absolute;transform-style:preserve-3d}
+.fc{position:absolute;overflow:hidden;box-sizing:border-box}
+.glass .fc{border:.8em solid #ef4444;background-image:none!important}
+.tilt{position:absolute;inset:0;transform-style:preserve-3d;transform:rotateX(35.26deg) rotateZ(45deg)}
+.ly{position:absolute;left:8em;top:8em;width:84em;height:84em;transform-style:preserve-3d}
+.ly .sp{position:absolute;left:0;top:0;width:7em;height:7em}
+.ring{position:absolute;left:8em;top:8em;width:84em;height:84em;border-radius:50%;border:1.1em solid #ef4444;box-sizing:border-box;box-shadow:0 0 4em rgba(239,68,68,.35)}
+.ring.r1{animation:ac-rx 9s linear infinite}.ring.r2{animation:ac-ry 12s linear infinite;border-color:#f87171}
+.ring.r3{animation:ac-rz 15s linear infinite;border-color:#b91c1c;left:16em;top:16em;width:68em;height:68em}
+.ant{position:absolute;transform-style:preserve-3d}
+.tipx{position:absolute;left:-2.5em;top:-7em;width:8em;height:8em;animation:ac-tip 1.4s infinite}
+.shd{position:absolute;left:26em;right:26em;top:92em;height:5em;border-radius:50%;background:rgba(239,68,68,.25);filter:blur(2em)}
+.fz{position:absolute;z-index:3}
+.fi{position:absolute;inset:0}
+.pn{position:absolute;inset:0;background-color:#ef4444;border-radius:14em;box-shadow:inset 0 0 0 3.2em #b91c1c,0 0 6em rgba(239,68,68,.35)}
+.eyes2{position:absolute;left:0;right:0;top:17em;display:flex;justify-content:center;gap:26em;animation:ac-look 8s ease-in-out infinite}
+.ey2{display:block;width:15em;height:24em;background:#0a0e1a;animation:ac-blink 5s infinite;transition:all .3s}
+.mo2{position:absolute;left:50%;top:51em;width:26em;height:5em;margin-left:-13em;background:#0a0e1a;transition:all .3s}
+.bars2,.dots2{position:absolute;left:0;right:0;top:46em;height:16em;display:none;justify-content:center;align-items:center;gap:3.5em}
+.bars2 i{display:block;width:3.5em;height:16em;background:#0a0e1a;animation:ac-bar .8s ease-in-out infinite}
+.bars2 i:nth-child(2){animation-delay:.2s}.bars2 i:nth-child(3){animation-delay:.4s}.bars2 i:nth-child(4){animation-delay:.1s}.bars2 i:nth-child(5){animation-delay:.3s}
+.dots2 i{display:block;width:6em;height:6em;background:#0a0e1a;animation:ac-dot 1.2s infinite}
+.dots2 i:nth-child(2){animation-delay:.3s}.dots2 i:nth-child(3){animation-delay:.6s}
+.scan2{position:absolute;top:8%;bottom:8%;width:2.4em;background:#0a0e1a;box-shadow:0 0 3em rgba(10,14,26,.6);display:none;animation:ac-scanv 1.6s linear infinite alternate}
+.zz2,.q2{position:absolute;right:-6em;top:-16em;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:26em;line-height:1;color:#ef4444;display:none}
+.zz2{font-size:22em;color:var(--text-muted);animation:ac-zz 2.6s ease-out infinite}
+.q2{animation:ac-q 1.4s ease-in-out infinite}
+.atom-char.s-ouvindo .ey2{transform:scale(1.15);animation:none}
+.atom-char.s-ouvindo .eyes2{animation:none}
+.atom-char.s-ouvindo .mo2{display:none}.atom-char.s-ouvindo .bars2{display:flex}
+.atom-char.s-pensando .eyes2{animation:ac-think 1.6s ease-in-out infinite}
+.atom-char.s-pensando .mo2{display:none}.atom-char.s-pensando .dots2{display:flex}
+.atom-char.s-vendo .eyes2{animation:none;transform:translateX(-12em)}
+.atom-char.s-vendo .ey2{height:18em;margin-top:3em}
+.atom-char.s-vendo .scan2{display:block}
+.atom-char.s-falando .eyes2{animation:none}
+.atom-char.s-falando .mo2{animation:ac-talk .45s ease-in-out infinite}
+.atom-char.s-feliz .eyes2{animation:none}
+.atom-char.s-feliz .ey2{clip-path:polygon(0 100%,50% 0,100% 100%,72% 100%,50% 42%,28% 100%);height:14em;margin-top:6em;animation:none}
+.atom-char.s-feliz .mo2{width:30em;height:11em;margin-left:-15em;border-radius:0 0 15em 15em}
+.atom-char.s-feliz .ch{animation:ac-hop 1.6s ease-in-out infinite}
+.atom-char.s-dormindo .eyes2{animation:none}
+.atom-char.s-dormindo .ey2{height:3.5em;margin-top:14em;animation:none}
+.atom-char.s-dormindo .mo2{width:12em;margin-left:-6em}
+.atom-char.s-dormindo .zz2{display:block}
+.atom-char.s-dormindo .ch{opacity:.7}
+.atom-char.s-dormindo .sc{animation-duration:8s}
+.atom-char.s-confuso .eyes2{animation:none}
+.atom-char.s-confuso .ey2{animation:none}
+.atom-char.s-confuso .ey2:first-child{height:12em;margin-top:9em}
+.atom-char.s-confuso .mo2{transform:rotate(-10deg);width:20em;margin-left:-8em}
+.atom-char.s-confuso .q2{display:block}
+.atom-char.s-confuso .ch{animation:ac-wob 2.4s ease-in-out infinite}

@@ -2,7 +2,7 @@
 title J.A.R.V.I.S. Protocol - Stark Industries HUD
 color 0b
 echo ========================================================
-echo        J.A.R.V.I.S. - SISTEMA TACTICAL OS ONLINE
+echo        ATOM ONLINE
 echo ========================================================
 echo.
 
@@ -27,5 +27,5 @@ echo  JARVIS pronto na porta 8000. Pressione Ctrl+C para parar.
 echo ========================================================
 echo.
 
-python -m uvicorn backend.server:app --host 127.0.0.1 --port 8000
+python -m uvicorn backend.server:app --host 127.0.0.1 --port 8000 --reload
 pause

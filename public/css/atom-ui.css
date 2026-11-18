@@ -1,0 +1,514 @@
+/* ==========================================================================
+   A.T.O.M. — visual novo (base do portfólio): sem brilho/neon, um neutro + vermelho.
+   Carrega depois de style.css e themes.css.
+   ========================================================================== */
+
+body { background-color: var(--bg-space); transition: background-color .3s; }
+
+.hud-background-grid {
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+}
+
+/* Sem neon: tira os brilhos de texto e sombras coloridas */
+.logo-title, .core-title, .core-subtitle, .logo-symbol { text-shadow: none !important; }
+
+/* Logo ATOM com OM vermelho */
+.atom-logo { letter-spacing: 0.04em; font-weight: 700; }
+.atom-logo b { color: var(--accent-red); font-weight: 700; }
+.logo-ver {
+  color: var(--text-muted);
+  background: transparent;
+  border-color: var(--border-color);
+}
+
+/* ---------- Palco do personagem ---------- */
+.hud-centerstage {
+  background: transparent;
+  border-color: var(--border-color);
+}
+.atom-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(4px, 1vh, 12px);
+  flex-shrink: 1;
+  min-height: 0;
+}
+#atom-char {
+  width: min(clamp(180px, 22vw, 340px), 38vh);
+  height: min(clamp(180px, 22vw, 340px), 38vh);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.atom-core-info {
+  position: static;
+  width: auto;
+}
+.atom-core-info .core-subtitle { color: var(--accent-red); }
+.atom-core-info .core-title {
+  color: var(--text-primary);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  font-size: clamp(18px, 1.8vw, 26px);
+}
+.atom-core-info .wave-bar { background: var(--accent-red); }
+
+/* ---------- Botões principais (vermelho, sem gradiente azul) ---------- */
+.voice-btn.mic-btn {
+  background: var(--accent-red);
+  border: 1px solid var(--accent-red);
+  color: #fff;
+  box-shadow: none;
+}
+.voice-btn.mic-btn:hover { transform: none; filter: brightness(1.08); box-shadow: none; }
+.hud-send-btn {
+  background: var(--accent-red);
+  color: #fff;
+  box-shadow: none;
+}
+.hud-mini-btn.btn-listen {
+  background: transparent;
+  border: 1px solid var(--border-muted);
+  color: var(--text-secondary);
+}
+.hud-control-toggle, .hud-action-pill { box-shadow: none !important; }
+
+/* ---------- Cabeçalho do chat ---------- */
+.chat-header {
+  background: transparent;
+  border-bottom-color: var(--border-color);
+  gap: 10px;
+}
+.chat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.chat-header-actions .hud-mini-btn {
+  height: 26px;
+  background: transparent;
+  border: 1px solid var(--border-muted);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+.chat-header-actions .hud-mini-btn:hover { border-color: var(--accent-red); color: var(--text-primary); }
+.chat-header-actions .atom-new-chat { border-color: var(--accent-red); color: var(--accent-red); }
+.chat-header-actions .hud-icon-btn { position: static; }
+
+/* ---------- Conversas salvas ---------- */
+.hud-chat-panel { position: relative; }
+.atom-history {
+  position: absolute;
+  top: 48px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+}
+.atom-history.hidden { display: none; }
+.atom-history-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-red);
+  border-bottom: 1px solid var(--border-color);
+}
+.atom-history-list { overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.atom-history-empty { padding: 16px; color: var(--text-muted); font-size: 13px; line-height: 1.5; }
+.atom-history-item {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-space);
+}
+.atom-history-item.active { border-color: var(--accent-red); }
+.atom-history-open {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 10px 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+.atom-history-title { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.atom-history-meta { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+.atom-history-del {
+  background: none;
+  border: none;
+  border-left: 1px solid var(--border-color);
+  color: var(--text-muted);
+  width: 40px;
+  cursor: pointer;
+}
+.atom-history-del:hover { color: var(--accent-red); }
+
+/* ---------- Aparência (corpo + tema) ---------- */
+.atom-pop-wrap { position: relative; }
+.atom-pop {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 50;
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  padding: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-muted);
+  border-radius: 4px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+}
+.atom-pop.hidden { display: none; }
+.atom-pop-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-red);
+  margin: 2px 0 10px;
+}
+.atom-pop-title:not(:first-child) { margin-top: 16px; }
+.atom-body-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.atom-body-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 4px 8px;
+  background: var(--bg-space);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+}
+.atom-body-card:hover { border-color: var(--border-muted); }
+.atom-body-card.active { border-color: var(--accent-red); color: var(--text-primary); }
+.atom-body-mini { width: 64px; height: 64px; display: block; }
+.atom-body-mini .atom-char { --ac-size: 0.64px; }
+.atom-body-mini .sc { animation: none; }
+.atom-body-mini .ey2, .atom-body-mini .eyes2, .atom-body-mini .tipx { animation: none; }
+.atom-body-name { font-size: 11px; line-height: 1.2; text-align: center; }
+.atom-pop-foot { margin-top: 8px; font-size: 12px; color: var(--text-muted); }
+
+/* Celular: o popover ocupa a largura da tela */
+@media (max-width: 760px) {
+  .atom-pop { position: fixed; top: 64px; left: 16px; right: 16px; width: auto; }
+  #atom-char { width: min(200px, 26vh); height: min(200px, 26vh); }
+}
+
+/* Mensagens do Atom num cartão neutro do tema */
+.jarvis-msg .msg-content { background: var(--bg-card); border-color: var(--border-color); color: var(--text-primary); }
+.user-msg .msg-content { background: var(--accent-red); color: #fff; }
+
+@media (max-width: 760px) {
+  .atom-core-info .core-title, .atom-core-info .audio-wave-visualizer { display: none; }
+  .chat-header-actions .hud-mini-btn { padding: 3px 6px; }
+}
+
+/* ---------- Celular: uma coluna (Atom, conversa, depois o resto) ---------- */
+@media (max-width: 760px) {
+  .hud-cockpit {
+    display: flex !important;
+    flex-direction: column;
+    overflow-y: auto;
+    height: calc(100dvh - 64px);
+    padding: 10px 12px 16px;
+  }
+  .hud-centerstage {
+    order: 1;
+    flex-shrink: 0;
+    min-height: 0 !important;
+    max-height: none !important;
+    padding: 12px !important;
+  }
+  .hud-chat-panel {
+    order: 2;
+    flex-shrink: 0;
+    height: 72dvh !important;
+  }
+  .hud-sidebar { order: 3; flex-shrink: 0; height: auto !important; overflow: visible !important; }
+  #atom-char { width: 150px; height: 150px; }
+  .voice-controls-bar { margin-top: 6px; }
+  .logo-ver, .status-indicator-badge .status-label { display: none; }
+}
+
+/* Operador sem amarelo */
+.user-msg .msg-sender { color: var(--text-muted); }
+.user-msg .msg-avatar { color: var(--text-secondary); border-color: var(--border-muted); background: transparent; box-shadow: none; }
+
+
+/* ---------- Ícones próprios (sprite em index.html) ---------- */
+.ic { width: 16px; height: 16px; flex-shrink: 0; vertical-align: -3px; display: inline-block; }
+.btn-icon, .toggle-icon, .mic-icon, .mic-glyph, .send-arrow, .screen-preview-icon { display: inline-flex; align-items: center; font-size: 0; }
+.quick-cmd-btn { display: flex; align-items: center; gap: 8px; }
+.quick-cmd-btn .ic { color: var(--accent-red); }
+.copy-msg-btn, .chat-report-download-btn, .read-dossier-btn, .hud-btn-subtle, .hud-action-btn, .hud-action-btn-small, .screen-preview-close, .security-badge { display: inline-flex; align-items: center; gap: 6px; }
+.copy-msg-btn .ic { width: 13px; height: 13px; }
+.hud-icon-btn, .close-drawer-btn, .key-vis-btn, .hud-btn-cancel-model, .delete-model-btn, .research-download-icon-btn { display: inline-flex; align-items: center; justify-content: center; }
+
+/* Avatar do Atom: o próprio rostinho */
+.msg-avatar { display: flex; align-items: center; justify-content: center; }
+.atom-av {
+  position: relative;
+  width: 20px;
+  height: 14px;
+  border-radius: 3px;
+  background: #ef4444;
+  box-shadow: inset 0 0 0 1.5px #b91c1c;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  padding-top: 3.5px;
+  box-sizing: border-box;
+}
+.atom-av i { display: block; width: 3px; height: 5px; background: #0a0e1a; }
+
+/* ---------- Navbar igual à do portfólio ---------- */
+.hud-header .hud-btn-nav {
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  border-radius: 4px;
+  background: transparent;
+  border: 1px solid var(--border-muted);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+  box-shadow: none;
+  transform: none;
+}
+.hud-header .hud-btn-nav:hover { border-color: var(--text-primary); color: var(--text-primary); background: transparent; box-shadow: none; transform: none; }
+.hud-header .hud-btn-nav span { text-transform: none; }
+.atom-wardrobe-btn { border-color: var(--accent-red) !important; color: var(--text-primary) !important; }
+.atom-wardrobe-btn .ic { color: var(--accent-red); }
+.atom-square-btn {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: 1px solid var(--border-muted);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.atom-square-btn:hover { border-color: var(--text-primary); color: var(--text-primary); }
+.atom-square-btn .ic { width: 18px; height: 18px; }
+
+.atom-theme-menu { width: 224px; padding: 6px; }
+.atom-theme-group-title {
+  display: block;
+  padding: 8px 8px 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-red);
+}
+.atom-theme-sep { margin: 4px 0; border-top: 1px solid var(--border-color); }
+.atom-theme-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+.atom-theme-item:hover, .atom-theme-item.active { background: var(--bg-card-hover); color: var(--text-primary); }
+.atom-theme-swatch { display: flex; width: 32px; height: 20px; overflow: hidden; border-radius: 2px; box-shadow: 0 0 0 1px var(--border-muted); flex-shrink: 0; }
+.atom-theme-swatch span:first-child { flex: 1; }
+.atom-theme-swatch span:nth-child(2) { width: 8px; }
+.atom-theme-swatch .red { width: 6px; background: #e11d1d; }
+.atom-theme-name { flex: 1; }
+.atom-theme-dot { font-family: var(--font-mono); font-size: 12px; color: var(--accent-red); visibility: hidden; }
+.atom-theme-item.active .atom-theme-dot { visibility: visible; }
+
+@media (max-width: 1040px) {
+  .hud-header .hud-btn-nav { padding: 0 10px; }
+}
+@media (max-width: 760px) {
+  .hud-header .hud-btn-nav { width: 40px; padding: 0; justify-content: center; }
+  .hud-header .hud-btn-nav span:not(.btn-icon) { display: none; }
+  .header-right { gap: 6px; }
+  .atom-theme-menu { width: auto; }
+}
+
+/* Celular: cabeçalho em duas linhas (logo + botões, depois o modelo) e a página rola */
+@media (max-width: 760px) {
+  html, body { overflow: auto; height: auto; }
+  .hud-container { height: auto; min-height: 100dvh; }
+  .hud-header { height: auto; flex-wrap: wrap; row-gap: 8px; padding: 10px 12px; position: sticky; top: 0; }
+  .header-left { order: 1; }
+  .header-right { order: 2; margin-left: auto; }
+  .header-center { order: 3; width: 100%; justify-content: center; }
+  .status-indicator-badge { display: none; }
+  .hud-cockpit { height: auto !important; overflow: visible !important; }
+  .atom-pop { top: 112px; }
+}
+
+/* Cabeçalho acima das gavetas (Sistema, Dossiês): os menus de Temas e Vestiário abrem por cima delas */
+.hud-header { position: relative; z-index: 150; }
+@media (max-width: 760px) { .hud-header { position: sticky; } }
+
+/* ---------- Vozes ---------- */
+.atom-seg { display: inline-flex; border: 1px solid var(--border-muted); border-radius: 4px; overflow: hidden; margin: 6px 0 8px; }
+.atom-seg-btn { padding: 8px 14px; background: transparent; border: none; color: var(--text-secondary); font-family: var(--font-sans); font-size: 13px; cursor: pointer; }
+.atom-seg-btn + .atom-seg-btn { border-left: 1px solid var(--border-muted); }
+.atom-seg-btn.active { background: var(--accent-red); color: #fff; }
+.atom-voice-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin: 10px 0 4px; }
+.atom-voice-grid.hidden, #browser-voice-group.hidden, #voice-pitch-row.hidden { display: none; }
+.atom-voice-card { display: flex; align-items: stretch; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-space); }
+.atom-voice-card.active { border-color: var(--accent-red); }
+.atom-voice-pick { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; background: none; border: none; text-align: left; cursor: pointer; color: var(--text-primary); font-family: var(--font-sans); }
+.atom-voice-name { font-size: 13px; font-weight: 500; }
+.atom-voice-note { font-size: 11px; color: var(--text-muted); }
+.atom-voice-play { width: 38px; background: none; border: none; border-left: 1px solid var(--border-color); color: var(--accent-red); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.atom-voice-play:hover { background: var(--bg-card-hover); }
+.atom-voice-play.loading { opacity: .4; pointer-events: none; }
+
+/* Microfone: vira "parar" enquanto o Atom responde ou fala; sem pulsar à toa */
+.hud-composer-mic-btn { touch-action: none; user-select: none; -webkit-user-select: none; }
+.hud-composer-mic-btn.atom-busy { border-color: var(--accent-red); color: var(--accent-red); }
+.hud-composer-mic-btn.atom-busy:hover { background: color-mix(in srgb, var(--accent-red) 18%, transparent); }
+
+/* ---------- Web x local ---------- */
+html[data-ambiente="web"] .so-local { display: none !important; }
+html[data-ambiente="local"] .so-web { display: none !important; }
+.atom-web-rows { margin: 8px 0 0; display: grid; gap: 6px; }
+.atom-web-rows { min-width: 0; }
+.atom-web-card { container-type: inline-size; }
+@container (max-width: 240px) {
+  .atom-web-rows div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .atom-web-rows dd { text-align: left; }
+}
+.atom-web-rows div { display: grid; grid-template-columns: max-content minmax(0, 1fr); align-items: baseline; gap: 10px; font-size: 11px; min-width: 0; }
+.atom-web-rows dt { color: var(--text-dim); white-space: nowrap; }
+.atom-web-rows dd { margin: 0; min-width: 0; color: var(--text-primary); font-family: var(--font-mono); text-align: right; overflow-wrap: anywhere; line-height: 1.35; }
+.atom-web-note { margin: 10px 0 0; font-size: 10.5px; line-height: 1.45; color: var(--text-dim); }
+.atom-env-section h4 span { color: var(--accent-red); }
+
+/* Boca sincronizada com o áudio da voz (--boca de 0 a 1, enviada pelo audio.js) */
+.atom-char[data-lip="1"].s-falando .mo2 {
+  animation: none;
+  transition: height .07s linear, width .07s linear, margin-left .07s linear, border-radius .07s linear;
+  height: calc(4em + var(--boca, 0) * 15em);
+  width: calc(26em - var(--boca, 0) * 6em);
+  margin-left: calc(-13em + var(--boca, 0) * 3em);
+  border-radius: calc(var(--boca, 0) * 5em);
+}
+
+/* Parar: só aparece quando o Atom está ouvindo, pensando ou falando */
+.atom-stop-label { display: none; }
+.atom-stop-btn { gap: 6px; border-color: var(--accent-red) !important; color: var(--accent-red) !important; font-family: var(--font-hud); font-size: 10px; letter-spacing: 1px; }
+.atom-stop-btn.hidden { display: none !important; }
+.atom-stop-btn:hover { background: color-mix(in srgb, var(--accent-red) 18%, transparent) !important; }
+
+/* Campo de mensagem maior: 3 linhas de saída, cresce até ~9 linhas */
+.composer-input-row { align-items: stretch; flex-wrap: wrap; gap: 8px; }
+.composer-input-row .hud-textarea { flex: 1 1 100%; }
+.composer-input-row { justify-content: flex-end; }
+.hud-textarea { min-height: 72px !important; max-height: 220px !important; font-size: 14px !important; line-height: 1.5 !important; padding: 6px 2px !important; }
+.composer-input-row .hud-composer-mic-btn, .composer-input-row .hud-send-btn { align-self: flex-end; }
+
+/* Modo Live */
+.atom-live-btn.active { background: var(--accent-red) !important; border-color: var(--accent-red) !important; color: #fff !important; }
+.atom-live-btn.active .toggle-label, .atom-live-btn.active .toggle-icon { color: #fff !important; }
+
+/* Lista de atalhos: canto inferior esquerdo do palco, compacta para não cobrir os botões */
+.atom-shortcuts { position: absolute; left: 12px; right: 12px; bottom: 10px; z-index: 5; width: auto; max-width: 760px; background: color-mix(in srgb, var(--bg-card) 94%, transparent); border: 1px solid color-mix(in srgb, var(--text-dim) 28%, transparent); border-radius: 6px; padding: 7px 9px; font-size: 10px; line-height: 1.3; color: var(--text-secondary); }
+.atom-shortcuts summary { cursor: pointer; font-family: var(--font-hud); font-size: 9px; letter-spacing: 1.5px; color: var(--accent-red); list-style: none; user-select: none; }
+.atom-shortcuts summary::-webkit-details-marker { display: none; }
+.atom-shortcuts summary::after { content: ' +'; color: var(--text-dim); }
+.atom-shortcuts[open] summary::after { content: ' −'; }
+.atom-shortcuts dl { margin: 6px 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 3px 14px; }
+.atom-shortcuts dl div { display: grid; grid-template-columns: 86px minmax(0, 1fr); gap: 6px; align-items: baseline; }
+.atom-shortcuts dt { color: var(--text-primary); white-space: nowrap; }
+.atom-shortcuts dd { margin: 0; color: var(--text-dim); }
+.atom-shortcuts kbd { font-family: var(--font-mono); font-size: 9px; padding: 0 4px; border: 1px solid color-mix(in srgb, var(--text-dim) 45%, transparent); border-bottom-width: 2px; border-radius: 3px; color: var(--text-primary); }
+@media (max-width: 900px), (hover: none) { .atom-shortcuts { display: none; } }
+
+.atom-shortcuts:not([open]) { right: auto; }
+
+/* Modo Live ligado: o microfone e a conversa do modo normal ficam travados */
+html[data-live] #mic-toggle-btn,
+html[data-live] #composer-mic-btn,
+html[data-live] label:has(#conversa-toggle) {
+  opacity: .35;
+  pointer-events: none;
+  filter: grayscale(1);
+}
+
+/* Renomear conversa */
+.atom-history-input {
+  width: 100%;
+  font: inherit;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--bg-input, transparent);
+  border: 1px solid var(--accent-red);
+  border-radius: 4px;
+  padding: 3px 6px;
+}
+
+/* Arquivos: de qual conversa veio */
+.dossier-conv {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  max-width: 100%;
+  padding: 0;
+  background: none;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent-red);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.dossier-conv:hover { text-decoration: underline; }
+.dossier-conv.off { color: var(--text-dim); cursor: default; text-decoration: none; }
+.dossier-card .research-item-actions button.research-download-icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 2px;
+}
+.dossier-card .research-item-actions button.research-download-icon-btn:hover { color: var(--accent-red); }
