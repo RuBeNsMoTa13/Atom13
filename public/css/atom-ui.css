@@ -461,3 +461,12 @@ html[data-ambiente="local"] .so-web { display: none !important; }
 @media (max-width: 900px), (hover: none) { .atom-shortcuts { display: none; } }
 
 .atom-shortcuts:not([open]) { right: auto; }
+
+/* Modo Live ligado: o microfone e a conversa do modo normal ficam travados */
+html[data-live] #mic-toggle-btn,
+html[data-live] #composer-mic-btn,
+html[data-live] label:has(#conversa-toggle) {
+  opacity: .35;
+  pointer-events: none;
+  filter: grayscale(1);
+}

@@ -55,7 +55,7 @@ export class AtomLive {
     try { if (this.h[name]) this.h[name](...args); } catch (e) { console.warn('[LIVE]', name, e); }
   }
 
-  async start({ voice = 'Fenrir', systemPrompt = '', sessionKey = null } = {}) {
+  async start({ voice = 'Fenrir', systemPrompt = '', sessionKey = null, native = true, functions = [], _retry = false } = {}) {
     if (this.active) return;
     this.active = true;
     this.emit('onState', 'CONNECTING');
@@ -63,7 +63,7 @@ export class AtomLive {
       const res = await fetch('/api/live/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session_key: sessionKey })
+        body: JSON.stringify({ session_key: sessionKey, native })
       });
       const info = await res.json().catch(() => ({}));
       if (!res.ok || !info.success) throw new Error(info.error || 'Não consegui preparar o modo Live.');
@@ -84,7 +84,7 @@ export class AtomLive {
           systemInstruction: { parts: [{ text: systemPrompt }] },
           inputAudioTranscription: {},
           outputAudioTranscription: {},
-          tools: [{ googleSearch: {} }]
+          tools: [{ googleSearch: {} }].concat(functions.length ? [{ functionDeclarations: functions }] : [])
         }
       });
       if (!this.active) return;
@@ -93,7 +93,14 @@ export class AtomLive {
       this.emit('onState', 'LISTENING');
     } catch (e) {
       const msg = e && e.message ? e.message : String(e);
+      const stillWanted = this.active; // se a pessoa desligou no meio, não tenta de novo
       this.stop(true);
+      if (!stillWanted) return;
+      // O modelo "mesma voz" pode não existir para a chave: tenta uma vez o de áudio nativo
+      if (!native && !_retry) {
+        this.emit('onFallback', msg);
+        return this.start({ voice, systemPrompt, sessionKey, native: true, functions, _retry: true });
+      }
       this.emit('onError', msg);
     }
   }
@@ -123,6 +130,11 @@ export class AtomLive {
   }
 
   handle(msg) {
+    // O Gemini pediu para rodar funções (artigos, arquivo Markdown...): o app roda e devolve o resultado
+    if (msg.toolCall && msg.toolCall.functionCalls) {
+      this.emit('onToolCall', msg.toolCall.functionCalls);
+      return;
+    }
     if (msg.goAway) this.emit('onError', 'O Gemini vai encerrar esta sessão Live em instantes (limite de tempo). É só ligar de novo.');
     const sc = msg.serverContent;
     if (!sc) return;
@@ -216,6 +228,11 @@ export class AtomLive {
   sendFrame(base64jpeg) {
     if (!base64jpeg) return;
     this.send({ realtimeInput: { video: { data: base64jpeg.replace(/^data:image\/\w+;base64,/, ''), mimeType: 'image/jpeg' } } });
+  }
+
+  /** Resultado das funções, para o Gemini continuar a conversa. */
+  sendToolResponse(responses) {
+    this.send({ toolResponse: { functionResponses: responses } });
   }
 
   /** Mensagem escrita durante o Live. */

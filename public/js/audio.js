@@ -270,6 +270,7 @@ export class JarvisAudio {
   }
 
   async startListening() {
+    if (this.blocked) { if (this.onBlocked) this.onBlocked(); return; } // modo Live ligado: fala normal travada
     this.ensureAudioContext();
     this.stopSpeaking();
 
@@ -688,7 +689,7 @@ export class JarvisAudio {
 
   /** Fala a resposta: voz natural do Gemini quando der; senão a voz do navegador. */
   speak(text) {
-    if (!this.ttsEnabled) return false;
+    if (!this.ttsEnabled || this.blocked) return false;
     this.stopSpeaking(true);
     const cleanText = this.cleanForSpeech(text);
     if (!cleanText) return false;

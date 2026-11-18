@@ -133,15 +133,16 @@ def best_tts_model(client, key: str = "") -> str:
 _live_model_cache: Dict[str, str] = {}
 
 
-def best_live_model(client, key: str = "") -> str:
+def best_live_model(client, key: str = "", native: bool = True) -> str:
     """Modelo do Gemini Live (conversa por voz em tempo real) mais novo que a chave libera.
     Prefere os de áudio nativo, que soam mais naturais e deixam interromper falando."""
     if os.environ.get("ATOM_LIVE_MODEL"):
         return os.environ["ATOM_LIVE_MODEL"]
-    if key in _live_model_cache:
-        return _live_model_cache[key]
+    ck = f"{key}|{native}"
+    if ck in _live_model_cache:
+        return _live_model_cache[ck]
     import re as _re
-    best, best_score = "gemini-2.5-flash-native-audio-preview-09-2025", -1.0
+    best, best_score = ("gemini-2.5-flash-native-audio-preview-09-2025" if native else "gemini-live-2.5-flash-preview"), -1.0
     try:
         for m in client.models.list():
             name = (getattr(m, "name", "") or "").replace("models/", "")
@@ -150,12 +151,14 @@ def best_live_model(client, key: str = "") -> str:
             if "bidiGenerateContent" not in actions or not low.startswith("gemini"):
                 continue
             mv = _re.search(r"gemini-(\d+(?:\.\d+)?)", low)
-            score = (float(mv.group(1)) if mv else 0.0) + (5 if "native-audio" in low else 0) + (0.01 if "flash" in low else 0)
+            is_native = "native-audio" in low
+            # nativo: voz gerada direto pelo modelo (mais natural); sem nativo: usa as mesmas vozes do modo normal
+            score = (float(mv.group(1)) if mv else 0.0) + (5 if is_native == native else 0) + (0.01 if "flash" in low else 0)
             if score > best_score:
                 best, best_score = name, score
     except Exception as e:
         logger.warning(f"Não consegui listar modelos Live do Gemini: {e}")
-    _live_model_cache[key] = best
+    _live_model_cache[ck] = best
     return best
 
 

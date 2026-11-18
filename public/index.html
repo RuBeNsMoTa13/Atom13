@@ -589,6 +589,12 @@
           </div>
           <span class="settings-desc" id="voice-engine-desc">Vozes do Gemini, bem menos robóticas. Usam a sua chave do Google (a da Vercel ou a ativada na sessão).</span>
           <div id="natural-voices" class="atom-voice-grid"></div>
+          <label class="hud-label mt-2">VOZ NO MODO LIVE:</label>
+          <div class="atom-seg" role="radiogroup" aria-label="Voz no modo Live">
+            <button type="button" class="atom-seg-btn" data-live-nativo="0" role="radio">Igual ao modo normal</button>
+            <button type="button" class="atom-seg-btn" data-live-nativo="1" role="radio">Áudio nativo</button>
+          </div>
+          <span class="settings-desc" id="live-voice-desc"></span>
           <div class="form-group" id="browser-voice-group">
             <label class="hud-label">VOZ DO NAVEGADOR:</label>
             <select id="voice-select" class="hud-select"></select>

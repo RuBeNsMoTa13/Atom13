@@ -194,6 +194,7 @@ def text_to_speech(req: TTSRequest):
 
 class LiveSessionRequest(BaseModel):
     session_key: Optional[str] = None
+    native: bool = True
 
 
 @app.post("/api/live/session")
@@ -206,13 +207,74 @@ def live_session(req: LiveSessionRequest):
         return JSONResponse({"success": False, "error": "O modo Live precisa de uma chave do Google AI Studio (Gemini)."}, status_code=400)
     try:
         from .core.api_client import genai_client, best_live_model, live_ephemeral_token
-        model = best_live_model(genai_client(key), key)
+        model = best_live_model(genai_client(key), key, native=req.native)
         if req.session_key:
             return {"success": True, "model": model, "auth": "key"}
         return {"success": True, "model": model, "auth": "token", "token": live_ephemeral_token(key)}
     except Exception as e:
         logger.warning(f"[LIVE]: {e}")
         return JSONResponse({"success": False, "error": f"Não consegui abrir o modo Live: {str(e)[:200]}"}, status_code=502)
+
+
+class LiveToolRequest(BaseModel):
+    name: str
+    args: Optional[dict] = None
+    session_key: Optional[str] = None
+    autonomous: bool = False
+
+
+@app.post("/api/live/tool")
+def live_tool(req: LiveToolRequest):
+    """Executa as funções que o Gemini Live pede (artigos, web, arquivo Markdown, apps...).
+    São as mesmas ferramentas do modo normal; o resultado volta para o Gemini continuar falando."""
+    from .core.atom import english_query
+    from .tools.search_tool import search_web, search_arxiv, read_url_content
+    from .tools.markdown_tool import save_research_markdown
+    from .tools.system_tool import open_application, get_system_telemetry, execute_os_command, is_cloud_environment
+    a = req.args or {}
+    name = (req.name or "").strip()
+    local_only = {"abrir_aplicativo_no_pc", "telemetria_do_pc", "executar_comando_no_pc"}
+    try:
+        if name in local_only and is_cloud_environment():
+            return {"ok": False, "erro": "Isso só funciona no modo local, com o Atom rodando no PC. Na versão web não dá."}
+        if name == "buscar_artigos":
+            assunto = str(a.get("assunto", "")).strip()
+            q_en = english_query(assunto, req.session_key)
+            res = search_arxiv(q_en, max_results=int(a.get("quantidade", 3) or 3))
+            papers = [{
+                "titulo": p.get("title"), "autores": ", ".join((p.get("authors") or [])[:4]),
+                "ano": str(p.get("published", ""))[:4], "resumo": (p.get("summary") or "")[:600], "link": p.get("url"),
+            } for p in (res.get("papers") or [])]
+            return {"ok": bool(papers), "fonte": "arXiv (arxiv.org)", "busca_em_ingles": q_en, "artigos": papers,
+                    "erro": None if papers else res.get("error", "Nenhum artigo encontrado.")}
+        if name == "pesquisar_web":
+            res = search_web(str(a.get("consulta", "")), max_results=5)
+            itens = [{"titulo": r.get("title"), "site": r.get("url"), "trecho": (r.get("snippet") or r.get("body") or "")[:400]}
+                     for r in (res.get("results") or [])]
+            return {"ok": bool(itens), "resultados": itens, "erro": None if itens else res.get("error")}
+        if name == "ler_pagina":
+            res = read_url_content(str(a.get("url", "")), max_chars=4000)
+            return {"ok": res.get("success", False), "url": res.get("url"), "conteudo": res.get("content"), "erro": res.get("error")}
+        if name == "salvar_arquivo_markdown":
+            titulo = str(a.get("titulo") or "Anotação do Atom")[:120]
+            res = save_research_markdown(titulo, str(a.get("conteudo") or ""), query=titulo)
+            return {"ok": True, "arquivo": res.get("filename"), "tamanho": res.get("size"),
+                    "download_url": res.get("download_url"), "content": res.get("content"), "titulo": titulo}
+        if name == "abrir_aplicativo_no_pc":
+            return open_application(str(a.get("nome", "")))
+        if name == "abrir_site":
+            url = str(a.get("url", "")).strip()
+            if not url.startswith("http"):
+                url = "https://" + url
+            return {"ok": True, "client_action": "open_url", "url": url}
+        if name == "telemetria_do_pc":
+            return get_system_telemetry()
+        if name == "executar_comando_no_pc":
+            return execute_os_command(str(a.get("comando", "")), autonomous=req.autonomous)
+        return {"ok": False, "erro": f"Função desconhecida: {name}"}
+    except Exception as e:
+        logger.warning(f"[LIVE TOOL {name}]: {e}")
+        return {"ok": False, "erro": str(e)[:300]}
 
 
 class ListModelsRequest(BaseModel):

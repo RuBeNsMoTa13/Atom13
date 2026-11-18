@@ -695,6 +695,7 @@ class JarvisApp {
       const isNumLock = e.code === 'NumLock' || e.key === 'NumLock' || e.keyCode === 144;
       if (isNumLock) {
         e.preventDefault();
+        if (this.liveOn) { this.liveBlockedNotice(); return; }
         this.logTerminal(`[TECLADO]: Tecla NumLock pressionada -> Alternando microfone...`, 'cmd');
         if (this.audio) {
           this.audio.toggleListening();
@@ -1628,6 +1629,7 @@ class JarvisApp {
     if (box) {
       box.checked = this.conversa;
       box.addEventListener('change', () => {
+        if (this.liveOn && box.checked) { box.checked = false; this.liveBlockedNotice(); return; }
         this.conversa = box.checked;
         try { localStorage.setItem('atom_conversa', this.conversa ? '1' : '0'); } catch (e) {}
         this.audio.idleLimit = this.conversa ? 600 : 0;
@@ -1640,6 +1642,7 @@ class JarvisApp {
     }
     this.audio.idleLimit = this.conversa ? 600 : 0; // 60 s sem ninguém falar: pausa
     this.audio.onSpeechDone = () => this.resumeListeningSoon();
+    this.audio.onBlocked = () => this.liveBlockedNotice();
     this.audio.onNothingHeard = () => {
       if (!this.conversa || this.conversaPaused) return;
       this.emptyHeard = (this.emptyHeard || 0) + 1;
@@ -1659,7 +1662,7 @@ class JarvisApp {
 
   /** Na conversa contínua, volta a ouvir depois que o Atom termina. */
   resumeListeningSoon() {
-    if (!this.conversa || this.conversaPaused) return;
+    if (this.liveOn || !this.conversa || this.conversaPaused) return;
     clearTimeout(this.resumeTimer);
     this.resumeTimer = setTimeout(() => {
       if (!this.conversa || this.conversaPaused || this.atomBusy() || this.audio.isListening || this.audio.isTranscribing) return;
@@ -1693,6 +1696,7 @@ class JarvisApp {
         if (a) { this.appendMessage('assistant', a); this.messages.push({ role: 'assistant', content: a }); }
         this.saveConversation();
       },
+      onToolCall: (calls) => this.runLiveTools(calls),
       onMouth: (v) => this.reactor.setAudioLevel(v),
       onMicLevel: (v) => {
         const t = document.getElementById('speech-transcript');
@@ -1704,11 +1708,83 @@ class JarvisApp {
         say(msg);
         if (!this.live.active) this.stopLive(true);
       },
+      onFallback: (msg) => {
+        this.logTerminal(`[LIVE]: o modelo com a mesma voz do modo normal não abriu (${msg}). Tentando o de áudio nativo...`, 'sys');
+      },
       onClose: (reason) => {
         this.logTerminal(`[LIVE]: ${reason}`, 'sys');
         this.stopLive(true);
       }
     });
+  }
+
+  /** Funções que o Gemini Live pode chamar (as mesmas ferramentas do modo normal). */
+  liveFunctions() {
+    const S = (d) => ({ type: 'STRING', description: d });
+    const f = (name, description, props = {}, required = []) => ({
+      name, description,
+      parameters: { type: 'OBJECT', properties: props, ...(required.length ? { required } : {}) }
+    });
+    const list = [
+      f('buscar_artigos', 'Busca artigos científicos no arXiv (arxiv.org). Use sempre que pedirem artigo, paper ou pesquisa acadêmica.',
+        { assunto: S('Assunto dos artigos, em português ou inglês'), quantidade: { type: 'INTEGER', description: 'Quantos artigos (1 a 5)' } }, ['assunto']),
+      f('pesquisar_web', 'Pesquisa na web e devolve títulos, sites e trechos.', { consulta: S('O que pesquisar') }, ['consulta']),
+      f('ler_pagina', 'Lê o conteúdo de uma página da web.', { url: S('Endereço completo da página') }, ['url']),
+      f('salvar_arquivo_markdown', 'Salva um arquivo Markdown (.md) que a pessoa pode baixar. Escreva o conteúdo completo, com títulos e tópicos.',
+        { titulo: S('Título do arquivo'), conteudo: S('Conteúdo completo em Markdown') }, ['titulo', 'conteudo']),
+      f('abrir_site', 'Abre um site numa nova aba do navegador da pessoa.', { url: S('Endereço do site') }, ['url']),
+    ];
+    if (!this.isWeb) {
+      list.push(
+        f('abrir_aplicativo_no_pc', 'Abre um aplicativo do Windows (calculadora, bloco de notas, vscode, explorer, paint...).', { nome: S('Nome do aplicativo') }, ['nome']),
+        f('telemetria_do_pc', 'Mostra uso de CPU, memória e disco do PC.'),
+        f('executar_comando_no_pc', 'Executa um comando no PowerShell/CMD do PC (comandos perigosos pedem confirmação).', { comando: S('Comando') }, ['comando'])
+      );
+    }
+    return list;
+  }
+
+  /** Roda as funções pedidas pelo Live no servidor e devolve o resultado. */
+  async runLiveTools(calls) {
+    const labels = {
+      buscar_artigos: 'Buscando artigos no arXiv', pesquisar_web: 'Pesquisando na web', ler_pagina: 'Lendo a página',
+      salvar_arquivo_markdown: 'Salvando arquivo Markdown', abrir_site: 'Abrindo site', abrir_aplicativo_no_pc: 'Abrindo aplicativo',
+      telemetria_do_pc: 'Lendo a telemetria do PC', executar_comando_no_pc: 'Executando comando'
+    };
+    let sessionKey = null;
+    try { sessionKey = sessionStorage.getItem('jarvis_key_google'); } catch (e) {}
+    const responses = await Promise.all(calls.map(async (c) => {
+      const label = labels[c.name] || c.name;
+      this.logTerminal(`[LIVE · FUNÇÃO]: ${label} ${c.args ? JSON.stringify(c.args).slice(0, 120) : ''}`, 'cmd');
+      try { this.showToolBanner(label, 'modo Live'); } catch (e) {}
+      let result;
+      try {
+        const res = await fetch('/api/live/tool', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: c.name, args: c.args || {}, session_key: sessionKey, autonomous: !!(this.autonomousToggle && this.autonomousToggle.checked) })
+        });
+        result = await res.json();
+      } catch (e) {
+        result = { ok: false, erro: 'Falha de conexão com o servidor do Atom.' };
+      }
+      // Efeitos no navegador
+      if (result && result.client_action === 'open_url' && result.url) window.open(result.url, '_blank', 'noopener');
+      if (c.name === 'salvar_arquivo_markdown' && result && result.ok) {
+        const url = result.content
+          ? URL.createObjectURL(new Blob([result.content], { type: 'text/markdown;charset=utf-8' }))
+          : result.download_url;
+        const holder = this.appendStreamingMessage();
+        holder.updateContent(`Arquivo Markdown salvo: **${result.titulo || result.arquivo}**`);
+        try { holder.appendReportCreatedCard(result.arquivo, url); } catch (e) {}
+        this.logTerminal(`[ARQUIVO MARKDOWN SALVO]: ${result.arquivo}`, 'sys');
+        this.loadResearches();
+        delete result.content; // não precisa mandar o arquivo inteiro de volta para o Gemini
+      }
+      return { id: c.id, name: c.name, response: { result } };
+    }));
+    try { this.hideToolBanner(); } catch (e) {}
+    this.live.sendToolResponse(responses);
   }
 
   toggleLive() {
@@ -1725,7 +1801,9 @@ class JarvisApp {
       'Fale sempre em português do Brasil, de forma natural, simpática e curta, como numa conversa falada: frases curtas, sem listas, sem markdown e sem ler links em voz alta.',
       'Se a pessoa começar a falar enquanto você fala, pare e escute.',
       'Para fatos atuais, use a busca do Google e diga de qual site veio a informação.',
-      'Se pedirem artigos científicos ou para salvar um arquivo Markdown, explique que isso funciona no modo normal (com o Live desligado).',
+      'Você tem funções: buscar_artigos (artigos científicos no arXiv; "artigo" sempre quer dizer isso), pesquisar_web, ler_pagina, salvar_arquivo_markdown (escreva o conteúdo completo em Markdown) e abrir_site.' + (this.isWeb ? '' : ' No PC também: abrir_aplicativo_no_pc, telemetria_do_pc e executar_comando_no_pc.'),
+      'Use as funções sempre que pedirem essas coisas, avise rapidinho que vai fazer ("vou buscar no arXiv") e, ao responder, diga o site de onde veio cada fonte.',
+      '"Arquivo X" ou "archive" na fala é o arXiv; "dossiê" ou "do CI" é arquivo Markdown.',
       this.isScreenSharing ? 'A pessoa está compartilhando a tela com você: você recebe imagens dela de tempos em tempos.' : '',
       recent ? `Conversa até agora:\n${recent}` : ''
     ].filter(Boolean).join('\n');
@@ -1742,16 +1820,20 @@ class JarvisApp {
     clearTimeout(this.resumeTimer);
 
     this.liveOn = true;
+    this.audio.blocked = true; // trava a fala normal enquanto o Live estiver ligado
     document.documentElement.dataset.live = '1';
     this.updateLiveUi();
     this.updateMicBtnState();
     this.logTerminal('[LIVE]: ligando o modo Live (Gemini). Fale à vontade; se você falar, ele para para ouvir. Esc ou L desliga.', 'cmd');
     let sessionKey = null;
     try { sessionKey = sessionStorage.getItem('jarvis_key_google'); } catch (e) {}
-    await this.live.start({ voice: this.audio.geminiVoice || 'Fenrir', systemPrompt: this.liveSystemPrompt(), sessionKey });
+    const voice = this.audio.geminiVoice || 'Fenrir';
+    let native = false;
+    try { native = localStorage.getItem('atom_live_nativo') === '1'; } catch (e) {}
+    await this.live.start({ voice, systemPrompt: this.liveSystemPrompt(), sessionKey, native, functions: this.liveFunctions() });
     if (!this.liveOn) return;
     if (this.live.active) {
-      this.logTerminal(`[LIVE]: conectado (${this.live.model}).`, 'sys');
+      this.logTerminal(`[LIVE]: conectado (${this.live.model}), voz ${voice}${/native-audio/.test(this.live.model || '') ? ' (áudio nativo, soa diferente do modo normal)' : ' (mesma voz do modo normal)'}.`, 'sys');
       const t = document.getElementById('speech-transcript');
       if (t) t.innerText = 'Live ligado, pode falar';
       clearInterval(this.liveFrameTimer);
@@ -1764,6 +1846,7 @@ class JarvisApp {
   stopLive(silent = false) {
     if (!this.liveOn && !silent) return;
     this.liveOn = false;
+    this.audio.blocked = false;
     delete document.documentElement.dataset.live;
     clearInterval(this.liveFrameTimer);
     this.live.stop(true);
@@ -1810,7 +1893,15 @@ class JarvisApp {
   /**
    * BOTÃO [+]: Para o JARVIS imediatamente e abre o microfone para escutar o operador.
    */
+  liveBlockedNotice() {
+    const now = Date.now();
+    if (now - (this.lastLiveNotice || 0) < 3000) return;
+    this.lastLiveNotice = now;
+    this.logTerminal('[LIVE]: o modo Live está ligado, então o microfone normal fica travado. Fale direto; para usar o modo normal, desligue o Live (L ou Esc).', 'sys');
+  }
+
   async stopAndListen() {
+    if (this.liveOn) { this.liveBlockedNotice(); return; }
     // 1. Interromper geração e fala
     if (this.currentAbortController) {
       try {
@@ -2020,7 +2111,7 @@ class JarvisApp {
 
     const mark = () => {
       const natural = this.audio.voiceEngine === 'natural';
-      document.querySelectorAll('.atom-seg-btn').forEach((b) => {
+      document.querySelectorAll('.atom-seg-btn[data-engine]').forEach((b) => {
         const on = b.dataset.engine === this.audio.voiceEngine;
         b.classList.toggle('active', on);
         b.setAttribute('aria-checked', on ? 'true' : 'false');
@@ -2033,12 +2124,34 @@ class JarvisApp {
         : 'Vozes instaladas no seu navegador. As marcadas como "mais natural" costumam soar melhor (no Edge, as "Online (Natural)").';
       grid.querySelectorAll('.atom-voice-card').forEach((c) => c.classList.toggle('active', c.dataset.voice === this.audio.geminiVoice));
     };
-    document.querySelectorAll('.atom-seg-btn').forEach((b) => b.addEventListener('click', () => {
+    document.querySelectorAll('.atom-seg-btn[data-engine]').forEach((b) => b.addEventListener('click', () => {
       this.audio.voiceEngine = b.dataset.engine;
       store('atom_voz_motor', b.dataset.engine);
       mark();
     }));
     mark();
+
+    // Voz no modo Live: o modelo de áudio nativo interpreta a voz do jeito dele
+    // (a Fenrir soa diferente); o modelo "meio a meio" fica mais perto da voz do modo normal.
+    const liveDesc = document.getElementById('live-voice-desc');
+    const markLive = () => {
+      let nativo = false;
+      try { nativo = localStorage.getItem('atom_live_nativo') === '1'; } catch (e) {}
+      document.querySelectorAll('.atom-seg-btn[data-live-nativo]').forEach((b) => {
+        const on = (b.dataset.liveNativo === '1') === nativo;
+        b.classList.toggle('active', on);
+        b.setAttribute('aria-checked', on ? 'true' : 'false');
+      });
+      if (liveDesc) liveDesc.innerText = nativo
+        ? 'Modelo de áudio nativo: responde mais rápido e com mais emoção, mas recria a voz do jeito dele, então a Fenrir fica diferente da do modo normal.'
+        : 'Usa um modelo Live que fala com as mesmas vozes do Gemini do modo normal, então a Fenrir soa igual. Vale a partir da próxima vez que ligar o Live.';
+    };
+    document.querySelectorAll('.atom-seg-btn[data-live-nativo]').forEach((b) => b.addEventListener('click', () => {
+      store('atom_live_nativo', b.dataset.liveNativo);
+      markLive();
+      if (this.liveOn) this.logTerminal('[LIVE]: a voz nova vale quando você ligar o Live de novo.', 'sys');
+    }));
+    markLive();
   }
 
   showVoiceError(err) {
