@@ -130,6 +130,52 @@ def best_tts_model(client, key: str = "") -> str:
     _tts_model_cache[key] = best
     return best
 
+_live_model_cache: Dict[str, str] = {}
+
+
+def best_live_model(client, key: str = "") -> str:
+    """Modelo do Gemini Live (conversa por voz em tempo real) mais novo que a chave libera.
+    Prefere os de áudio nativo, que soam mais naturais e deixam interromper falando."""
+    if os.environ.get("ATOM_LIVE_MODEL"):
+        return os.environ["ATOM_LIVE_MODEL"]
+    if key in _live_model_cache:
+        return _live_model_cache[key]
+    import re as _re
+    best, best_score = "gemini-2.5-flash-native-audio-preview-09-2025", -1.0
+    try:
+        for m in client.models.list():
+            name = (getattr(m, "name", "") or "").replace("models/", "")
+            actions = getattr(m, "supported_actions", None) or []
+            low = name.lower()
+            if "bidiGenerateContent" not in actions or not low.startswith("gemini"):
+                continue
+            mv = _re.search(r"gemini-(\d+(?:\.\d+)?)", low)
+            score = (float(mv.group(1)) if mv else 0.0) + (5 if "native-audio" in low else 0) + (0.01 if "flash" in low else 0)
+            if score > best_score:
+                best, best_score = name, score
+    except Exception as e:
+        logger.warning(f"Não consegui listar modelos Live do Gemini: {e}")
+    _live_model_cache[key] = best
+    return best
+
+
+def live_ephemeral_token(key: str) -> str:
+    """Token de uso único (vale 30 min, precisa conectar em 2 min) para o navegador abrir o Live
+    sem nunca ver a chave guardada na Vercel."""
+    import datetime as _dt
+    from google import genai
+    from google.genai import types
+    client = genai.Client(api_key=key, http_options=types.HttpOptions(api_version="v1alpha"))
+    now = _dt.datetime.now(tz=_dt.timezone.utc)
+    token = client.auth_tokens.create(config={
+        "uses": 1,
+        "expire_time": now + _dt.timedelta(minutes=30),
+        "new_session_expire_time": now + _dt.timedelta(minutes=2),
+        "http_options": {"api_version": "v1alpha"},
+    })
+    return token.name
+
+
 _best_flash_cache: Dict[str, str] = {}
 
 

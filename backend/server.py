@@ -192,6 +192,29 @@ def text_to_speech(req: TTSRequest):
         return JSONResponse({"success": False, "error": str(e)[:300]}, status_code=502)
 
 
+class LiveSessionRequest(BaseModel):
+    session_key: Optional[str] = None
+
+
+@app.post("/api/live/session")
+def live_session(req: LiveSessionRequest):
+    """Prepara o modo Live (voz em tempo real com o Gemini). O navegador conecta direto no Google:
+    com a chave colada na aba ele usa a própria chave; com a chave da Vercel recebe um token de uso único."""
+    from fastapi.responses import JSONResponse
+    key = api_model_manager.resolve_api_key({"provider": "google", "env_var": "GEMINI_API_KEY"}, req.session_key)
+    if not key:
+        return JSONResponse({"success": False, "error": "O modo Live precisa de uma chave do Google AI Studio (Gemini)."}, status_code=400)
+    try:
+        from .core.api_client import genai_client, best_live_model, live_ephemeral_token
+        model = best_live_model(genai_client(key), key)
+        if req.session_key:
+            return {"success": True, "model": model, "auth": "key"}
+        return {"success": True, "model": model, "auth": "token", "token": live_ephemeral_token(key)}
+    except Exception as e:
+        logger.warning(f"[LIVE]: {e}")
+        return JSONResponse({"success": False, "error": f"Não consegui abrir o modo Live: {str(e)[:200]}"}, status_code=502)
+
+
 class ListModelsRequest(BaseModel):
     provider: str
     session_key: Optional[str] = None

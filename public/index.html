@@ -252,6 +252,11 @@
             <span class="mic-label" id="mic-btn-label">FALAR COM O ATOM</span>
           </button>
 
+          <button id="live-toggle-btn" class="hud-control-toggle atom-live-btn" title="Modo Live do Gemini: conversa por voz em tempo real; se você falar, ele para para ouvir (tecla L)">
+            <span class="toggle-icon"><svg class="ic" aria-hidden="true"><use href="#i-som"/></svg></span>
+            <span class="toggle-label" id="live-btn-label">MODO LIVE</span>
+          </button>
+
           <button id="tts-toggle-btn" class="hud-control-toggle active" title="Alternar resposta por voz (Text-To-Speech)">
             <span class="toggle-icon"><svg class="ic" aria-hidden="true"><use href="#i-som"/></svg></span>
             <span class="toggle-label" id="tts-label">VOZ ATIVADA</span>
@@ -262,6 +267,22 @@
             <span class="toggle-label" id="sfx-label">EFEITOS SONOROS ATIVADOS</span>
           </button>
         </div>
+
+        <!-- ATALHOS DE TECLADO -->
+        <details class="atom-shortcuts" id="atom-shortcuts" open>
+          <summary>ATALHOS</summary>
+          <dl>
+            <div><dt><kbd>Espaço</kbd> segure</dt><dd>fala enquanto segura</dd></div>
+            <div><dt><kbd>Espaço</kbd> toque</dt><dd>ouve até você calar</dd></div>
+            <div><dt><kbd>Esc</kbd></dt><dd>para tudo, sem mandar</dd></div>
+            <div><dt><kbd>L</kbd></dt><dd>modo Live</dd></div>
+            <div><dt><kbd>Enter</kbd></dt><dd>envia</dd></div>
+            <div><dt><kbd>Shift</kbd><kbd>Enter</kbd></dt><dd>nova linha</dd></div>
+            <div><dt><kbd>NumLock</kbd></dt><dd>microfone</dd></div>
+            <div><dt><kbd>+</kbd> numérico</dt><dd>para e ouve</dd></div>
+            <div><dt>Voz: "pare"</dt><dd>para o Atom</dd></div>
+          </dl>
+        </details>
 
         <!-- VOICE TRANSCRIPTION BANNER -->
         <div class="speech-banner hidden" id="speech-banner">
@@ -350,7 +371,7 @@
               <span class="toggle-text">CONVERSA CONTÍNUA</span>
             </label>
 
-            <span class="composer-hint" id="composer-hint">[Enter] envia · segure [Espaço] para falar · [Esc] para</span>
+            <span class="composer-hint" id="composer-hint">[Enter] envia · [Shift+Enter] nova linha</span>
           </div>
 
           <div class="composer-input-row">
@@ -358,7 +379,7 @@
               id="chat-input" 
               class="hud-textarea" 
               rows="1" 
-              placeholder="Transmita suas ordens para o A.T.O.M. aqui..."
+              placeholder="Escreva para o Atom..."
               autocomplete="off"
             ></textarea>
 

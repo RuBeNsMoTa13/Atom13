@@ -229,7 +229,7 @@ export class JarvisAudio {
           if (chatInput) {
             chatInput.value = text;
             chatInput.style.height = 'auto';
-            chatInput.style.height = `${Math.min(chatInput.scrollHeight, 120)}px`;
+            chatInput.style.height = `${Math.min(chatInput.scrollHeight, 220)}px`;
           }
 
           if (transcriptEl) {
@@ -318,7 +318,7 @@ export class JarvisAudio {
       this.ensureAudioContext();
       const source = this.audioCtx.createMediaStreamSource(this.micStream);
       this.analyser = this.audioCtx.createAnalyser();
-      this.analyser.fftSize = 256;
+      this.analyser.fftSize = 2048;
       source.connect(this.analyser);
       this.startVolumeMonitor();
     } catch (e) {
@@ -367,24 +367,21 @@ export class JarvisAudio {
   startVolumeMonitor() {
     if (!this.analyser) return;
 
-    const dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+    const dataArray = new Float32Array(this.analyser.fftSize);
     const transcriptEl = document.getElementById('speech-transcript');
     let silenceCount = 0;
     let zeroCount = 0;
+    let floor = null; // ruído de fundo do ambiente, aprendido enquanto ouve
 
     const checkVolume = () => {
       if (!this.isListening) return;
 
-      this.analyser.getByteFrequencyData(dataArray);
-      let sum = 0;
-      for (let i = 0; i < dataArray.length; i++) {
-        sum += dataArray[i];
-      }
-      const avg = sum / dataArray.length;
-      const vol = Math.min(100, Math.round(avg / 1.8));
+      const vol = JarvisAudio.micLevel(this.analyser, dataArray);
+      floor = floor === null ? vol : Math.min(floor + 0.15, vol);
+      this.lastMicLevel = vol;
 
-      // Se o volume estiver captando som (> 8%)
-      if (vol > 8) {
+      // Fala = bem acima do ruído de fundo
+      if (vol > Math.max(18, floor + 14)) {
         this.hasSpoken = true;
         silenceCount = 0;
         zeroCount = 0;
@@ -402,7 +399,7 @@ export class JarvisAudio {
             return;
           }
           if (zeroCount === 30 && transcriptEl) { // 3 segundos de silêncio absoluto
-            transcriptEl.innerText = `● Microfone ativo [Vol: 0%] - Verifique se não está mudo no Windows ou fale mais perto`;
+            transcriptEl.innerText = `● Microfone ativo [Vol: ${vol}%] - Ainda não ouvi fala. Verifique se não está mudo no Windows ou fale mais perto`;
           }
         } else {
           silenceCount++;
@@ -527,7 +524,7 @@ export class JarvisAudio {
             if (chatInput) {
               chatInput.value = finalSpoken;
               chatInput.style.height = 'auto';
-              chatInput.style.height = `${Math.min(chatInput.scrollHeight, 120)}px`;
+              chatInput.style.height = `${Math.min(chatInput.scrollHeight, 220)}px`;
             }
 
             if (this.onStateChange) this.onStateChange('IDLE');
@@ -589,24 +586,35 @@ export class JarvisAudio {
     return new Blob([buffer], { type: 'audio/wav' });
   }
 
+  /**
+   * Volume do microfone de 0 a 100 em escala de decibéis (como os medidores de áudio):
+   * silêncio fica perto de 0, fala normal entre 50 e 80, grito perto de 100.
+   * A conta antiga (média das frequências) quase nunca passava de 20%.
+   */
+  static micLevel(analyser, buf) {
+    analyser.getFloatTimeDomainData(buf);
+    let sum = 0;
+    for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
+    const rms = Math.sqrt(sum / buf.length);
+    const db = 20 * Math.log10(rms + 1e-8);
+    return Math.max(0, Math.min(100, Math.round((db + 60) * 2)));
+  }
+
   async testMicrophoneHardware(onProgress, onResult) {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       this.ensureAudioContext();
       const source = this.audioCtx.createMediaStreamSource(stream);
       const analyser = this.audioCtx.createAnalyser();
-      analyser.fftSize = 256;
+      analyser.fftSize = 2048;
       source.connect(analyser);
 
-      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      const dataArray = new Float32Array(analyser.fftSize);
       let maxVol = 0;
       let count = 0;
 
       const timer = setInterval(() => {
-        analyser.getByteFrequencyData(dataArray);
-        let sum = 0;
-        for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
-        const pct = Math.round((sum / dataArray.length) / 2.55);
+        const pct = JarvisAudio.micLevel(analyser, dataArray);
         if (pct > maxVol) maxVol = pct;
         count++;
 

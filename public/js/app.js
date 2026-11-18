@@ -10,6 +10,7 @@ import { Conversas } from './conversas.js';
 /** Ícone próprio (sprite em index.html). */
 const ic = (n) => `<svg class="ic" aria-hidden="true"><use href="#i-${n}"/></svg>`;
 import { JarvisAudio } from './audio.js';
+import { AtomLive } from './live.js';
 import { JarvisAPI } from './api.js';
 
 class JarvisApp {
@@ -194,7 +195,7 @@ class JarvisApp {
     // Auto-ajustar altura do textarea
     this.chatInput.addEventListener('input', () => {
       this.chatInput.style.height = 'auto';
-      this.chatInput.style.height = `${Math.min(this.chatInput.scrollHeight, 120)}px`;
+      this.chatInput.style.height = `${Math.min(this.chatInput.scrollHeight, 220)}px`;
     });
 
     // Microfone
@@ -202,7 +203,7 @@ class JarvisApp {
     // Toque: ouve e para sozinho quando você se cala. Segurar: ouve enquanto estiver apertado.
     // Com o Atom falando ou respondendo: ele para e já começa a ouvir.
     const stopBtn = document.getElementById('composer-stop-btn');
-    if (stopBtn) stopBtn.addEventListener('click', () => { this.interruptJarvis(); this.updateMicBtnState(); });
+    if (stopBtn) stopBtn.addEventListener('click', () => { if (this.liveOn) this.stopLive(); else this.interruptJarvis(); this.updateMicBtnState(); });
 
     [this.micBtn, this.composerMicBtn].filter(Boolean).forEach((btn) => {
       btn.addEventListener('pointerdown', (e) => {
@@ -217,6 +218,8 @@ class JarvisApp {
       btn.addEventListener('click', (e) => e.preventDefault());
     });
     this.setupConversaMode();
+    this.setupLive();
+    this.setupShortcutsPanel();
     this.audio.onMouth = (v) => this.reactor.setAudioLevel(v);
 
     // Toggles de Áudio
@@ -249,7 +252,20 @@ class JarvisApp {
 
       if (e.code === 'Space' && !isTyping) {
         e.preventDefault();
-        if (!e.repeat) this.talkPress();
+        if (!e.repeat && !this.liveOn) this.talkPress();
+        return;
+      }
+
+      // L liga e desliga o modo Live
+      if ((e.key === 'l' || e.key === 'L') && !isTyping && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        this.toggleLive();
+        return;
+      }
+
+      if (e.key === 'Escape' && this.liveOn) {
+        e.preventDefault();
+        this.stopLive();
         return;
       }
 
@@ -651,7 +667,7 @@ class JarvisApp {
 
     const stopBtn = document.getElementById('composer-stop-btn');
     if (stopBtn && this.audio) {
-      const active = isListening || this.audio.isTranscribing || this.atomBusy();
+      const active = this.liveOn || isListening || this.audio.isTranscribing || this.atomBusy();
       stopBtn.classList.toggle('hidden', !active);
     }
 
@@ -1328,7 +1344,7 @@ class JarvisApp {
     // 1. Escrever visivelmente no campo de entrada do chat
     this.chatInput.value = clean;
     this.chatInput.style.height = 'auto';
-    this.chatInput.style.height = `${Math.min(this.chatInput.scrollHeight, 120)}px`;
+    this.chatInput.style.height = `${Math.min(this.chatInput.scrollHeight, 220)}px`;
     // sem focar o campo: assim o Espaço continua sendo o botão de falar
 
     this.logTerminal(`[COMANDO DE VOZ]: "${clean}" -> Enviando ordem...`, 'cmd');
@@ -1375,6 +1391,17 @@ class JarvisApp {
 
     const text = this.chatInput.value.trim();
     if (!text) return;
+
+    // No modo Live, o que você escreve vai para a mesma conversa de voz
+    if (this.liveOn) {
+      this.chatInput.value = '';
+      this.chatInput.style.height = 'auto';
+      this.appendMessage('user', text);
+      this.messages.push({ role: 'user', content: text });
+      this.saveConversation();
+      this.live.sendText(text);
+      return;
+    }
 
     this.chatInput.value = '';
     this.chatInput.style.height = 'auto';
@@ -1559,6 +1586,7 @@ class JarvisApp {
 
   /** Apertou o microfone (ou Espaço). */
   talkPress() {
+    if (this.liveOn) return; // no Live o microfone já fica aberto
     if (this.spaceDown) return;
     this.spaceDown = true;
     this.pressAt = Date.now();
@@ -1638,6 +1666,129 @@ class JarvisApp {
       this.audio.holdToTalk = false;
       this.audio.startListening().then(() => this.updateMicBtnState());
     }, 400);
+  }
+
+  /* ==========================================================================
+     MODO LIVE (Gemini Live): voz em tempo real, você interrompe falando
+     ========================================================================== */
+
+  setupLive() {
+    this.liveOn = false;
+    this.liveBtn = document.getElementById('live-toggle-btn');
+    if (this.liveBtn) this.liveBtn.addEventListener('click', () => this.toggleLive());
+    const banner = () => document.getElementById('speech-banner');
+    const say = (txt) => { const t = document.getElementById('speech-transcript'); if (t) t.innerText = txt; const b = banner(); if (b) b.classList.remove('hidden'); };
+    this.live = new AtomLive({
+      onState: (st) => {
+        if (!this.liveOn) return;
+        if (st === 'CONNECTING') { this.reactor.setState('THINKING'); say('Conectando no Gemini Live...'); }
+        else if (st === 'LISTENING') { this.reactor.setState('LISTENING'); }
+        else if (st === 'SPEAKING') { this.reactor.setState('SPEAKING'); }
+        this.updateLiveUi();
+      },
+      onUserText: (txt) => say(`Você: "${txt}"`),
+      onAtomText: (txt) => say(`Atom: ${txt}`),
+      onTurn: (u, a) => {
+        if (u) { this.appendMessage('user', u); this.messages.push({ role: 'user', content: u }); }
+        if (a) { this.appendMessage('assistant', a); this.messages.push({ role: 'assistant', content: a }); }
+        this.saveConversation();
+      },
+      onMouth: (v) => this.reactor.setAudioLevel(v),
+      onMicLevel: (v) => {
+        const t = document.getElementById('speech-transcript');
+        if (t && this.liveOn && !this.live.playing && /^Live/.test(t.innerText)) t.innerText = `Live ligado, pode falar [Vol: ${v}%]`;
+        this.liveLevel = v;
+      },
+      onError: (msg) => {
+        this.logTerminal(`[LIVE]: ${msg}`, 'sys');
+        say(msg);
+        if (!this.live.active) this.stopLive(true);
+      },
+      onClose: (reason) => {
+        this.logTerminal(`[LIVE]: ${reason}`, 'sys');
+        this.stopLive(true);
+      }
+    });
+  }
+
+  toggleLive() {
+    if (this.liveOn) this.stopLive();
+    else this.startLive();
+  }
+
+  liveSystemPrompt() {
+    const recent = (this.messages || []).slice(-8)
+      .map((m) => `${m.role === 'user' ? 'Operador' : 'Atom'}: ${String(m.content).replace(/\s+/g, ' ').slice(0, 400)}`)
+      .join('\n');
+    return [
+      'Você é o A.T.O.M., assistente de voz criado por Rubens Mota. O nome é MOTA, o sobrenome dele, ao contrário.',
+      'Fale sempre em português do Brasil, de forma natural, simpática e curta, como numa conversa falada: frases curtas, sem listas, sem markdown e sem ler links em voz alta.',
+      'Se a pessoa começar a falar enquanto você fala, pare e escute.',
+      'Para fatos atuais, use a busca do Google e diga de qual site veio a informação.',
+      'Se pedirem artigos científicos ou para salvar um arquivo Markdown, explique que isso funciona no modo normal (com o Live desligado).',
+      this.isScreenSharing ? 'A pessoa está compartilhando a tela com você: você recebe imagens dela de tempos em tempos.' : '',
+      recent ? `Conversa até agora:\n${recent}` : ''
+    ].filter(Boolean).join('\n');
+  }
+
+  async startLive() {
+    if (this.liveOn) return;
+    // Para o modo normal antes: nada de duas vozes ao mesmo tempo
+    if (this.currentAbortController) { try { this.currentAbortController.abort(); } catch (e) {} this.currentAbortController = null; }
+    this.isGenerating = false;
+    this.audio.stopSpeaking(true);
+    if (this.audio.isListening) { this.audio.discardNext = true; this.audio.stopListening(); }
+    this.conversaPaused = true;
+    clearTimeout(this.resumeTimer);
+
+    this.liveOn = true;
+    document.documentElement.dataset.live = '1';
+    this.updateLiveUi();
+    this.updateMicBtnState();
+    this.logTerminal('[LIVE]: ligando o modo Live (Gemini). Fale à vontade; se você falar, ele para para ouvir. Esc ou L desliga.', 'cmd');
+    let sessionKey = null;
+    try { sessionKey = sessionStorage.getItem('jarvis_key_google'); } catch (e) {}
+    await this.live.start({ voice: this.audio.geminiVoice || 'Fenrir', systemPrompt: this.liveSystemPrompt(), sessionKey });
+    if (!this.liveOn) return;
+    if (this.live.active) {
+      this.logTerminal(`[LIVE]: conectado (${this.live.model}).`, 'sys');
+      const t = document.getElementById('speech-transcript');
+      if (t) t.innerText = 'Live ligado, pode falar';
+      clearInterval(this.liveFrameTimer);
+      this.liveFrameTimer = setInterval(() => {
+        if (this.liveOn && this.isScreenSharing) this.live.sendFrame(this.captureScreenFrame());
+      }, 1500);
+    }
+  }
+
+  stopLive(silent = false) {
+    if (!this.liveOn && !silent) return;
+    this.liveOn = false;
+    delete document.documentElement.dataset.live;
+    clearInterval(this.liveFrameTimer);
+    this.live.stop(true);
+    this.reactor.setAudioLevel(null);
+    this.reactor.setState('IDLE');
+    const b = document.getElementById('speech-banner');
+    if (b && !silent) b.classList.add('hidden');
+    this.updateLiveUi();
+    this.updateMicBtnState();
+    if (!silent) this.logTerminal('[LIVE]: modo Live desligado.', 'sys');
+  }
+
+  updateLiveUi() {
+    if (!this.liveBtn) return;
+    this.liveBtn.classList.toggle('active', this.liveOn);
+    const lbl = document.getElementById('live-btn-label');
+    if (lbl) lbl.textContent = this.liveOn ? 'LIVE LIGADO' : 'MODO LIVE';
+  }
+
+  /** Lista de atalhos no canto inferior esquerdo (aberta ou fechada fica salva no navegador). */
+  setupShortcutsPanel() {
+    const box = document.getElementById('atom-shortcuts');
+    if (!box) return;
+    try { if (localStorage.getItem('atom_atalhos') === '0') box.open = false; } catch (e) {}
+    box.addEventListener('toggle', () => { try { localStorage.setItem('atom_atalhos', box.open ? '1' : '0'); } catch (e) {} });
   }
 
   /**
