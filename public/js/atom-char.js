@@ -9,7 +9,7 @@ const BODY_KEY = 'atom_corpo';
 const SLEEP_AFTER_MS = 90 * 1000;
 
 const LABELS = {
-  parado:   ['ONLINE', 'A.T.O.M.'],
+  parado:   ['ONLINE', 'ATOM'],
   ouvindo:  ['MIC ATIVO', 'OUVINDO'],
   pensando: ['PROCESSANDO', 'PENSANDO'],
   falando:  ['RESPONDENDO', 'FALANDO'],

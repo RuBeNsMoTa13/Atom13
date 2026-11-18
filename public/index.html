@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="A.T.O.M. - Artificial Tactical Operating Matrix por Rubens Mota. Sistema Tático Híbrido com Visão Multimodal e Pesquisa Aprofundada.">
+  <meta name="description" content="Atom por Rubens Mota. Assistente híbrido com visão multimodal e Pesquisa Aprofundada.">
   <meta name="theme-color" content="#ef4444">
-  <title>A.T.O.M. // Artificial Tactical Operating Matrix</title>
+  <title>Atom</title>
   
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/svg+xml" href="icons/atom-face.svg">
   <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   
-  <!-- Google Fonts: Space Grotesk (Interface Tática) & JetBrains Mono (Telemetria & HUD) -->
+  <!-- Google Fonts: Space Grotesk (Interface) & JetBrains Mono (Telemetria & HUD) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -137,7 +137,7 @@
           <!-- CPU GAUGE (A.T.O.M. PROCESS) -->
           <div class="telemetry-card so-local">
             <div class="card-head">
-              <span>CPU (A.T.O.M.)</span>
+              <span>CPU (Atom)</span>
               <span id="cpu-val" class="metric-highlight">0.0%</span>
             </div>
             <div class="hud-progress-bar">
@@ -152,7 +152,7 @@
           <!-- RAM GAUGE (A.T.O.M. MEMORY) -->
           <div class="telemetry-card so-local">
             <div class="card-head">
-              <span>RAM (A.T.O.M.)</span>
+              <span>RAM (Atom)</span>
               <span id="ram-val" class="metric-highlight">0 MB</span>
             </div>
             <div class="hud-progress-bar">
@@ -186,7 +186,7 @@
             </div>
             <div class="engine-meta">
               <span id="ollama-subinfo">RAM IA: Inativo</span>
-              <span id="engine-model-tag">A.T.O.M. / Híbrido</span>
+              <span id="engine-model-tag">Atom / Híbrido</span>
             </div>
           </div>
         </div>
@@ -200,10 +200,10 @@
           <div class="quick-btn-group">
             <button class="quick-cmd-btn so-local" data-prompt="Abra a calculadora"><svg class="ic" aria-hidden="true"><use href="#i-calculadora"/></svg> Abrir Calculadora</button>
             <button class="quick-cmd-btn so-local" data-prompt="Abra o bloco de notas"><svg class="ic" aria-hidden="true"><use href="#i-nota"/></svg> Bloco de Notas</button>
-            <button class="quick-cmd-btn so-local" data-prompt="A.T.O.M., qual o status do sistema e uso de hardware?"><svg class="ic" aria-hidden="true"><use href="#i-grafico"/></svg> Diagnóstico do sistema</button>
-            <button class="quick-cmd-btn" data-prompt="A.T.O.M., pesquise artigos científicos no arXiv sobre quantum computing e faça um resumo"><svg class="ic" aria-hidden="true"><use href="#i-artigo"/></svg> Pesquisar artigos (arXiv)</button>
+            <button class="quick-cmd-btn so-local" data-prompt="Atom, qual o status do sistema e uso de hardware?"><svg class="ic" aria-hidden="true"><use href="#i-grafico"/></svg> Diagnóstico do sistema</button>
+            <button class="quick-cmd-btn" data-prompt="Atom, pesquise artigos científicos no arXiv sobre quantum computing e faça um resumo"><svg class="ic" aria-hidden="true"><use href="#i-artigo"/></svg> Pesquisar artigos (arXiv)</button>
             <button class="quick-cmd-btn" data-prompt="Salve um arquivo Markdown sobre as novidades de inteligência artificial"><svg class="ic" aria-hidden="true"><use href="#i-salvar"/></svg> Salvar arquivo Markdown</button>
-            <button class="quick-cmd-btn" data-prompt="A.T.O.M., pesquise na web as novidades sobre tecnologia hoje e faça um resumo"><svg class="ic" aria-hidden="true"><use href="#i-globo"/></svg> Pesquisar notícias</button>
+            <button class="quick-cmd-btn" data-prompt="Atom, pesquise na web as novidades sobre tecnologia hoje e faça um resumo"><svg class="ic" aria-hidden="true"><use href="#i-globo"/></svg> Pesquisar notícias</button>
           </div>
         </div>
 
@@ -215,7 +215,7 @@
             <button id="clear-term-btn" class="term-action-btn">LIMPAR</button>
           </div>
           <div id="terminal-output" class="terminal-logs">
-            <div class="log-line sys">[SISTEMA] Matriz A.T.O.M. inicializada.</div>
+            <div class="log-line sys">[SISTEMA] Iniciando o Atom...</div>
             <div class="log-line sys">[SISTEMA] Arquitetura híbrida pronta (Visão + Nuvem + SO).</div>
           </div>
         </div>
@@ -229,7 +229,7 @@
           <div id="atom-char" class="atom-char s-parado" title="Clique no Atom"></div>
           <div class="reactor-core-info atom-core-info">
             <span class="core-subtitle" id="core-state-subtitle">ONLINE</span>
-            <h2 class="core-title" id="core-state-title">A.T.O.M.</h2>
+            <h2 class="core-title" id="core-state-title">Atom</h2>
             <div class="audio-wave-visualizer" id="audio-waves">
               <span class="wave-bar"></span>
               <span class="wave-bar"></span>
@@ -242,7 +242,7 @@
 
         <!-- VOICE & MULTIMODAL CONTROLS -->
         <div class="voice-controls-bar">
-          <button id="screen-share-btn" class="hud-control-toggle screen-btn" title="Compartilhar tela com o A.T.O.M. (Visão Multimodal)">
+          <button id="screen-share-btn" class="hud-control-toggle screen-btn" title="Compartilhar tela com o Atom (Visão Multimodal)">
             <span class="toggle-icon"><svg class="ic" aria-hidden="true"><use href="#i-olho"/></svg></span>
             <span class="toggle-label" id="screen-btn-label">ENXERGAR TELA</span>
           </button>
@@ -321,12 +321,12 @@
             <div class="msg-avatar"><span class="atom-av" aria-hidden="true"><i></i><i></i></span></div>
             <div class="msg-body">
               <div class="msg-meta">
-                <span class="msg-sender">A.T.O.M.</span>
+                <span class="msg-sender">Atom</span>
                 <span class="msg-time">AGORA</span>
                 <button class="copy-msg-btn" title="Copiar mensagem"><svg class="ic" aria-hidden="true"><use href="#i-copiar"/></svg> Copiar</button>
               </div>
               <div class="msg-content">
-                Matriz Tática A.T.O.M. inicializada e operacional sob o comando de Rubens Mota. 
+                Atom pronto, criado por Rubens Mota. 
                 Subsistemas neurais híbridos (Google Gemini / Groq Vision / Local), busca aprofundada com DuckDuckGo & arXiv, e visão de tela em tempo real ativos. 
                 Como posso assisti-lo nas operações agora?
               </div>
@@ -580,7 +580,7 @@
           <span class="settings-desc">Valores menores (0.1 - 0.3) são mais determinísticos e exatos; valores maiores (0.7 - 0.9) são mais criativos. Vale nos dois modos: vai junto em toda mensagem, tanto para a chave de API (Gemini, OpenAI, Groq...) quanto para o Ollama local.</span>
         </div>
 
-        <!-- SECTION: VOZ DO A.T.O.M. -->
+        <!-- SECTION: VOZ DO ATOM -->
         <div class="settings-section">
           <h4>VOZ DO ATOM</h4>
           <div class="atom-seg" role="radiogroup" aria-label="Tipo de voz">

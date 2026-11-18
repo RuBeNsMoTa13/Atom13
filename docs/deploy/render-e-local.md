@@ -7,7 +7,7 @@ Status: Atualizado
 
 # Guia de Deploy & Operação: Render (Cloud) & Windows (Local)
 
-Este documento orienta a configuração do ambiente, instalação de dependências e implantação do **A.T.O.M. (Artificial Tactical Operating Matrix)** tanto em ambiente local no Windows quanto na nuvem via Render / Docker.
+Este documento orienta a configuração do ambiente, instalação de dependências e implantação do **Atom** tanto em ambiente local no Windows quanto na nuvem via Render / Docker.
 
 ---
 
@@ -68,5 +68,5 @@ O Render injeta automaticamente a variável de ambiente `$PORT`, garantindo bind
 ## 3. Instalação PWA (Progressive Web App)
 
 Uma vez aberto no navegador (local ou via HTTPS no Render):
-- **No Google Chrome / Edge (Desktop):** Clique no ícone de instalação no lado direito da barra de endereços ("Instalar A.T.O.M.") para fixá-lo como um aplicativo tático na barra de tarefas do Windows.
+- **No Google Chrome / Edge (Desktop):** Clique no ícone de instalação no lado direito da barra de endereços ("Instalar A.T.O.M.") para fixá-lo como um aplicativo na barra de tarefas do Windows.
 - **No Android / iOS:** Acesse a URL gerada pelo Render, abra o menu do navegador e selecione **"Adicionar à Tela de Início"**.

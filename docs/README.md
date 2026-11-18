@@ -7,7 +7,7 @@ Status: Atualizado
 
 # Documentação & Auditoria — A.T.O.M.
 
-Bem-vindo ao índice central de governança, arquitetura e rastreabilidade técnica do **A.T.O.M. (Artificial Tactical Operating Matrix)** concebido e desenvolvido por **Rubens Mota**.
+Bem-vindo ao índice central de governança, arquitetura e rastreabilidade técnica do **Atom** concebido e desenvolvido por **Rubens Mota**.
 
 ---
 
@@ -15,9 +15,9 @@ Bem-vindo ao índice central de governança, arquitetura e rastreabilidade técn
 
 ### 1. Governança, Arquitetura & Backlog
 - 🏛️ **[Fonte Primária da Verdade (GEMINI.md)](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/GEMINI.md)** — Stack tecnológica, diretrizes invioláveis e visão geral do sistema.
-- 🎯 **[Backlog Tático & Status de Tarefas (docs/todo.md)](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/todo.md)** — Rastreabilidade oficial de tarefas concluídas e futuras expansões.
-- 📐 **[Arquitetura Geral do Sistema (docs/arquitetura/atom-tactical-os.md)](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/arquitetura/atom-tactical-os.md)** — Diagrama mermaid, componentes híbridos e orquestração.
-- 📋 **[Plano Tático dos 9 Passos (plano.md)](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/plano.md)** — Especificação e validação da migração completa.
+- 🎯 **[Backlog & Status de Tarefas (docs/todo.md)](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/todo.md)** — Rastreabilidade oficial de tarefas concluídas e futuras expansões.
+- 📐 **[Arquitetura Geral do Sistema (docs/arquitetura/atom.md)](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/arquitetura/atom.md)** — Diagrama mermaid, componentes híbridos e orquestração.
+- 📋 **[Plano dos 9 Passos (plano.md)](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/plano.md)** — Especificação e validação da migração completa.
 
 ### 2. Modelos de IA & Inteligência Neural
 - 🧠 **[Catálogo de Modelos de IA & Arquitetura Híbrida (docs/modelos/catalogo-e-ia.md)](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/modelos/catalogo-e-ia.md)** — Modelos cloud oficiais (Gemini Flash, Groq Vision), modelos locais via Ollama, matriz comparativa e segurança de chaves.
@@ -31,7 +31,7 @@ Bem-vindo ao índice central de governança, arquitetura e rastreabilidade técn
 - 🌐 **[Guia de Deploy: Render (Cloud) & Windows (Local) (docs/deploy/render-e-local.md)](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/deploy/render-e-local.md)** — Inicialização em 1 clique via `run_atom.bat`, manual no PowerShell, deploy no Render com `Procfile` e instalação PWA.
 
 ### 5. Design System & Interface Visual
-- 🎨 **[Especificação do Design System Dark Tactical Red (docs/design-system/dark-tactical-red.md)](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/design-system/dark-tactical-red.md)** — Tokens HSL/Hex, tipografia (Space Grotesk + JetBrains Mono), geometria tática 4px e animação do Reator Quântico 2D.
+- 🎨 **[Especificação do Design System escuro e vermelho (docs/design-system/escuro-e-vermelho.md)](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/design-system/escuro-e-vermelho.md)** — Tokens HSL/Hex, tipografia (Space Grotesk + JetBrains Mono), geometria 4px e animação do Reator Quântico 2D.
 
 ---
 

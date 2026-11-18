@@ -5,9 +5,9 @@ Commit: 7dce1c2
 Status: Atualizado
 -->
 
-# Especificação do Design System: Dark Tactical Red
+# Especificação do Design System: escuro e vermelho
 
-O **Design System Dark Tactical Red** foi concebido por Rubens Mota para dotar o **A.T.O.M.** de uma estética militar e futurista de alta precisão, priorizando ergonomia visual em ambientes de baixa luminosidade e máxima densidade informacional.
+O **Design System escuro e vermelho** foi concebido por Rubens Mota para dotar o **A.T.O.M.** de uma estética futurista de alta precisão, priorizando ergonomia visual em ambientes de baixa luminosidade e máxima densidade informacional.
 
 ---
 
@@ -17,7 +17,7 @@ Definidos em `:root` no arquivo [frontend/css/style.css](file:///c:/Users/Rubens
 
 ```css
 :root {
-  /* Fundos Táticos */
+  /* Fundos */
   --bg-space: #0a0a0a;            /* Espaço exterior e fundo primário */
   --bg-cockpit: #0d0d0d;          /* Cockpit central */
   --bg-panel: rgba(17, 17, 17, 0.92); /* Superfícies de vidro dos painéis */
@@ -30,8 +30,8 @@ Definidos em `:root` no arquivo [frontend/css/style.css](file:///c:/Users/Rubens
   --border-muted: #404040;        /* Linhas divisórias atenuadas */
   --red-border-subtle: #3b1515;   /* Borda vermelha de baixa saturação */
 
-  /* Acentos de Energia Tática */
-  --accent-red: #ef4444;          /* Vermelho tático primário */
+  /* Acentos de Energia */
+  --accent-red: #ef4444;          /* Vermelho primário */
   --accent-red-hover: #e11d1d;    /* Vermelho de ação/hover */
   --accent-glow: rgba(239, 68, 68, 0.35); /* Glow difuso */
   --red-bg-subtle: #1f0d0d;       /* Fundo sutil para badges e botões */
@@ -47,7 +47,7 @@ Definidos em `:root` no arquivo [frontend/css/style.css](file:///c:/Users/Rubens
 
 ---
 
-## 2. Tipografia Tática
+## 2. Tipografia
 
 O A.T.O.M. utiliza uma combinação harmoniosa de duas fontes do Google Fonts:
 
@@ -60,9 +60,9 @@ O A.T.O.M. utiliza uma combinação harmoniosa de duas fontes do Google Fonts:
 
 ---
 
-## 3. Cantoneiras Táticas & Geometria
+## 3. Cantoneiras & Geometria
 
-- **`border-radius: 4px` padronizado:** Cantos com raio fechado reforçam a estética militar e a sensação de equipamento de alta precisão.
+- **`border-radius: 4px` padronizado:** Cantos com raio fechado reforçam a estética e a sensação de equipamento de alta precisão.
 - **Cantoneiras nos 4 Vértices:** Painéis como `.hud-sidebar`, `.hud-centerstage`, `.hud-chat-panel`, `.hud-drawer` e `.hud-modal-window` utilizam pseudo-elementos `::before` e `::after` com bordas de `2px solid #ef4444` nos cantos superior-esquerdo e inferior-direito, simulando mirantes HUD.
 
 ---

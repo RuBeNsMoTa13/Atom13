@@ -1,17 +1,17 @@
-# ⚛️ A.T.O.M. — Artificial Tactical Operating Matrix
+# ⚛️ Atom
 
-> **Sistema Operacional Tático Híbrido com Inteligência Artificial Multimodal, Pesquisa Aprofundada & HUD de Comando**  
+> **Sistema Operacional Híbrido com Inteligência Artificial Multimodal, Pesquisa Aprofundada & HUD de Comando**  
 > **Concebido & Desenvolvido por:** Rubens Mota  
-> **Versão:** 2.0 (Produção Tática)  
-> **Design System:** Dark Tactical Red (`#0a0a0a` / `#ef4444`)
+> **Versão:** 2.0 (Produção)  
+> **Design System:** escuro e vermelho (`#0a0a0a` / `#ef4444`)
 
 ---
 
 ## 📋 Visão Geral
 
-O **A.T.O.M.** (*Artificial Tactical Operating Matrix*) é um sistema operacional com inteligência artificial híbrida adaptativa, projetado para execução nativa no **Windows Desktop** e deploy em escala em containers de nuvem (**Render / Docker**).
+O **A.T.O.M.** (Atom) é um sistema operacional com inteligência artificial híbrida adaptativa, projetado para execução nativa no **Windows Desktop** e deploy em escala em containers de nuvem (**Render / Docker**).
 
-O sistema conta com um cockpit HUD imersivo estilo militar/sci-fi com animação quântica em Canvas 2D, combinando percepção visual de tela em tempo real, pesquisa sintética em bases acadêmicas (**arXiv**) e web (**DuckDuckGo + Jina Reader**), automação de sistema operacional e exportação de dossiês em Markdown com download seguro.
+O sistema conta com um cockpit HUD imersivo estilo sci-fi com animação quântica em Canvas 2D, combinando percepção visual de tela em tempo real, pesquisa sintética em bases acadêmicas (**arXiv**) e web (**DuckDuckGo + Jina Reader**), automação de sistema operacional e exportação de dossiês em Markdown com download seguro.
 
 ---
 
@@ -23,7 +23,7 @@ O sistema conta com um cockpit HUD imersivo estilo militar/sci-fi com animação
 - Payload ultraleve (~150KB) injetado diretamente em modelos com visão computacional:
   - **Google Gemini** (`gemini-flash-latest`, `gemini-3.6-flash`) via `types.Part.from_bytes` e fallback REST `inline_data`.
   - **Groq Cloud Vision** (`meta-llama/llama-4-scout-17b-16e-instruct`) via data URL base64.
-- Badge flutuante tático no compositor indicando transmissão ativa.
+- Badge flutuante no compositor indicando transmissão ativa.
 
 ### 2. 🔬 Pesquisa Aprofundada & Síntese Científica
 - **Web em Tempo Real:** Busca resiliente sem chaves via DuckDuckGo (`ddgs`).
@@ -43,10 +43,10 @@ O sistema conta com um cockpit HUD imersivo estilo militar/sci-fi com animação
   - **Em Desktop Windows:** Executa ferramentas do sistema (`calc.exe`, `notepad.exe`, comandos PowerShell) localmente via `subprocess.Popen`.
   - **Em Container Nuvem:** Bloqueia comandos destrutivos via allowlist e emite eventos SSE `client_action` com ação `open_url` para que links e ferramentas sejam abertos diretamente no navegador do operador.
 
-### 5. 🎨 Design System: Dark Tactical Red
-- **Paleta Tática:** Fundo `#0a0a0a`, cockpit `#0d0d0d`, cards `#111111`, bordas `#262626` e acentos de energia em `#ef4444` / `#e11d1d`.
+### 5. 🎨 Design System: escuro e vermelho
+- **Paleta:** Fundo `#0a0a0a`, cockpit `#0d0d0d`, cards `#111111`, bordas `#262626` e acentos de energia em `#ef4444` / `#e11d1d`.
 - **Tipografia:** `Space Grotesk` (Interface & Títulos) e `JetBrains Mono` (Telemetria, HUD e Rótulos).
-- **Geometria Tática:** Cantos com `border-radius: 4px` e cantoneiras vermelhas nos 4 vértices dos painéis.
+- **Geometria:** Cantos com `border-radius: 4px` e cantoneiras vermelhas nos 4 vértices dos painéis.
 - **Reator Atômico Quântico:** Animação a 60fps em HTML5 Canvas com órbitas elípticas, elétrons pulsantes e núcleo reativo.
 
 ### 6. 📱 Suporte a PWA (Progressive Web App)
@@ -64,7 +64,7 @@ O sistema conta com um cockpit HUD imersivo estilo militar/sci-fi com animação
 | **Pesquisa** | `ddgs`, Jina Reader, arXiv XML API | Coleta de dados web e artigos científicos |
 | **Frontend UI** | HTML5 Semântico, Vanilla CSS Moderno | Cockpit HUD, tokens HSL/Hex, micro-animações |
 | **Canvas** | HTML5 2D Context | Reator atômico quântico reativo |
-| **Áudio & Voz** | Web Speech API, Web Audio API | Síntese TTS, transcrição STT e SFX táticos |
+| **Áudio & Voz** | Web Speech API, Web Audio API | Síntese TTS, transcrição STT e SFX |
 | **Deploy** | Procfile, Render, Docker | Inicialização automática em nuvem |
 
 ---
@@ -103,12 +103,12 @@ Toda a documentação técnica detalhada, fluxos e governança estão centraliza
 
 - 🗂️ **[docs/README.md](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/README.md)**: Índice geral navegável.
 - 🎯 **[docs/todo.md](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/todo.md)**: Backlog oficial e rastreabilidade de tarefas.
-- 🏛️ **[docs/arquitetura/atom-tactical-os.md](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/arquitetura/atom-tactical-os.md)**: Arquitetura completa e diagramas.
+- 🏛️ **[docs/arquitetura/atom.md](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/arquitetura/atom.md)**: Arquitetura completa e diagramas.
 - 👁️ **[docs/fluxos/visao-multimodal.md](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/fluxos/visao-multimodal.md)**: Fluxo de visão computacional de tela.
 - 🔬 **[docs/fluxos/pesquisa-e-sintese.md](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/fluxos/pesquisa-e-sintese.md)**: Busca web, Jina Reader e arXiv.
 - 📡 **[docs/api/endpoints.md](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/api/endpoints.md)**: Especificação de rotas REST e eventos SSE.
 - 🌐 **[docs/deploy/render-e-local.md](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/deploy/render-e-local.md)**: Guia completo de deploy e ambiente.
-- 🎨 **[docs/design-system/dark-tactical-red.md](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/design-system/dark-tactical-red.md)**: Design system Dark Tactical Red.
+- 🎨 **[docs/design-system/escuro-e-vermelho.md](file:///c:/Users/Rubens/Desktop/projetinhos/jarvis%20gravity/docs/design-system/escuro-e-vermelho.md)**: Design system escuro e vermelho.
 
 ---
 

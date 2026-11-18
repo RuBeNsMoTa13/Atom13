@@ -1,7 +1,7 @@
 {
-  "name": "A.T.O.M. — Artificial Tactical Operating Matrix",
-  "short_name": "A.T.O.M.",
-  "description": "Sistema Operacional Tático de Inteligência Híbrida com Visão Multimodal e Pesquisa Aprofundada",
+  "name": "Atom",
+  "short_name": "Atom",
+  "description": "Assistente híbrido com visão multimodal e Pesquisa Aprofundada",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0e1a",

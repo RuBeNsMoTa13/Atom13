@@ -7,7 +7,7 @@ Status: Atualizado
 
 # Arquitetura Geral do Sistema — A.T.O.M.
 
-Este documento detalha o fluxo de dados, a arquitetura híbrida e a orquestração multimodal do **A.T.O.M. (Artificial Tactical Operating Matrix)** concebido por Rubens Mota.
+Este documento detalha o fluxo de dados, a arquitetura híbrida e a orquestração multimodal do **Atom** concebido por Rubens Mota.
 
 ---
 
@@ -64,4 +64,4 @@ A função `is_cloud_environment()` em `backend/tools/system_tool.py` inspeciona
 - **Quando em Ambiente Local (Windows Desktop):**
   - Comandos como abrir Calculadora (`calc.exe`) ou Bloco de Notas (`notepad.exe`) são disparados via `subprocess.Popen` no host do operador.
 - **Quando em Ambiente de Nuvem (Container Linux):**
-  - Tentativas de abrir aplicativos desktop do Windows são convertidas com segurança em avisos táticos amigáveis ou eventos SSE `client_action` com ação `open_url` para que o navegador do cliente abra o link em uma nova aba.
+  - Tentativas de abrir aplicativos desktop do Windows são convertidas com segurança em avisos amigáveis ou eventos SSE `client_action` com ação `open_url` para que o navegador do cliente abra o link em uma nova aba.

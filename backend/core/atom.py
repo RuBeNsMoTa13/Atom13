@@ -1,8 +1,8 @@
 """
-A.T.O.M. • Artificial Tactical Operating Matrix
-Núcleo de Inteligência e Orquestração do A.T.O.M. (criado por Rubens Mota).
+Atom
+Núcleo de orquestração do A.T.O.M. (criado por Rubens Mota).
 Orquestra Visão Multimodal, Pesquisa Web (DuckDuckGo + Jina), Artigos Científicos (arXiv),
-Relatórios Táticos em Markdown e Automação de Sistema Híbrido (Local Windows / Nuvem).
+Arquivos Markdown e Automação de Sistema Híbrido (Local Windows / Nuvem).
 """
 import json
 import logging
@@ -23,13 +23,13 @@ from ..tools.system_tool import execute_os_command, open_application, get_system
 
 logger = logging.getLogger("atom.core.brain")
 
-DEFAULT_SYSTEM_PROMPT = """Você é o A.T.O.M. (Artificial Tactical Operating Matrix), um sistema avançado de inteligência tática, análise profunda e operações em tempo real, criado por Rubens Mota.
+DEFAULT_SYSTEM_PROMPT = """Você é o Atom, um assistente de análise, pesquisa e operações em tempo real, criado por Rubens Mota.
 Você opera com precisão de alta fidelidade, elegância analítica e foco implacável na utilidade prática para seu operador.
 
 Suas capacidades integradas incluem:
 1. Visão de Tela Multimodal: capacidade de enxergar o que o operador está vendo na tela em tempo real para análises, diagnósticos, revisão de código e assistência contextual.
 2. Pesquisa Web & Leitura Profunda: DuckDuckGo para dados em tempo real e Jina Reader para extração cirúrgica de conteúdo de páginas e documentações.
-3. Inteligência Acadêmica & Científica: busca em tempo real no repositório arXiv para papers, teses e fundamentos de ponta.
+3. Pesquisa Acadêmica & Científica: busca em tempo real no repositório arXiv para papers, teses e fundamentos de ponta.
 4. Arquivos Markdown: criação de arquivos .md estruturados (relatórios e resumos) com download imediato.
 5. Automação do Sistema Operacional: execução de comandos controlados no Windows (PowerShell/CMD) e abertura adaptativa de sites/aplicativos via navegador do operador na nuvem.
 
@@ -39,7 +39,7 @@ Vocabulário do operador (ele costuma falar por voz e a transcrição erra algum
 - "salvar arquivo Markdown" (antes chamado de "dossiê", que a voz às vezes transcreve como "do CI") = criar um arquivo .md com o conteúdo.
 
 Diretrizes de comunicação:
-- Responda em Português do Brasil com tom tático, perspicaz, técnico e prestativo.
+- Responda em Português do Brasil com tom perspicaz, técnico e prestativo.
 - Sempre diga de qual site veio cada informação pesquisada (por exemplo "segundo o arXiv" ou "fonte: g1.globo.com"), com o link.
 - Se uma captura de tela for fornecida, analise diretamente os elementos visuais destacados pelo operador com precisão cirúrgica.
 - Sintetize informações complexas de forma analítica com títulos claros, tópicos objetivos, tabelas e conclusões práticas.
@@ -125,7 +125,7 @@ class AtomBrain:
         if any(phrase in lower for phrase in [
             "status do sistema", "uso de cpu", "uso de memória", "uso de ram",
             "telemetria", "como está a máquina", "espaço em disco", "status de hardware",
-            "diagnóstico do sistema", "diagnóstico tático"
+            "diagnóstico do sistema", "diagnóstico do atom"
         ]):
             return {"tool": "system_telemetry"}
 
@@ -157,7 +157,7 @@ class AtomBrain:
             re.search(r"(?:crie|gere|salve|salvar|grave|fazer|faça|faz)\s+(?:um\s+|o\s+|isso\s+(?:num|em um|em)\s+)?(?:arquivo\s+)?(?:markdown|\.?md|resumo|relat[oó]rio|dossi[êe]|nota|anota[çc][ãa]o)\s*(?:em\s+markdown|\.md)?\s*(?:sobre|de|do|da)?\s*(.*)", lower)
         )
         if markdown_match:
-            topic = markdown_match.group(1).strip() or "Pesquisa Tática"
+            topic = markdown_match.group(1).strip() or "Pesquisa"
             return {"tool": "create_markdown", "topic": topic}
 
         # 7. Intenção: Pesquisa Web em tempo real
@@ -242,7 +242,7 @@ class AtomBrain:
             yield {
                 "type": "tool_start",
                 "tool": "system_telemetry",
-                "label": "Telemetria Tática",
+                "label": "Telemetria",
                 "details": "Coletando telemetria em tempo real (CPU, RAM, Disco, Ambiente)..."
             }
             telem = get_system_telemetry()
@@ -254,7 +254,7 @@ class AtomBrain:
             }
             env = telem.get("environment", {})
             context_injection = (
-                f"\n[TELEMETRIA TÁTICA - A.T.O.M. OS ({env.get('mode', 'local').upper()})]:\n"
+                f"\n[TELEMETRIA - ATOM ({env.get('mode', 'local').upper()})]:\n"
                 f"- Ambiente de Execução: {env.get('platform', 'Desktop')} (Modo {env.get('mode')})\n"
                 f"- Consumo de CPU A.T.O.M.: {telem.get('jarvis_cpu_percent', telem.get('cpu_percent'))}% (Total PC: {telem.get('pc_cpu_total', 'N/A')}%)\n"
                 f"- Memória RAM A.T.O.M.: {telem.get('jarvis_ram_mb')} MB ({telem.get('jarvis_ram_percent')}% da RAM física)\n"
@@ -289,7 +289,7 @@ class AtomBrain:
             yield {
                 "type": "tool_start",
                 "tool": "arxiv_search",
-                "label": "Inteligência Científica (arXiv)",
+                "label": "Artigos científicos (arXiv)",
                 "details": f"Consultando teses e artigos acadêmicos sobre \"{q}\"..."
             }
             google_key = session_key if str(target_model).startswith("api:google:") else None
@@ -332,7 +332,7 @@ class AtomBrain:
             yield {
                 "type": "tool_start",
                 "tool": "web_search",
-                "label": "Pesquisa Web Tática",
+                "label": "Pesquisa na web",
                 "details": f"Buscando no DuckDuckGo: \"{query}\"..."
             }
             search_res = search_web(query, max_results=5)
@@ -376,7 +376,7 @@ class AtomBrain:
             last_msg = augmented_messages[-1]
             augmented_messages[-1] = {
                 "role": last_msg["role"],
-                "content": last_msg["content"] + f"\n\n[DADOS DE SUPORTE TÁTICO]:{context_injection}"
+                "content": last_msg["content"] + f"\n\n[DADOS DE SUPORTE]:{context_injection}"
             }
 
         # 2. Streaming da resposta do modelo

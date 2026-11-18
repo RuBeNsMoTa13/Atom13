@@ -2,7 +2,7 @@
 title: "Dossie de Teste Integrado"
 date: "10/09/2026 22:00:28"
 query: "Validacao do Sistema"
-tags: [Pesquisa Geral, JARVIS Intelligence]
+tags: [Pesquisa Geral, Atom]
 system: "JARVIS Protocol - Offline Neural Processing"
 ---
 
@@ -12,8 +12,8 @@ system: "JARVIS Protocol - Offline Neural Processing"
 | :--- | :--- |
 | **Data de Geração** | 10/09/2026 às 22:00:28 |
 | **Consulta Original** | `Validacao do Sistema` |
-| **Classificação** | Dossiê Tático & Pesquisa Integrada |
-| **Mecanismo** | JARVIS AI Local (Ollama) + Web Intelligence |
+| **Classificação** | Pesquisa integrada |
+| **Mecanismo** | JARVIS AI Local (Ollama) + Web |
 
 ---
 

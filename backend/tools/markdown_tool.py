@@ -51,14 +51,14 @@ def save_research_markdown(title: str, content: str, query: str = "", tags: Opti
     filename = f"{date_prefix}_{clean_title}.md"
     file_path = RESEARCHES_DIR / filename
 
-    tag_str = ", ".join(tags) if tags else "Pesquisa Geral, A.T.O.M. Tactical Intelligence"
+    tag_str = ", ".join(tags) if tags else "Pesquisa Geral, Atom"
 
     markdown_document = f"""---
 title: "{title}"
 date: "{now.strftime('%d/%m/%Y %H:%M:%S')}"
 query: "{query}"
 tags: [{tag_str}]
-system: "A.T.O.M. Tactical Intelligence — Artificial Tactical Operating Matrix"
+system: "Atom"
 author: "A.T.O.M. por Rubens Mota"
 ---
 
@@ -68,8 +68,8 @@ author: "A.T.O.M. por Rubens Mota"
 | :--- | :--- |
 | **Data de Geração** | {now.strftime('%d/%m/%Y às %H:%M:%S')} |
 | **Consulta Original** | `{query or title}` |
-| **Classificação** | Dossiê Tático & Pesquisa Integrada |
-| **Mecanismo** | A.T.O.M. Tactical Intelligence (LLM Híbrido + Web + arXiv) |
+| **Classificação** | Pesquisa integrada |
+| **Mecanismo** | Atom (LLM Híbrido + Web + arXiv) |
 
 ---
 
@@ -77,7 +77,7 @@ author: "A.T.O.M. por Rubens Mota"
 {content}
 
 ---
-*Documento gerado automaticamente pelo A.T.O.M. Tactical Intelligence — Artificial Tactical Operating Matrix.*
+*Documento gerado automaticamente pelo Atom.*
 """
 
     with open(file_path, "w", encoding="utf-8") as f:

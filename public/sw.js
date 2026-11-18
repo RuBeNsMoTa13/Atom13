@@ -1,9 +1,9 @@
 /**
- * Service Worker para A.T.O.M. Tactical OS PWA
+ * Service Worker para Atom PWA
  * Suporta cache estático e instalação como aplicativo autônomo.
  */
 
-const CACHE_NAME = 'atom-tactical-v8';
+const CACHE_NAME = 'atom-v9';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

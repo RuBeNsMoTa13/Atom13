@@ -63,7 +63,7 @@ def _block_in_cloud():
     if is_cloud_environment():
         raise HTTPException(status_code=403, detail="Indisponível na versão online do A.T.O.M.")
 
-app = FastAPI(title="A.T.O.M. Tactical OS", version="2.0.0")
+app = FastAPI(title="Atom", version="2.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -116,7 +116,7 @@ def health_check():
     ollama_ok = ollama_manager.is_available()
     return {
         "status": "online",
-        "system": "A.T.O.M. Tactical Operating Matrix",
+        "system": "Atom",
         "ollama_connected": ollama_ok,
         "environment": get_environment_info()
     }

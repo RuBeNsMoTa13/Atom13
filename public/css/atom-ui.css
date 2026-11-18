@@ -470,3 +470,45 @@ html[data-live] label:has(#conversa-toggle) {
   pointer-events: none;
   filter: grayscale(1);
 }
+
+/* Renomear conversa */
+.atom-history-input {
+  width: 100%;
+  font: inherit;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--bg-input, transparent);
+  border: 1px solid var(--accent-red);
+  border-radius: 4px;
+  padding: 3px 6px;
+}
+
+/* Arquivos: de qual conversa veio */
+.dossier-conv {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  max-width: 100%;
+  padding: 0;
+  background: none;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent-red);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.dossier-conv:hover { text-decoration: underline; }
+.dossier-conv.off { color: var(--text-dim); cursor: default; text-decoration: none; }
+.dossier-card .research-item-actions button.research-download-icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 2px;
+}
+.dossier-card .research-item-actions button.research-download-icon-btn:hover { color: var(--accent-red); }

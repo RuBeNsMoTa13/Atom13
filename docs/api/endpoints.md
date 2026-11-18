@@ -19,7 +19,7 @@ Retorna o estado geral de saúde dos subsistemas do A.T.O.M.
   ```json
   {
     "status": "online",
-    "system": "A.T.O.M. Tactical Operating Matrix",
+    "system": "Atom",
     "ollama_connected": true,
     "environment": {
       "mode": "local",
@@ -86,7 +86,7 @@ Obtém o conteúdo textual integral de um dossiê Markdown para leitura no modal
   {
     "success": true,
     "filename": "2026-10-15_22-30-00_Computacao_Quantica.md",
-    "content": "---\ntitle: ...\n# Dossiê Tático\n..."
+    "content": "---\ntitle: ...\n# Dossiê\n..."
   }
   ```
 
@@ -124,7 +124,7 @@ Cada linha enviada pelo backend segue o formato padrão `data: <JSON>\n\n`.
 | Tipo de Evento (`type`) | Payload Exemplo | Descrição |
 | :--- | :--- | :--- |
 | `token` | `{"type": "token", "content": "Analisando"}` | Token de texto emitido em tempo real. |
-| `tool_start` | `{"type": "tool_start", "tool": "web_search", "label": "Pesquisa Web", "details": "Buscando 'IA tática'..."}` | Disparado antes de executar uma ferramenta. |
+| `tool_start` | `{"type": "tool_start", "tool": "web_search", "label": "Pesquisa Web", "details": "Buscando 'IA'..."}` | Disparado antes de executar uma ferramenta. |
 | `tool_end` | `{"type": "tool_end", "tool": "web_search", "success": true}` | Disparado após término da ferramenta. |
 | `client_action` | `{"type": "client_action", "action": "open_url", "url": "https://arxiv.org/abs/..."}` | Comanda o navegador do cliente a abrir uma URL em nova aba. |
 | `report_created` | `{"type": "report_created", "filename": "dossie_123.md", "download_url": "/api/researches/dossie_123.md/download"}` | Notifica que um dossiê foi gerado e disponibiliza o download imediato. |

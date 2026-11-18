@@ -7,7 +7,7 @@ Status: Atualizado
 
 # Catálogo Neural: Modelos de Inteligência Artificial & Arquitetura Híbrida
 
-Este documento especifica a infraestrutura de modelos de IA do **A.T.O.M. (Artificial Tactical Operating Matrix)**, detalhando os modelos em nuvem catalogados, a integração com o motor local Ollama, a matriz de capacidades multimodais e as políticas de segurança de chaves.
+Este documento especifica a infraestrutura de modelos de IA do **Atom**, detalhando os modelos em nuvem catalogados, a integração com o motor local Ollama, a matriz de capacidades multimodais e as políticas de segurança de chaves.
 
 ---
 
@@ -76,7 +76,7 @@ O arquivo [backend/core/ollama_client.py](file:///c:/Users/Rubens/Desktop/projet
 | **LLaMA 3.2 3B** | `llama3.2:3b` | ~2.5 GB | Excelente para comandos de SO, conversação rápida e baixo impacto no hardware. |
 | **LLaMA 3.2 1B** | `llama3.2:1b` | ~1.2 GB | Ultraleve para notebooks sem GPU dedicada. |
 | **Qwen 2.5 Coder** | `qwen2.5-coder:7b` | ~5.5 GB | Especialista em análise de código e comandos de terminal PowerShell. |
-| **DeepSeek R1 Distill** | `deepseek-r1:7b` | ~5.2 GB | Raciocínio matemático passo-a-passo e planejamento tático. |
+| **DeepSeek R1 Distill** | `deepseek-r1:7b` | ~5.2 GB | Raciocínio matemático passo-a-passo e planejamento. |
 | **Mistral 7B** | `mistral:latest` | ~4.8 GB | Geração equilibrada de textos e síntese analítica. |
 
 ### 3.2. Download de Modelos pelo HUD (`Ollama Pull`)

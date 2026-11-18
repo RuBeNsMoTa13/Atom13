@@ -494,7 +494,7 @@ export class JarvisAudio {
       if (audioBlob.size > 800) {
         this.isTranscribing = true;
         if (this.onStateChange) this.onStateChange('THINKING');
-        if (transcriptEl) transcriptEl.innerText = 'A.T.O.M. entendendo comando de voz via IA...';
+        if (transcriptEl) transcriptEl.innerText = 'Atom entendendo o que você falou...';
         if (this.onStatusMessage) this.onStatusMessage("Transcrevendo áudio via servidor neural...");
 
         try {

@@ -5,7 +5,7 @@
 
 import { AtomCharacter } from './atom-char.js';
 import { THEMES } from './themes.js';
-import { Conversas } from './conversas.js';
+import { Conversas, Arquivos } from './conversas.js';
 
 /** Ícone próprio (sprite em index.html). */
 const ic = (n) => `<svg class="ic" aria-hidden="true"><use href="#i-${n}"/></svg>`;
@@ -707,7 +707,7 @@ class JarvisApp {
   }
 
   /**
-   * Alterna compartilhamento de tela com o A.T.O.M. (Visão Multimodal)
+   * Alterna compartilhamento de tela com o Atom (Visão Multimodal)
    */
   async toggleScreenShare() {
     if (this.isScreenSharing) {
@@ -766,7 +766,7 @@ class JarvisApp {
       }
 
       this.audio.playToolBeep();
-      this.logTerminal('[VISÃO DE TELA]: Transmissão iniciada. A.T.O.M. agora possui percepção multimodal.', 'sys');
+      this.logTerminal('[VISÃO DE TELA]: Transmissão iniciada. o Atom agora enxerga a tela.', 'sys');
     } catch (err) {
       console.warn("Compartilhamento de tela cancelado ou negado:", err);
       this.stopScreenShare();
@@ -836,7 +836,7 @@ class JarvisApp {
 
   async bootSystem() {
     this.audio.playStartupSFX();
-    this.logTerminal('[SISTEMA] Matriz A.T.O.M. inicializada. Arquitetura híbrida pronta (Visão + Nuvem + SO).', 'sys');
+    this.logTerminal('[SISTEMA] Atom pronto. Arquitetura híbrida pronta (Visão + Nuvem + SO).', 'sys');
 
     // Registrar Service Worker para PWA se suportado
     if ('serviceWorker' in navigator) {
@@ -1214,52 +1214,101 @@ class JarvisApp {
     }
   }
 
-  async loadResearches() {
-    let res = await JarvisAPI.getResearches();
-    if (res && res.success) {
-      try {
-        localStorage.setItem('atom_researches_cache', JSON.stringify(res));
-      } catch (e) {}
-    } else {
-      // Fallback para cache local se offline
-      const cached = localStorage.getItem('atom_researches_cache');
-      if (cached) {
-        try { res = JSON.parse(cached); } catch (e) {}
-      }
-    }
-    if (!res || !res.success) return;
+  /** Guarda o arquivo Markdown no navegador, com a conversa de onde ele veio. */
+  rememberFile({ filename, title, content }) {
+    if (!filename || !content) return;
+    // salva a conversa antes, para ela existir na lista com o nome certo
+    try { this.saveConversation(); } catch (e) {}
+    const conv = Conversas.get(this.conversationId);
+    Arquivos.add({
+      filename, content,
+      title: title || filename.replace(/\.md$/, ''),
+      convId: this.conversationId || null,
+      convTitle: conv ? conv.title : 'Conversa atual'
+    });
+  }
 
-    this.researchCountBadge.innerText = res.count;
+  async loadResearches() {
+    // Arquivos do navegador (valem online e local) + os da pasta do PC quando roda local
+    const items = Arquivos.list().map((a) => ({ ...a, local: true }));
+    let res = null;
+    try { res = await JarvisAPI.getResearches(); } catch (e) {}
+    if (res && res.success && Array.isArray(res.items)) {
+      res.items.forEach((it) => {
+        if (!items.some((a) => a.filename === it.filename)) items.push({ ...it, local: false });
+      });
+    }
+
+    this.researchCountBadge.innerText = items.length;
     this.researchesList.innerHTML = '';
 
-    if (res.items.length === 0) {
+    if (items.length === 0) {
       this.researchesList.innerHTML = `
         <div class="empty-dossier-state">Nenhum arquivo Markdown salvo ainda. Peça ao Atom: <em>"Salve um arquivo Markdown sobre IA"</em></div>
       `;
       return;
     }
 
-    res.items.forEach(item => {
+    items.forEach((item) => {
       const card = document.createElement('div');
       card.className = 'dossier-card';
-      const downloadUrl = JarvisAPI.getDownloadUrl(item.filename);
+      const when = item.local
+        ? new Date(item.created).toLocaleString([], { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+        : (item.modified || '');
+      const preview = item.local
+        ? String(item.content).replace(/^---[\s\S]*?---/, '').replace(/[#|*`>-]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 140)
+        : (item.preview || 'Sem pré-visualização');
+      const conv = item.local && item.convId ? Conversas.get(item.convId) : null;
+      const convLine = item.local
+        ? (conv
+          ? `<button type="button" class="dossier-conv" title="Abrir a conversa de onde veio">${ic('livro')} Da conversa: ${this.escapeHtml(conv.title)}</button>`
+          : `<span class="dossier-conv off">Da conversa: ${this.escapeHtml(item.convTitle || 'apagada')}${item.convTitle ? ' (apagada)' : ''}</span>`)
+        : `<span class="dossier-conv off">Salvo na pasta do PC</span>`;
       card.innerHTML = `
         <div class="dossier-head">
-          <span class="dossier-title">${ic('arquivo')} ${item.title}</span>
+          <span class="dossier-title">${ic('arquivo')} ${this.escapeHtml(item.title || item.filename)}</span>
           <div class="research-item-actions">
-            <span class="dossier-date">${item.modified}</span>
-            <a href="${downloadUrl}" download="${item.filename}" class="research-download-icon-btn" title="Baixar relatório (.md)" onclick="event.stopPropagation()">${ic('baixar')}</a>
+            <span class="dossier-date">${when}</span>
+            <button type="button" class="research-download-icon-btn dl" title="Baixar arquivo (.md)">${ic('baixar')}</button>
+            ${item.local ? `<button type="button" class="research-download-icon-btn del" title="Apagar este arquivo">${ic('lixeira')}</button>` : ''}
           </div>
         </div>
-        <p class="dossier-preview">${item.preview || 'Sem pré-visualização'}</p>
+        <p class="dossier-preview">${this.escapeHtml(preview || 'Sem pré-visualização')}</p>
+        ${convLine}
       `;
+      card.querySelector('.dl').addEventListener('click', (e) => { e.stopPropagation(); this.downloadFile(item.filename); });
+      card.querySelector('.del')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        Arquivos.remove(item.filename);
+        this.loadResearches();
+      });
+      card.querySelector('button.dossier-conv')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.researchesDrawer.classList.remove('open');
+        this.openConversation(item.convId);
+      });
       card.addEventListener('click', () => this.openDossierModal(item.filename));
       this.researchesList.appendChild(card);
     });
   }
 
+  downloadFile(filename) {
+    const saved = Arquivos.get(filename);
+    const url = saved
+      ? URL.createObjectURL(new Blob([saved.content], { type: 'text/markdown;charset=utf-8' }))
+      : JarvisAPI.getDownloadUrl(filename);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    this.logTerminal(`[DOWNLOAD]: Baixando ${filename}...`, 'sys');
+  }
+
   async openDossierModal(filename) {
-    const res = await JarvisAPI.getResearchContent(filename);
+    const saved = Arquivos.get(filename);
+    const res = saved ? { success: true, filename, content: saved.content } : await JarvisAPI.getResearchContent(filename);
     if (!res || !res.success) return;
 
     this.modalDossierTitle.innerText = res.filename;
@@ -1272,16 +1321,7 @@ class JarvisApp {
     }
 
     if (this.modalDownloadBtn) {
-      this.modalDownloadBtn.onclick = () => {
-        const url = JarvisAPI.getDownloadUrl(filename);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        this.logTerminal(`[DOWNLOAD]: Baixando ${filename}...`, 'sys');
-      };
+      this.modalDownloadBtn.onclick = () => this.downloadFile(filename);
     }
 
     this.modalOpenWinBtn.onclick = () => {
@@ -1363,6 +1403,7 @@ class JarvisApp {
     const isOpen = drawer.classList.contains('open');
 
     // Fechar todos
+    this.toggleHistory(false);
     this.researchesDrawer.classList.remove('open');
     this.settingsDrawer.classList.remove('open');
 
@@ -1494,6 +1535,7 @@ class JarvisApp {
           ? URL.createObjectURL(new Blob([reportEvent.content], { type: 'text/markdown;charset=utf-8' }))
           : JarvisAPI.getDownloadUrl(filename);
         assistantMsg.appendReportCreatedCard(filename, downloadUrl);
+        this.rememberFile({ filename, title: reportEvent.title, content: reportEvent.content });
         this.loadResearches();
         this.logTerminal(`[RELATÓRIO GERADO]: ${filename} (Download disponível)`, 'sys');
       },
@@ -1574,7 +1616,7 @@ class JarvisApp {
 
     // 5. Feedback sonoro e no terminal
     this.audio.playCancelSFX();
-    this.logTerminal('[COMANDO -]: A.T.O.M. interrompido pelo operador.', 'sys');
+    this.logTerminal('[COMANDO -]: Atom interrompido pelo operador.', 'sys');
   }
 
   /* ==========================================================================
@@ -1778,6 +1820,7 @@ class JarvisApp {
         holder.updateContent(`Arquivo Markdown salvo: **${result.titulo || result.arquivo}**`);
         try { holder.appendReportCreatedCard(result.arquivo, url); } catch (e) {}
         this.logTerminal(`[ARQUIVO MARKDOWN SALVO]: ${result.arquivo}`, 'sys');
+        this.rememberFile({ filename: result.arquivo, title: result.titulo, content: result.content });
         this.loadResearches();
         delete result.content; // não precisa mandar o arquivo inteiro de volta para o Gemini
       }
@@ -1920,7 +1963,7 @@ class JarvisApp {
     }
 
     this.audio.playToolBeep();
-    this.logTerminal('[COMANDO +]: A.T.O.M. interrompido. Escuta ativada: fale agora...', 'cmd');
+    this.logTerminal('[COMANDO +]: Atom interrompido. Escuta ativada: fale agora...', 'cmd');
   }
 
   showToolBanner(name, detail) {
@@ -2184,13 +2227,13 @@ class JarvisApp {
   }
 
   welcomeHtml(text) {
-    const msg = text || 'Oi! Sou o A.T.O.M., assistente do Rubens Mota. Posso pesquisar na web, buscar artigos no arXiv, salvar arquivos Markdown e, se você deixar, enxergar a sua tela. Como posso ajudar?';
+    const msg = text || 'Oi! Sou o Atom, assistente do Rubens Mota. Posso pesquisar na web, buscar artigos no arXiv, salvar arquivos Markdown e, se você deixar, enxergar a sua tela. Como posso ajudar?';
     return `
       <div class="chat-msg atom-msg jarvis-msg">
         <div class="msg-avatar"><span class="atom-av" aria-hidden="true"><i></i><i></i></span></div>
         <div class="msg-body">
           <div class="msg-meta">
-            <span class="msg-sender">A.T.O.M.</span>
+            <span class="msg-sender">Atom</span>
             <span class="msg-time">AGORA</span>
           </div>
           <div class="msg-content">${this.escapeHtml(msg)}</div>
@@ -2236,7 +2279,12 @@ class JarvisApp {
     const willOpen = open === undefined ? this.historyPanel.classList.contains('hidden') : open;
     this.historyPanel.classList.toggle('hidden', !willOpen);
     this.historyBtn?.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
-    if (willOpen) this.renderHistory();
+    if (willOpen) {
+      // uma gaveta por vez
+      this.researchesDrawer?.classList.remove('open');
+      this.settingsDrawer?.classList.remove('open');
+      this.renderHistory();
+    }
   }
 
   renderHistory() {
@@ -2258,9 +2306,34 @@ class JarvisApp {
           <span class="atom-history-title">${this.escapeHtml(c.title)}</span>
           <span class="atom-history-meta">${when} · ${n} ${n === 1 ? 'pergunta' : 'perguntas'}</span>
         </button>
-        <button type="button" class="atom-history-del" title="Apagar esta conversa">${ic('lixeira')}</button>`;
+        <button type="button" class="atom-history-del atom-history-ren" title="Renomear esta conversa">${ic('editar')}</button>
+        <button type="button" class="atom-history-del" data-del="1" title="Apagar esta conversa">${ic('lixeira')}</button>`;
       row.querySelector('.atom-history-open').addEventListener('click', () => this.openConversation(c.id));
-      row.querySelector('.atom-history-del').addEventListener('click', () => {
+      row.querySelector('.atom-history-ren').addEventListener('click', () => {
+        const titleEl = row.querySelector('.atom-history-title');
+        const input = document.createElement('input');
+        input.className = 'atom-history-input';
+        input.value = c.title;
+        input.maxLength = 80;
+        input.setAttribute('aria-label', 'Novo nome da conversa');
+        titleEl.replaceWith(input);
+        input.focus(); input.select();
+        let done = false;
+        const finish = (ok) => {
+          if (done) return; done = true;
+          if (ok) Conversas.rename(c.id, input.value);
+          this.renderHistory();
+          if (this.researchesDrawer && this.researchesDrawer.classList.contains('open')) this.loadResearches();
+        };
+        input.addEventListener('click', (e) => e.stopPropagation());
+        input.addEventListener('keydown', (e) => {
+          e.stopPropagation();
+          if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+          if (e.key === 'Escape') { e.preventDefault(); finish(false); }
+        });
+        input.addEventListener('blur', () => finish(true));
+      });
+      row.querySelector('[data-del]').addEventListener('click', () => {
         Conversas.remove(c.id);
         if (c.id === this.conversationId) this.startNewConversation(null, true);
         else this.renderHistory();
@@ -2275,10 +2348,10 @@ class JarvisApp {
 
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const avatar = role === 'user' ? ic('pessoa') : '<span class="atom-av" aria-hidden="true"><i></i><i></i></span>';
-    const sender = role === 'user' ? 'OPERADOR' : 'A.T.O.M.';
+    const sender = role === 'user' ? 'OPERADOR' : 'Atom';
 
     const screenBadgeHtml = hasScreenFrame ? `
-      <div class="tactical-label" style="margin-bottom: 6px; font-size: 10px; color: var(--accent-red); display: flex; align-items: center; gap: 4px;">
+      <div class="atom-label" style="margin-bottom: 6px; font-size: 10px; color: var(--accent-red); display: flex; align-items: center; gap: 4px;">
         ${ic('olho')} TELA ENVIADA JUNTO
       </div>
     ` : '';
@@ -2317,7 +2390,7 @@ class JarvisApp {
       <div class="msg-avatar"><span class="atom-av" aria-hidden="true"><i></i><i></i></span></div>
       <div class="msg-body">
         <div class="msg-meta">
-          <span class="msg-sender">A.T.O.M.</span>
+          <span class="msg-sender">Atom</span>
           <span class="msg-time">${now}</span>
           <button class="copy-msg-btn" title="Copiar resposta">${ic('copiar')} Copiar</button>
         </div>

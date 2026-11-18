@@ -5,7 +5,7 @@ Commit: 7dce1c2
 Status: Atualizado
 -->
 
-# Backlog Tático — A.T.O.M.
+# Backlog — A.T.O.M.
 
 Este é o backlog oficial e único de rastreabilidade do projeto **A.T.O.M.** Qualquer nova demanda, débito técnico ou funcionalidade deve ser registrada exclusivamente neste documento.
 
@@ -39,7 +39,7 @@ Este é o backlog oficial e único de rastreabilidade do projeto **A.T.O.M.** Qu
   - [x] Suportar envio de imagens em formato URL base64 para Groq Vision e OpenAI.
   - [x] Garantir fallback inteligente para `gemini-flash-latest`.
 - [x] **Passo 7: Servidor FastAPI com Rotas de Download e Visão (`server.py`)**
-  - [x] Atualizar título da aplicação para **A.T.O.M. Tactical OS**.
+  - [x] Atualizar título da aplicação para **Atom**.
   - [x] Adicionar `image_base64` no esquema Pydantic `ChatRequest`.
   - [x] Implementar rota `GET /api/researches/{filename}/download` com `FileResponse`.
   - [x] Otimizar verificação do Ollama com socket probe rápido para não travar na nuvem.
@@ -47,9 +47,9 @@ Este é o backlog oficial e único de rastreabilidade do projeto **A.T.O.M.** Qu
   - [x] Definir persona oficial A.T.O.M. por Rubens Mota.
   - [x] Orquestrar visão multimodal, arXiv, DuckDuckGo e Jina.
   - [x] Emitir eventos SSE `client_action` e `report_created`.
-- [x] **Passo 9: Interface Front-end com Novo Design System Tático, Visão, Download e PWA**
-  - [x] Aplicar Design System **Dark Tactical Red** em `style.css` com paleta `#ef4444` e fontes `Space Grotesk` / `JetBrains Mono`.
-  - [x] Implementar cantoneiras táticas nos painéis HUD e `border-radius: 4px`.
+- [x] **Passo 9: Interface Front-end com Novo Design System, Visão, Download e PWA**
+  - [x] Aplicar Design System **escuro e vermelho** em `style.css` com paleta `#ef4444` e fontes `Space Grotesk` / `JetBrains Mono`.
+  - [x] Implementar cantoneiras nos painéis HUD e `border-radius: 4px`.
   - [x] Atualizar animação do canvas para órbitas quânticas e elétrons pulsantes em `reactor.js`.
   - [x] Criar botão `#screen-share-btn` com compressão canvas (máx 1280px JPEG 0.75) e badge no composer.
   - [x] Renderizar cards com botão de download no chat ao disparar `report_created`.
@@ -70,7 +70,7 @@ Este é o backlog oficial e único de rastreabilidade do projeto **A.T.O.M.** Qu
 - [ ] Guardar os dossiês do visitante no próprio navegador para a gaveta de dossiês funcionar online.
 - [ ] Atualizar README e `docs/deploy` com a Vercel (hoje falam só do Render).
 
-## 🔮 Futuras Expansões Táticas
+## 🔮 Futuras Expansões
 - [ ] Implementar suporte a gravação contínua de sessão de tela para envio sob demanda.
-- [ ] Adicionar exportação de dossiês para PDF tático com tema escuro.
+- [ ] Adicionar exportação de dossiês para PDF com tema escuro.
 - [ ] Integrar telemetria de GPU (NVIDIA CUDA) no painel de hardware quando rodando localmente.

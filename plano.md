@@ -1,13 +1,13 @@
-# Plano de Implementação: A.T.O.M. (Artificial Tactical Operating Matrix)
-### Web App Híbrido com Visão Multimodal, Relatórios de Pesquisa e Design System Tático
+# Plano de Implementação: Atom
+### Web App Híbrido com Visão Multimodal, Relatórios de Pesquisa e Design System
 
 > **Identidade do Projeto:** **A.T.O.M.** (*Mota* invertido — identidade proprietária por Rubens Mota).  
-> **Estética:** Dark Tactical Red (Preto profundo, vermelho de alta precisão, tipografia Space Grotesk e JetBrains Mono).  
+> **Estética:** escuro e vermelho (Preto profundo, vermelho de alta precisão, tipografia Space Grotesk e JetBrains Mono).  
 > **Arquitetura:** Híbrida Adaptativa (Local no Windows com Ollama/PowerShell + Nuvem no Render com Visão de Tela, Jina Reader, arXiv e PWA).
 
 ---
 
-## 🎨 Design System Oficial A.T.O.M. (Dark Tactical Red)
+## 🎨 Design System Oficial A.T.O.M. (escuro e vermelho)
 
 ### 1. Paleta de Cores
 - **Fundo da Página:** `#0a0a0a`
@@ -17,10 +17,10 @@
   - Texto Principal: `#f5f5f5`
   - Texto Secundário: `#d4d4d4`
   - Texto Apagado / Muted: `#a3a3a3` e `#8a8a8a`
-- **Acentos e Energia Tática:**
+- **Acentos e Energia:**
   - Vermelho de Destaque (rótulos, foco, alvos): `#ef4444`
   - Vermelho de Preenchimento (botões de ação e estados ativos): `#e11d1d`
-  - Painéis Vermelhos Escuros (táticos/alertas): `#1f0d0d` e `#140a0a`, com borda `#3b1515`
+  - Painéis Vermelhos Escuros (alertas): `#1f0d0d` e `#140a0a`, com borda `#3b1515`
 
 ### 2. Tipografia e Hierarquia Visual
 - **Fonte Principal (Space Grotesk):**
@@ -30,9 +30,9 @@
   - Utilizada nos rótulos de precisão estilo `01 · APRESENTAÇÃO` (`12px`, maiúsculas, cor `#ef4444`, tracking espaçado `letter-spacing: 0.15em`).
   - Utilizada no terminal PowerShell HUD, telemetria de hardware e blocos de código.
 
-### 3. Geometria e Acabamento Tático
+### 3. Geometria e Acabamento
 - **Bordas / Raio:** Cantos pouco arredondados (`border-radius: 4px`).
-- **Cantoneiras Táticas:** Painéis com cantoneiras decorativas vermelhas nos cantos (`::before` / `::after` com acento em `#ef4444`).
+- **Cantoneiras:** Painéis com cantoneiras decorativas vermelhas nos cantos (`::before` / `::after` com acento em `#ef4444`).
 - **Reator Central (Canvas):** Núcleo com órbitas atômicas pulsantes em tons de `#ef4444` e glow suave.
 
 ---
@@ -40,7 +40,7 @@
 ## 🏛️ Diretrizes Arquiteturais do A.T.O.M.
 
 1. **Naming & Persona (A.T.O.M.):**
-   - Atualização da persona do sistema em prompts, títulos, telemetria e HUD para **A.T.O.M. (Artificial Tactical Operating Matrix)**.
+   - Atualização da persona do sistema em prompts, títulos, telemetria e HUD para **Atom**.
 2. **Ambiente Híbrido Adaptativo (`is_cloud_environment`):**
    - **Local (Windows):** Acesso a modelos locais offline (Ollama), comandos nativos PowerShell/CMD, abertura de `.exe` (`calc`, `notepad`, `code`) e Explorer.
    - **Nuvem (Web App):** Desativa comandos locais do SO de risco; substitui a abertura de sites pelo evento SSE `client_action` com `window.open`; ativa fallback gracioso caso Ollama esteja offline.
@@ -136,7 +136,7 @@ web: python -m uvicorn backend.server:app --host 0.0.0.0 --port $PORT
 ### Passo 5: Relatórios de Pesquisa Markdown com Download HTTP (`backend/tools/markdown_tool.py`)
 - **Arquivo:** `backend/tools/markdown_tool.py`
 - **Ação:**
-  1. Atualizar o cabeçalho dos relatórios para a persona **A.T.O.M. Tactical Intelligence**.
+  1. Atualizar o cabeçalho dos relatórios para a persona **Atom**.
   2. Criar função `get_research_file_path(filename)` para servir o arquivo com segurança.
   3. Adaptar `open_research_file()`: no Windows abre no Explorer; no modo nuvem orienta o download.
 - **Verificação:** Confirmar que o caminho e o conteúdo do `.md` são localizados e válidos.
@@ -156,7 +156,7 @@ web: python -m uvicorn backend.server:app --host 0.0.0.0 --port $PORT
 ### Passo 7: Servidor FastAPI com Rotas de Download e Visão (`backend/server.py`)
 - **Arquivo:** `backend/server.py`
 - **Ação:**
-  1. Atualizar título da aplicação para **A.T.O.M. Tactical OS**.
+  1. Atualizar título da aplicação para **Atom**.
   2. Adicionar `image_base64: Optional[str] = None` no modelo Pydantic `ChatRequest`.
   3. Criar rota `GET /api/researches/{filename}/download` retornando `FileResponse(media_type="text/markdown")`.
   4. Otimizar verificação do Ollama com timeout rápido para não travar na nuvem.
@@ -168,7 +168,7 @@ web: python -m uvicorn backend.server:app --host 0.0.0.0 --port $PORT
 - **Arquivo:** `backend/core/jarvis.py` (e compatibilidade)
 - **Ação:**
   1. Atualizar a persona do system prompt:
-     `Você é o A.T.O.M. (Artificial Tactical Operating Matrix), criado por Rubens Mota...`
+     `Você é o Atom, criado por Rubens Mota...`
   2. Definir modelo padrão para `api:google:gemini-flash-latest`.
   3. Atualizar `detect_intent()` para coordenar:
      - Análise visual quando `image_base64` for enviado.
@@ -180,15 +180,15 @@ web: python -m uvicorn backend.server:app --host 0.0.0.0 --port $PORT
 
 ---
 
-### Passo 9: Interface Front-end com Novo Design System Tático, Visão, Download e PWA
+### Passo 9: Interface Front-end com Novo Design System, Visão, Download e PWA
 - **Arquivos:** `frontend/index.html`, `frontend/css/style.css`, `frontend/js/api.js`, `frontend/js/app.js`, `frontend/manifest.json`
 - **Ação:**
   1. **Design System & CSS (`style.css`):**
      - Importar fontes `Space Grotesk` e `JetBrains Mono` do Google Fonts.
      - Atualizar variáveis CSS com a paleta oficial (`#0a0a0a`, `#0d0d0d`, `#111111`, `#151515`, `#262626`, `#404040`, `#f5f5f5`, `#d4d4d4`, `#a3a3a3`, `#8a8a8a`, `#ef4444`, `#e11d1d`, `#1f0d0d`, `#140a0a`, `#3b1515`).
-     - Aplicar `border-radius: 4px` e estilizar cantoneiras táticas vermelhas nos painéis.
+     - Aplicar `border-radius: 4px` e estilizar cantoneiras vermelhas nos painéis.
      - Ajustar tipografia com títulos de 44px/72px (`Space Grotesk`, -0.03em) e rótulos estilo `01 · APRESENTAÇÃO` (`JetBrains Mono`, 12px, `#ef4444`, maiúsculas, tracking largo).
-  2. **Reator Atômico:** Adaptar a animação do canvas para órbitas quânticas e pulsar de energia vermelha tática (`#ef4444`).
+  2. **Reator Atômico:** Adaptar a animação do canvas para órbitas quânticas e pulsar de energia vermelha (`#ef4444`).
   3. **Botão Visão de Tela (`#screen-share-btn`):** Adicionar no painel inferior e gerenciar `getDisplayMedia()` com redimensionamento em `<canvas>` (1280px máx, JPEG 0.75).
   4. **Tratamento de Eventos SSE:**
      - `client_action`: executa `window.open(url, '_blank')`.
@@ -209,4 +209,4 @@ Todos os 9 passos foram rigorosamente implementados e validados:
 - [x] **Passo 6:** Cliente multimodal (Gemini / Groq Vision) com base64 em `backend/core/api_client.py`.
 - [x] **Passo 7:** Servidor FastAPI com rota `GET /api/researches/{filename}/download` em `backend/server.py`.
 - [x] **Passo 8:** Orquestração completa do cérebro A.T.O.M. em `backend/core/atom.py` e bridge `jarvis.py`.
-- [x] **Passo 9:** Design System Dark Tactical Red, reator quântico, visão de tela via canvas e PWA (`manifest.json` e `sw.js`).
+- [x] **Passo 9:** Design System escuro e vermelho, reator quântico, visão de tela via canvas e PWA (`manifest.json` e `sw.js`).

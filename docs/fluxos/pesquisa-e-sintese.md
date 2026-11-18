@@ -7,7 +7,7 @@ Status: Atualizado
 
 # Fluxo Operacional: Pesquisa Aprofundada & Síntese Científica
 
-Este documento detalha o pipeline de coleta de dados web, busca acadêmica no **arXiv**, extração de conteúdo estruturado via **Jina Reader** e a persistência de dossiês táticos em Markdown.
+Este documento detalha o pipeline de coleta de dados web, busca acadêmica no **arXiv**, extração de conteúdo estruturado via **Jina Reader** e a persistência de dossiês em Markdown.
 
 ---
 
@@ -49,7 +49,7 @@ Localizado em [backend/tools/search_tool.py](file:///c:/Users/Rubens/Desktop/pro
 - Chamada via HTTP GET assíncrona:
   ```python
   jina_url = f"https://r.jina.ai/{target_url}"
-  headers = {"User-Agent": "A.T.O.M.-Tactical-OS/2.0", "X-No-Cache": "true"}
+  headers = {"User-Agent": "Atom/2.0", "X-No-Cache": "true"}
   ```
 - Trunca o conteúdo em `8.000` caracteres para manter o contexto ágil e prevenir estouro de janela em modelos compactos.
 
@@ -74,8 +74,8 @@ Quando o operador solicita a geração de um relatório ou resumo estruturado, o
 title: "Computação Quântica e Criptografia Pós-Quântica"
 date: "15/10/2026 22:30:00"
 query: "quantum computing post-quantum cryptography"
-tags: [Pesquisa Científica, arXiv, A.T.O.M. Tactical Intelligence]
-system: "A.T.O.M. Tactical Intelligence — Artificial Tactical Operating Matrix"
+tags: [Pesquisa Científica, arXiv, Atom]
+system: "Atom"
 author: "A.T.O.M. por Rubens Mota"
 ---
 ```

@@ -7,7 +7,7 @@ Status: Atualizado
 
 # Fluxo Operacional: Visão Multimodal de Tela
 
-Este documento especifica o ciclo de vida da percepção visual em tempo real do **A.T.O.M. (Artificial Tactical Operating Matrix)**, abrangendo captura, otimização de largura de banda, empacotamento base64 e injeção nos modelos de IA.
+Este documento especifica o ciclo de vida da percepção visual em tempo real do **Atom**, abrangendo captura, otimização de largura de banda, empacotamento base64 e injeção nos modelos de IA.
 
 ---
 

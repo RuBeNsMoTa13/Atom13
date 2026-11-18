@@ -1,5 +1,5 @@
 """
-A.T.O.M. • Ferramentas de Pesquisa Tática
+A.T.O.M. • Ferramentas de pesquisa
 - search_web(): busca ágil via DuckDuckGo.
 - read_url_content(): leitura profunda de páginas via Jina Reader (r.jina.ai).
 - search_arxiv(): artigos científicos reais em tempo real via API pública do arXiv.
@@ -19,7 +19,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 logger = logging.getLogger("atom.tools.search")
 
-USER_AGENT = "ATOM-Tactical-OS/2.0 (+https://github.com/RuBeNsMoTa13)"
+USER_AGENT = "Atom/2.0 (+https://github.com/RuBeNsMoTa13)"
 JINA_READER_BASE = "https://r.jina.ai/"
 ARXIV_API_URL = "https://export.arxiv.org/api/query"
 DEFAULT_READ_LIMIT = 5000

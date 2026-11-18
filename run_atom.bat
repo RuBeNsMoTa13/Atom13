@@ -1,8 +1,8 @@
 @echo off
-title A.T.O.M. Protocol - Tactical Operating Matrix
+title Atom
 color 0c
 echo ========================================================
-echo        A.T.O.M. - TACTICAL OPERATING MATRIX ONLINE
+echo        ATOM ONLINE
 echo        Criado por Rubens Mota // Versao 2.0
 echo ========================================================
 echo.
@@ -17,11 +17,11 @@ if %errorlevel% neq 0 (
     echo [OK] Motor neural Ollama online.
 )
 
-echo [2/3] Abrindo Cockpit HUD tatico no navegador...
+echo [2/3] Abrindo o Atom no navegador...
 timeout /t 2 /nobreak >nul
 start http://localhost:8000
 
-echo [3/3] Iniciando servidor FastAPI A.T.O.M. Tactical OS...
+echo [3/3] Iniciando servidor FastAPI Atom...
 echo.
 echo ========================================================
 echo  A.T.O.M. operacional em http://localhost:8000
